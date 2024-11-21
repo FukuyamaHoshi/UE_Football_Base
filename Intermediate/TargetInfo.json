@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "Football_Base",
+			"Path": "..\\Source\\Football_Base.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "Football_BaseEditor",
+			"Path": "..\\Source\\Football_BaseEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

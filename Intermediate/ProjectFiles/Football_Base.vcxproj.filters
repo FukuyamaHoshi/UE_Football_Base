@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\Football_Base.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\Football_Base.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\Football_BaseEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\Football_Base">
+      <UniqueIdentifier>{58459C77-A34F-3CAB-ACC5-AFA2F8F8D677}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\Football_Base\Football_Base.Build.cs">
+      <Filter>Source\Football_Base</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\Football_Base\Football_Base.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\Football_Base.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
