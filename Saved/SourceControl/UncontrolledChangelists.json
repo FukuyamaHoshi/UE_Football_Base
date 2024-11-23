@@ -6,7 +6,16 @@
 			"description": "Default Uncontrolled Changelist",
 			"files": [
 				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/StarterContent/Architecture/Floor_400x400.uasset",
-				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Maps/Game_Field_Map.umap"
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Maps/Game_Field_Map.umap",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/Field_Export.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/gum.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/Base.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/Flame.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/Line.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Game_Field/Game_Field.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Piece/Piece_Base.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Piece/Magnet.uasset",
+				"C:/Users/star1/Project/Football_Base/Game_Data/Football_Base/Content/Models/Piece/Piece.uasset"
 			]
 		}
 	]
