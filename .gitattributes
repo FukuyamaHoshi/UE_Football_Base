@@ -4,3 +4,4 @@ Intermediate/Build/Win64/x64/Football_BaseEditor/Development/UnrealEd/SharedPCH.
 .vs/Football_Base/v17/ipch/9146ac28428aa39a.ipch filter=lfs diff=lfs merge=lfs -text
 [[:space:]].vs/Football_Base/v17/ipch/9995ae5412a202d9.ipch filter=lfs diff=lfs merge=lfs -text
 .vs/Football_Base/v17/ipch/aafaff846090ef01.ipch filter=lfs diff=lfs merge=lfs -text
+.vs/Football_Base/v17/ipch/9995ae5412a202d9.ipch filter=lfs diff=lfs merge=lfs -text
