@@ -1,0 +1,26 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_my_player_controller.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\x64\\football_baseeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\football_base\\definitions.football_base.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_my_player_controller.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_tile.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\unrealeditor\\inc\\football_base\\uht\\c_tile.generated.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\unrealeditor\\inc\\football_base\\uht\\c_my_player_controller.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\kismetsystemlibrary.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\coreuobject\\public\\uobject\\propertyaccessutil.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\kismetsystemlibrary.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\gameplaystatics.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\sound\\dialoguetypes.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\dialoguetypes.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\gameplaystaticstypes.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gameplaystaticstypes.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gameplaystatics.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

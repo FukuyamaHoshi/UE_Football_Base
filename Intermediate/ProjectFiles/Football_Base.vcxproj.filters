@@ -11,6 +11,8 @@
     <None Include="..\..\Source\Football_BaseEditor.Target.cs">
       <Filter>Source</Filter>
     </None>
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.vsconfig" />
     <Filter Include="Config">
       <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
     </Filter>
@@ -29,6 +31,24 @@
     <Filter Include="Source\Football_Base">
       <UniqueIdentifier>{58459C77-A34F-3CAB-ACC5-AFA2F8F8D677}</UniqueIdentifier>
     </Filter>
+    <ClCompile Include="..\..\Source\Football_Base\C_My_Player_Controller.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\C_My_Player_Controller.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Football_Base\C_Piece.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\C_Piece.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Football_Base\C_Tile.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\C_Tile.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
     <None Include="..\..\Source\Football_Base\Football_Base.Build.cs">
       <Filter>Source\Football_Base</Filter>
     </None>
@@ -36,6 +56,18 @@
       <Filter>Source\Football_Base</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\Football_Base\Football_Base.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Football_Base\MyActorTest.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\MyActorTest.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\Football_Base\MyGameModeBase.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\MyGameModeBase.h">
       <Filter>Source\Football_Base</Filter>
     </ClInclude>
   </ItemGroup>
