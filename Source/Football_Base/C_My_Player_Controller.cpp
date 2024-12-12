@@ -5,6 +5,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include <Kismet/GameplayStatics.h>
 #include "C_Tile.h"
+#include <Kismet/KismetStringLibrary.h>
 
 // Called when the game starts or when spawned
 void AC_My_Player_Controller::BeginPlay()
@@ -26,6 +27,26 @@ void AC_My_Player_Controller::BeginPlay()
 		allTiles.Add(tile); // 追加
 	}
 	 // ***
+
+	// *** タイルNo設定 ***
+	// // 全てのタイル配列をソート
+	// xが小さい && yが小さい順にソート
+	allTiles.StableSort([](const AC_Tile& A, const AC_Tile& B) {
+		if (A.GetActorLocation().X != B.GetActorLocation().X) {
+			// xが同じでない(同じ列ででない)
+			return A.GetActorLocation().X < B.GetActorLocation().X; // xが小さい方
+		}
+		else {
+			// 同じ列なら
+			return A.GetActorLocation().Y < B.GetActorLocation().Y; // yが小さい方
+		}
+		});
+
+	// タイルにNoを設定
+	for (int i = 0; i < allTiles.Num(); ++i) {
+		allTiles[i]->tileNo = i + 1;
+	}
+	// ***
 }
 
 // Called every frame
@@ -36,25 +57,20 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	// *** マウスホバー時 ***
 	if (isGrap == false) return; // Grap中か
 
-	// *** ホバー中のフィールド(WorldStatic)の位置を取得 ***
+	// *** ホバー中のタイル(WorldStatic)の位置を取得 ***
 	// 取得するオブジェクトタイプを設定(WorldStaticを設定)
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
 	FHitResult outHit; // 結果を格納
 
-	bool isField = GetObjectFromMouseLocation(objectTypes, outHit); // アクター情報取得
+	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // アクター情報取得
 	// ***
 
 	// フィールドでなければ処理しない
-	if (isField == false) return;
+	if (isTile == false) return;
 
 	// *** 現在ホバー中のタイルNo ***
-	// マウスの位置を取得
-	FVector mouseLocation; // 位置 (*こっちのみ使用)
-	FVector mouseDirection; // 方向
-	APlayerController::DeprojectMousePositionToWorld(mouseLocation, mouseDirection); // マウス位置を３D座標で取得
-	
-    currentHoverTileNo = GetTileNoFromLocation(mouseLocation.X, mouseDirection.Y); // 現在ホバーしているタイルNo
+    currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // 現在ホバーしているタイルNo
 	// ***
 
 	// *** 選択されたプレイヤーがいるタイルと、現在光っているタイルには移動できないようにする ***
@@ -65,8 +81,16 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	// ***
 
 
-	// ***
-	// タイルNoからタイルの実態を取得して光らせる
+	// *** タイルを光らせる処理 ***
+	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverしているタイル取得
+	// タイルの1つのみ光らせるようにする ↓↓↓
+	// マテリアル削除
+	if (overlayTile != nullptr) overlayTile->RemoveMaterial();
+	overlayTile = hoverTile; // 光っているタイルを格納
+	// ↑↑↑
+	// マテリアルセット(タイルを光らせる)
+	overlayTile->SetMaterial();
+	overlayTileNo = currentHoverTileNo; // ホバー中のタイルと現在光っているタイルが同じにする(複数回マテリアルをセットしないようにする)
 	// ***
 }
 
@@ -156,19 +180,19 @@ int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
 		isPositiveY = false; // フラグ変更
 	}
 	
-	if (x < 50)	tileNoY = 13;
-	else if (x < 150) tileNoY = (isPositiveY) ? 14 : 12;
-	else if (x < 250) tileNoY = (isPositiveY) ? 15 : 11;
-	else if (x < 350) tileNoY = (isPositiveY) ? 16 : 10;
-	else if (x < 450) tileNoY = (isPositiveY) ? 17 : 9;
-	else if (x < 550) tileNoY = (isPositiveY) ? 18 : 8;
-	else if (x < 650) tileNoY = (isPositiveY) ? 19 : 7;
-	else if (x < 750) tileNoY = (isPositiveY) ? 20 : 6;
-	else if (x < 850) tileNoY = (isPositiveY) ? 21 : 5;
-	else if (x < 950) tileNoY = (isPositiveY) ? 22 : 4;
-	else if (x < 1050) tileNoY = (isPositiveY) ? 23 : 3;
-	else if (x < 1150) tileNoY = (isPositiveY) ? 24 : 2;
-	else if (x < 1250) tileNoY = (isPositiveY) ? 25 : 1;
+	if (y < 50)	tileNoY = 13;
+	else if (y < 150) tileNoY = (isPositiveY) ? 14 : 12;
+	else if (y < 250) tileNoY = (isPositiveY) ? 15 : 11;
+	else if (y < 350) tileNoY = (isPositiveY) ? 16 : 10;
+	else if (y < 450) tileNoY = (isPositiveY) ? 17 : 9;
+	else if (y < 550) tileNoY = (isPositiveY) ? 18 : 8;
+	else if (y < 650) tileNoY = (isPositiveY) ? 19 : 7;
+	else if (y < 750) tileNoY = (isPositiveY) ? 20 : 6;
+	else if (y < 850) tileNoY = (isPositiveY) ? 21 : 5;
+	else if (y < 950) tileNoY = (isPositiveY) ? 22 : 4;
+	else if (y < 1050) tileNoY = (isPositiveY) ? 23 : 3;
+	else if (y < 1150) tileNoY = (isPositiveY) ? 24 : 2;
+	else if (y < 1250) tileNoY = (isPositiveY) ? 25 : 1;
 	// ***
 
 	// *** タイルNo x(縦)を求める ***

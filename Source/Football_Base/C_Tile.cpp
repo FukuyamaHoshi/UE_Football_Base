@@ -25,3 +25,27 @@ void AC_Tile::Tick(float DeltaTime)
 
 }
 
+void AC_Tile::SetMaterial()
+{
+	TArray<UStaticMeshComponent*> Components; // component配列
+
+	// stacic componentを取得
+	GetComponents<UStaticMeshComponent>(Components);
+	UStaticMeshComponent* StaticMeshComponent = Components[0];
+
+	// マテリアルをセット
+	if (liteMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(liteMaterial);
+}
+
+void AC_Tile::RemoveMaterial()
+{
+	TArray<UStaticMeshComponent*> Components; // component配列
+
+	// stacic componentを取得
+	GetComponents<UStaticMeshComponent>(Components);
+	UStaticMeshComponent* StaticMeshComponent = Components[0];
+
+	// マテリアルを削除
+	StaticMeshComponent->SetOverlayMaterial(nullptr);
+}
+

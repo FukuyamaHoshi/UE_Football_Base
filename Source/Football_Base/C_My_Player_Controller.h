@@ -44,4 +44,5 @@ private:
 	int overlayTileNo = 0; // 現在光っているタイルNo
 	
 	TArray <AC_Tile*> allTiles; // すべてのタイル配列
+	AC_Tile* overlayTile; // 光っているタイル
 };
