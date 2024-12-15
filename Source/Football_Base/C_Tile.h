@@ -23,9 +23,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, Category = "Reference")
-	UMaterialInterface* liteMaterial = nullptr; // 光るマテリアル
-
+	
+	UMaterial* liteMaterial = nullptr; // 光るマテリアル
 	int tileNo = 0; // タイルNo
 
 	// オーバーレイマテリアルをセットし、タイルを光らせる

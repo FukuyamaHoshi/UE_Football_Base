@@ -45,4 +45,7 @@ private:
 	
 	TArray <AC_Tile*> allTiles; // すべてのタイル配列
 	AC_Tile* overlayTile; // 光っているタイル
+
+	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
+	UDecalComponent* currentDecal = nullptr; // 現在表示しているデカール
 };

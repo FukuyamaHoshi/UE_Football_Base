@@ -6,6 +6,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "C_Tile.h"
 #include <Kismet/KismetStringLibrary.h>
+#include "Components/DecalComponent.h"
 
 // Called when the game starts or when spawned
 void AC_My_Player_Controller::BeginPlay()
@@ -46,6 +47,11 @@ void AC_My_Player_Controller::BeginPlay()
 	for (int i = 0; i < allTiles.Num(); ++i) {
 		allTiles[i]->tileNo = i + 1;
 	}
+	// ***
+
+	// *** デカール取得 ***
+	// (コンストラクタ以外のマテリアルはLoadObject使用)
+	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
 	// ***
 }
 
@@ -111,7 +117,13 @@ void AC_My_Player_Controller::PressedLeft()
 	// *** プレイヤー以外をクリックした時 (選択解除) ***
 	if (p == nullptr) {
 		selectedPlayer = nullptr; // 変数を空にする
+		selectedPlayerTileNo = 0; // タイルNoを空にする
 		isGrap = false; // Grap解除
+
+		// デカール削除
+		if (currentDecal != nullptr) {
+			currentDecal->DestroyComponent();
+		}
 
 		return; // 処理終了
 	}
@@ -129,8 +141,13 @@ void AC_My_Player_Controller::PressedLeft()
 	}
 
 	// *** 選択されたプレイヤーのタイルNo取得 ***
-	FVector location = selectedPlayer -> GetActorLocation(); // 選択されたプレイヤーの位置
-	selectedPlayerTileNo = GetTileNoFromLocation(location.X, location.Y); // タイルＮｏセット
+	FVector playerLocation = selectedPlayer -> GetActorLocation(); // 選択されたプレイヤーの位置
+	selectedPlayerTileNo = GetTileNoFromLocation(playerLocation.X, playerLocation.Y); // タイルＮｏセット
+
+	// *** 選択されたプレイヤーのタイル位置にデカール表示 ***
+	FVector tileLocation = allTiles[selectedPlayerTileNo - 1]->GetActorLocation(); // タイル位置取得
+	tileLocation = FVector(tileLocation.X, tileLocation.Y, 40); // 位置調整
+	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
 
 	// *** プレイヤー選択中フラグ ***
 	isGrap = true; // プレイヤー選択中

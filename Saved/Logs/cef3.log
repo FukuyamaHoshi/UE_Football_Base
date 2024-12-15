@@ -1,1 +1,7 @@
-[1126/060631.096:ERROR:gpu_init.cc(426)] Passthrough is not supported, GL is disabled
+[1215/103853.169:ERROR:gpu_init.cc(426)] Passthrough is not supported, GL is disabled
+[1215/125909.611:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1215/125909.612:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1215/141555.316:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1215/141555.320:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1215/141555.340:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.
+[1215/141555.341:WARNING:dns_config_service_win.cc(712)] Failed to read DnsConfig.

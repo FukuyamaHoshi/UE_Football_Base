@@ -2,6 +2,7 @@
 
 
 #include "C_Tile.h"
+#include <Kismet/KismetSystemLibrary.h>
 
 // Sets default values
 AC_Tile::AC_Tile()
@@ -9,13 +10,20 @@ AC_Tile::AC_Tile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+	// *** オーバーレイマテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> materialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
+	if (materialAsset.Succeeded())
+	{
+		liteMaterial = materialAsset.Object;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
 void AC_Tile::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -24,6 +32,7 @@ void AC_Tile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
 
 void AC_Tile::SetMaterial()
 {
