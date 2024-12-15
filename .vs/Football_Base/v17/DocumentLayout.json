@@ -25,7 +25,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
@@ -37,8 +37,7 @@
               "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Epic Games\\UE_5.4\\Engine\\Source\\Runtime\\Engine\\Classes\\Components\\ActorComponent.h [Read Only]",
               "ViewState": "AQIAAEgEAAAAAAAAAAAAAGYEAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-12-15T04:18:16.902Z",
-              "EditorCaption": " [Read Only]"
+              "WhenOpened": "2024-12-15T04:18:16.902Z"
             },
             {
               "$type": "Document",
@@ -50,8 +49,7 @@
               "RelativeToolTip": "Source\\Football_Base\\C_Tile.cpp",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAdAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-12-07T00:10:55.893Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-12-07T00:10:55.893Z"
             },
             {
               "$type": "Document",
@@ -61,7 +59,7 @@
               "RelativeDocumentMoniker": "Source\\Football_Base\\C_My_Player_Controller.cpp",
               "ToolTip": "C:\\Users\\star1\\Project\\Football_Base\\Game_Data\\Football_Base\\Source\\Football_Base\\C_My_Player_Controller.cpp",
               "RelativeToolTip": "Source\\Football_Base\\C_My_Player_Controller.cpp",
-              "ViewState": "AQIAAAkAAAAAAAAAAAAAACEAAAAXAAAA",
+              "ViewState": "AQIAACQAAAAAAAAAAAAAAKEAAAAdAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-11-28T20:48:09.844Z",
               "EditorCaption": ""
@@ -74,7 +72,7 @@
               "RelativeDocumentMoniker": "Source\\Football_Base\\C_My_Player_Controller.h",
               "ToolTip": "C:\\Users\\star1\\Project\\Football_Base\\Game_Data\\Football_Base\\Source\\Football_Base\\C_My_Player_Controller.h",
               "RelativeToolTip": "Source\\Football_Base\\C_My_Player_Controller.h",
-              "ViewState": "AQIAAAkAAAAAAAAAAAAAADAAAAA5AAAA",
+              "ViewState": "AQIAABEAAAAAAAAAAAAQwBwAAAASAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-11-28T20:48:09.789Z",
               "EditorCaption": ""

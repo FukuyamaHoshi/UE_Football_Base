@@ -107,9 +107,11 @@ void AC_My_Player_Controller::SetupInput()
 	EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	// 左クリックのプレスのみバインド
 	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AC_My_Player_Controller::PressedLeft);
+	// 左クリックのプレスのみバインド
+	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AC_My_Player_Controller::ReleasedLeft);
 }
 
-// 左クリックイベント
+// 左クリック(プレス)イベント
 void AC_My_Player_Controller::PressedLeft()
 {
 	AActor* p = SelectHomePiece(); // Homeのコマを選択し、取得
@@ -151,6 +153,37 @@ void AC_My_Player_Controller::PressedLeft()
 
 	// *** プレイヤー選択中フラグ ***
 	isGrap = true; // プレイヤー選択中
+}
+
+// 左クリック(リリース)イベント
+void AC_My_Player_Controller::ReleasedLeft()
+{
+	// Grap時のみ処理
+	if (isGrap == false) return;
+	isGrap = false; // フラグ切り替え
+
+	// 光っているタイルがあるか
+	if (overlayTileNo == 0) return;
+
+	// *** プレイヤー(コマ)移動 ***
+	FVector overlayTileLocation = overlayTile->GetActorLocation(); // 光っているタイルの位置
+	overlayTileLocation.Z = 10; // zは固定
+	selectedPlayer->SetActorLocation(overlayTileLocation); // 移動
+	selectedPlayerTileNo = overlayTileNo; // タイル情報更新 (プレイヤーの)
+	// ***
+
+	// *** デカールの位置変更 ***
+	currentDecal->DestroyComponent(); // 現在のデカール削除
+	overlayTileLocation.Z = 40; // zだけ変更
+	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), overlayTileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
+	// ***
+
+	// タイルのオーバーレイ削除
+	overlayTile->RemoveMaterial();
+
+	// オーバーレイタイルの変数をリセット
+	overlayTileNo = 0; // タイルNo
+	overlayTile = nullptr; // タイルの実態
 }
 
 // 自分のチームのコマを選択 (プレイヤー以外をクリックしたときはnullptrを返す)
@@ -306,7 +339,7 @@ bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObj
 	worldDirection = (worldDirection * distance) + worldLocation;
 
 	TArray<AActor*> ignoreActors; // 無視するアクター
-	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::Type::ForOneFrame; // デバッグモード
+	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::Type::None; // デバッグモード
 
 	// 位置取得
 	isGetObject = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), worldLocation, worldDirection, objectTypes, false, ignoreActors, drawDebugType, outHit, true);

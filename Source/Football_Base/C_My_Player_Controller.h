@@ -26,8 +26,10 @@ public:
 private:
 	// 入力設定
 	void SetupInput();
-	// 左クリックイベント
+	// 左クリック(プレス)イベント
 	void PressedLeft();
+	// 左クリック(リリース)イベント
+	void ReleasedLeft();
 	// 自分のチームのコマを選択
 	AActor* SelectHomePiece();
 	// 位置からタイルＮｏ取得
