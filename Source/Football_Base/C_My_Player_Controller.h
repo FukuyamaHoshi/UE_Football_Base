@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "C_Tile.h"
+#include "C_Ball.h"
 #include "GameFramework/PlayerController.h"
 #include "C_My_Player_Controller.generated.h"
 
@@ -50,4 +51,6 @@ private:
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
 	UDecalComponent* currentDecal = nullptr; // 現在表示しているデカール
+
+	AC_Ball* ball; // ボール
 };

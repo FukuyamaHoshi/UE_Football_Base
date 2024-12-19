@@ -31,6 +31,12 @@
     <Filter Include="Source\Football_Base">
       <UniqueIdentifier>{58459C77-A34F-3CAB-ACC5-AFA2F8F8D677}</UniqueIdentifier>
     </Filter>
+    <ClCompile Include="..\..\Source\Football_Base\C_Ball.cpp">
+      <Filter>Source\Football_Base</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\Football_Base\C_Ball.h">
+      <Filter>Source\Football_Base</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\Football_Base\C_My_Player_Controller.cpp">
       <Filter>Source\Football_Base</Filter>
     </ClCompile>
@@ -56,12 +62,6 @@
       <Filter>Source\Football_Base</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\Football_Base\Football_Base.h">
-      <Filter>Source\Football_Base</Filter>
-    </ClInclude>
-    <ClCompile Include="..\..\Source\Football_Base\MyActorTest.cpp">
-      <Filter>Source\Football_Base</Filter>
-    </ClCompile>
-    <ClInclude Include="..\..\Source\Football_Base\MyActorTest.h">
       <Filter>Source\Football_Base</Filter>
     </ClInclude>
     <ClCompile Include="..\..\Source\Football_Base\MyGameModeBase.cpp">

@@ -53,6 +53,11 @@ void AC_My_Player_Controller::BeginPlay()
 	// (コンストラクタ以外のマテリアルはLoadObject使用)
 	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
 	// ***
+
+	// *** ボール取得 ***
+	AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // クラスで探す
+	ball = Cast<AC_Ball>(aBall); // キャスト
+	// ***
 }
 
 // Called every frame
