@@ -58,6 +58,28 @@ void AC_My_Player_Controller::BeginPlay()
 	AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // クラスで探す
 	ball = Cast<AC_Ball>(aBall); // キャスト
 	// ***
+
+	// *** コマ取得 ***
+	TArray<AActor*> a_allPieces; // コマアクター配列
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // クラスで探す
+	// 型変換
+	for (AActor* a : a_allPieces) {
+		AC_Piece* piece = Cast<AC_Piece>(a); // キャスト
+		// HomeとAwayのコマの配列作成
+		if (piece->ActorHasTag(FName("HOME"))) {
+			// Home
+			allHomePieces.Add(piece);
+		}
+		else {
+			// Away
+		}
+		allPieces.Add(piece); // 追加
+	}
+	// ***
+
+
+	// *************** test ***********
+	SerchAllyPlayer();
 }
 
 // Called every frame
@@ -351,4 +373,60 @@ bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObj
 	
 	
 	return isGetObject;
+}
+
+// 味方プレイヤーを探してパスをする ( ***フェーズ実行したい)
+// (*** フェーズ処理でしたい処理も入っている ***)
+void AC_My_Player_Controller::SerchAllyPlayer()
+{
+	// ** コマごとに現在のタイルNoを取得 **
+	for (AC_Piece* p : allPieces) {
+		FVector l = p->GetActorLocation(); // コマの位置
+		int n = GetTileNoFromLocation(l.X, l.Y); // タイルNo
+		p->currentTileNo = n; // タイルNoセット
+	}
+	// **
+	
+	// ** ボールホルダー取得( ***初回のみの処理 ) **
+	// ( ***最初はHomeのGKがボールホルダー。今は暫定でボールホルダーは決め打ちする )
+	for (AC_Piece* p : allHomePieces) {
+		if (p->ActorHasTag(FName("GK"))) {
+			ballHolder = p;
+
+			break;
+		}
+	}
+	// **
+
+	// ** ボールホルダー以外のHomeコマ取得 (*** 暫定) **
+	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
+
+	// Homeコマ配列からボールホルダー以外のコマを取得 (*** 暫定)
+	int32 i = allHomePieces.IndexOfByPredicate([&](const AC_Piece* p) {
+		return p->currentTileNo != ballHolder->currentTileNo;
+		});
+	AC_Piece* allyPirce = allHomePieces[i]; // コマを取得
+	// **
+	
+	// ** パス処理 **
+	Pass(allyPirce);
+	// **
+}
+
+// パス
+void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
+{
+	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
+	int targetTileNo = targetPiece->currentTileNo; // ターゲットのタイルNo
+	AC_Tile* targetBackTile = allTiles[(targetTileNo - 25) - 1]; // ターゲットの後ろのタイル
+	FVector t = targetBackTile->GetActorLocation(); // 目標位置
+	// **
+
+	// ** ボールホルダーをターゲットへ切り替える **
+	ballHolder = targetPiece;
+	// **
+
+	// ** ボールを移動させる **
+	ball->SetMoveTo(t);
+	// **
 }

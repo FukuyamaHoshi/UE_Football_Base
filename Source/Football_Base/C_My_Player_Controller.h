@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "C_Tile.h"
 #include "C_Ball.h"
+#include "C_Piece.h"
 #include "GameFramework/PlayerController.h"
 #include "C_My_Player_Controller.generated.h"
 
@@ -38,6 +39,11 @@ private:
 	// マウス位置のオブジェクトを取得
 	// ( return: bool(取得できたか), FHitResult&(取得したオブジェクト情報)<参照渡し> )
 	bool GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit);
+	// 味方プレイヤーを探す
+	void SerchAllyPlayer();
+	// パス
+	// ( 引数: targetPiece(コマ) )
+	void Pass(AC_Piece* targetPiece);
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー
@@ -53,4 +59,9 @@ private:
 	UDecalComponent* currentDecal = nullptr; // 現在表示しているデカール
 
 	AC_Ball* ball; // ボール
+
+	TArray <AC_Piece*> allPieces; // すべてのコマ配列
+	TArray <AC_Piece*> allHomePieces; // すべてのHomeコマ配列
+
+	AC_Piece* ballHolder = nullptr; // ボールホルダー
 };

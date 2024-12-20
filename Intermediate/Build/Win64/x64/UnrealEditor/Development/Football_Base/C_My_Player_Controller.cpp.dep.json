@@ -9,6 +9,8 @@
             "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_my_player_controller.h",
             "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_tile.h",
             "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\unrealeditor\\inc\\football_base\\uht\\c_tile.generated.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\source\\football_base\\c_ball.h",
+            "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\unrealeditor\\inc\\football_base\\uht\\c_ball.generated.h",
             "c:\\users\\star1\\project\\football_base\\game_data\\football_base\\intermediate\\build\\win64\\unrealeditor\\inc\\football_base\\uht\\c_my_player_controller.generated.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\kismetsystemlibrary.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\coreuobject\\public\\uobject\\propertyaccessutil.h",
@@ -18,7 +20,11 @@
             "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\dialoguetypes.generated.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\gameplaystaticstypes.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gameplaystaticstypes.generated.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gameplaystatics.generated.h"
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gameplaystatics.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\kismet\\kismetstringlibrary.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\kismetstringlibrary.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\components\\decalcomponent.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\decalcomponent.generated.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []
