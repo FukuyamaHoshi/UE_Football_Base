@@ -27,5 +27,5 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	int currentTileNo = 0; // 現在のタイルNo
-
+	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 };

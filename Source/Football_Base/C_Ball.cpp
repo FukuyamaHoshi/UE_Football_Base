@@ -46,9 +46,9 @@ void AC_Ball::MoveTo()
 
     // ** 移動終了処理 **
     if (FVector::Distance(currentLocation, targetLocation) < 3.0) {
-        isMoving = false; // 終了フラグ
         SetActorLocation(targetLocation); // 位置をターゲット位置へ
         targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
+        isMoving = false; // 移動終了
 
         return;
     }
@@ -64,6 +64,6 @@ void AC_Ball::SetMoveTo(FVector tLocation)
 {
     tLocation.Z = 10.0f; // ** Zの位置を修正 **
     targetLocation = tLocation; // 目標位置セット
-    isMoving = true; // フラグ切り替え
+    isMoving = true; // 移動開始
 }
 

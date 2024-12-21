@@ -76,10 +76,6 @@ void AC_My_Player_Controller::BeginPlay()
 		allPieces.Add(piece); // 追加
 	}
 	// ***
-
-
-	// *************** test ***********
-	SerchAllyPlayer();
 }
 
 // Called every frame
@@ -87,44 +83,23 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// *** マウスホバー時 ***
-	if (isGrap == false) return; // Grap中か
+	// ** フェーズ処理 **
+	// フェーズが終了しているか
+	if (isInPhase == false) {
+		isInPhase = true; // フェーズ開始
+		
+		// ** フェーズ時の処理 ***
+		InPhase();
+		// **
 
-	// *** ホバー中のタイル(WorldStatic)の位置を取得 ***
-	// 取得するオブジェクトタイプを設定(WorldStaticを設定)
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
-	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-	FHitResult outHit; // 結果を格納
+		SetTimerMonitorPhase(); // フェーズ監視タイマーセット
+	}
+	// **
 
-	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // アクター情報取得
-	// ***
-
-	// フィールドでなければ処理しない
-	if (isTile == false) return;
-
-	// *** 現在ホバー中のタイルNo ***
-    currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // 現在ホバーしているタイルNo
-	// ***
-
-	// *** 選択されたプレイヤーがいるタイルと、現在光っているタイルには移動できないようにする ***
-	// ホバー中のタイルと選択中のプレイヤーがいるタイルが同じなら処理しない
-	if (currentHoverTileNo == selectedPlayerTileNo) return;
-	// ホバー中のタイルと現在光っているタイルが同じなら処理しない
-	if (currentHoverTileNo == overlayTileNo) return;
-	// ***
-
-
-	// *** タイルを光らせる処理 ***
-	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverしているタイル取得
-	// タイルの1つのみ光らせるようにする ↓↓↓
-	// マテリアル削除
-	if (overlayTile != nullptr) overlayTile->RemoveMaterial();
-	overlayTile = hoverTile; // 光っているタイルを格納
-	// ↑↑↑
-	// マテリアルセット(タイルを光らせる)
-	overlayTile->SetMaterial();
-	overlayTileNo = currentHoverTileNo; // ホバー中のタイルと現在光っているタイルが同じにする(複数回マテリアルをセットしないようにする)
-	// ***
+	// ** マウスホバー時 **
+	// Grap中か
+	if (isGrap) HoverMouse();
+	// **
 }
 
 // 入力設定
@@ -375,29 +350,10 @@ bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObj
 	return isGetObject;
 }
 
-// 味方プレイヤーを探してパスをする ( ***フェーズ実行したい)
+// (***暫定) 味方プレイヤーを探してパスをする
 // (*** フェーズ処理でしたい処理も入っている ***)
 void AC_My_Player_Controller::SerchAllyPlayer()
 {
-	// ** コマごとに現在のタイルNoを取得 **
-	for (AC_Piece* p : allPieces) {
-		FVector l = p->GetActorLocation(); // コマの位置
-		int n = GetTileNoFromLocation(l.X, l.Y); // タイルNo
-		p->currentTileNo = n; // タイルNoセット
-	}
-	// **
-	
-	// ** ボールホルダー取得( ***初回のみの処理 ) **
-	// ( ***最初はHomeのGKがボールホルダー。今は暫定でボールホルダーは決め打ちする )
-	for (AC_Piece* p : allHomePieces) {
-		if (p->ActorHasTag(FName("GK"))) {
-			ballHolder = p;
-
-			break;
-		}
-	}
-	// **
-
 	// ** ボールホルダー以外のHomeコマ取得 (*** 暫定) **
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
@@ -428,5 +384,104 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 
 	// ** ボールを移動させる **
 	ball->SetMoveTo(t);
+	// **
+}
+
+// フェーズを終了していいか監視する
+void AC_My_Player_Controller::MonitorFinishPhase()
+{
+	// ** コマとボールが移動していないか **
+	for (AC_Piece* p : allPieces) {
+		if (p->isMoving) return;
+	}
+	if (ball->isMoving) return;
+	// **
+
+	FinishTimerAndPhase(); // タイマーとフェーズを終了
+}
+
+// (フェーズ)タイマーとフェーズを終了する
+void AC_My_Player_Controller::FinishTimerAndPhase()
+{
+	// タイマー終了
+	GetWorldTimerManager().ClearAllTimersForObject(this);
+
+	// フェーズ終了
+	isInPhase = false;
+}
+
+// マウスホバー時処理
+void AC_My_Player_Controller::HoverMouse()
+{
+	// *** ホバー中のタイル(WorldStatic)の位置を取得 ***
+	// 取得するオブジェクトタイプを設定(WorldStaticを設定)
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
+	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+	FHitResult outHit; // 結果を格納
+
+	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // アクター情報取得
+	// ***
+
+	// タイルでなければ処理しない
+	if (isTile == false) return;
+
+	// *** 現在ホバー中のタイルNo ***
+	currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // 現在ホバーしているタイルNo
+	// ***
+
+	// *** 選択されたプレイヤーがいるタイルと、現在光っているタイルには移動できないようにする ***
+	// ホバー中のタイルと選択中のプレイヤーがいるタイルが同じなら処理しない
+	if (currentHoverTileNo == selectedPlayerTileNo) return;
+	// ホバー中のタイルと現在光っているタイルが同じなら処理しない
+	if (currentHoverTileNo == overlayTileNo) return;
+	// ***
+
+
+	// *** タイルを光らせる処理 ***
+	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverしているタイル取得
+	// タイルの1つのみ光らせるようにする ↓↓↓
+	// マテリアル削除
+	if (overlayTile != nullptr) overlayTile->RemoveMaterial();
+	overlayTile = hoverTile; // 光っているタイルを格納
+	// ↑↑↑
+	// マテリアルセット(タイルを光らせる)
+	overlayTile->SetMaterial();
+	overlayTileNo = currentHoverTileNo; // ホバー中のタイルと現在光っているタイルが同じにする(複数回マテリアルをセットしないようにする)
+	// ***
+}
+
+// フェーズ時処理
+void AC_My_Player_Controller::InPhase()
+{
+	// ** コマごとに現在のタイルNoを取得 **
+	for (AC_Piece* p : allPieces) {
+		FVector l = p->GetActorLocation(); // コマの位置
+		int n = GetTileNoFromLocation(l.X, l.Y); // タイルNo
+		p->currentTileNo = n; // タイルNoセット
+	}
+	// **
+
+	// ** ボールホルダー取得( ***初回のみの処理 ) **
+	// ( ***最初はHomeのGKがボールホルダー。今は暫定でボールホルダーは決め打ちする )
+	for (AC_Piece* p : allHomePieces) {
+		if (p->ActorHasTag(FName("GK"))) {
+			ballHolder = p;
+
+			break;
+		}
+	}
+	// **
+
+	// ↓↓↓ プレイヤー判断処理を書いていく ↓↓↓
+
+	SerchAllyPlayer(); // 味方プレイヤーを探してパスをする
+}
+
+// フェーズ監視タイマー設定
+void AC_My_Player_Controller::SetTimerMonitorPhase()
+{
+	// ** タイマー開始 **
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::MonitorFinishPhase, 0.5f, true); // 0.5秒おき
 	// **
 }

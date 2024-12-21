@@ -44,6 +44,16 @@ private:
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
+	// フェーズ監視タイマー設定
+	void SetTimerMonitorPhase();
+	// フェーズを終了していいか監視する
+	void MonitorFinishPhase();
+	// (フェーズ)タイマーとフェーズを終了する
+	void FinishTimerAndPhase();
+	// マウスホバー時処理
+	void HoverMouse();
+	// フェーズ時処理
+	void InPhase();
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー
@@ -64,4 +74,7 @@ private:
 	TArray <AC_Piece*> allHomePieces; // すべてのHomeコマ配列
 
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
+
+	int phaseNum = 0; // フェーズ数カウンター
+	bool isInPhase = false; // フェーズ中
 };
