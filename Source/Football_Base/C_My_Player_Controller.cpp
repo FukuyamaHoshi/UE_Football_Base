@@ -118,7 +118,7 @@ void AC_My_Player_Controller::PressedLeft()
 {
 	AActor* p = SelectHomePiece(); // Homeのコマを選択し、取得
 
-	// *** プレイヤー以外をクリックした時 (選択解除) ***
+	// ** プレイヤー以外をクリックした時 (選択解除) **
 	if (p == nullptr) {
 		selectedPlayer = nullptr; // 変数を空にする
 		selectedPlayerTileNo = 0; // タイルNoを空にする
@@ -131,30 +131,39 @@ void AC_My_Player_Controller::PressedLeft()
 
 		return; // 処理終了
 	}
+	// **
 
-	// *** プレイヤー選択を一度のみにする ***
+	// ** プレイヤー選択を一度のみにする **
 	// (取得したプレイヤーと前にクリックされたプレイヤーが異なれば変数に保持する)
 	if (p == selectedPlayer)
 	{
-		// プレイヤーを変更しない
+		// * 前回と選択したプレイヤーが同じ
 		return; // なにもしない
 	}
 	else{
-		// プレイヤーを変更
-		selectedPlayer = p;
+		// * 前回と選択したプレイヤーが異なる
+		if (currentDecal != nullptr) {
+			currentDecal->DestroyComponent(); // デカール削除
+		}
+		
+		selectedPlayer = p; // プレイヤーを変更
 	}
+	// **
 
-	// *** 選択されたプレイヤーのタイルNo取得 ***
+	// ** 選択されたプレイヤーのタイルNo取得 **
 	FVector playerLocation = selectedPlayer -> GetActorLocation(); // 選択されたプレイヤーの位置
 	selectedPlayerTileNo = GetTileNoFromLocation(playerLocation.X, playerLocation.Y); // タイルＮｏセット
+	// **
 
-	// *** 選択されたプレイヤーのタイル位置にデカール表示 ***
+	// ** 選択されたプレイヤーのタイル位置にデカール表示 **
 	FVector tileLocation = allTiles[selectedPlayerTileNo - 1]->GetActorLocation(); // タイル位置取得
 	tileLocation = FVector(tileLocation.X, tileLocation.Y, 40); // 位置調整
 	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
+	// **
 
-	// *** プレイヤー選択中フラグ ***
+	// ** プレイヤー選択中フラグ **
 	isGrap = true; // プレイヤー選択中
+	// **
 }
 
 // 左クリック(リリース)イベント
