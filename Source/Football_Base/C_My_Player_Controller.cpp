@@ -87,6 +87,7 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	// フェーズが終了しているか
 	if (isInPhase == false) {
 		isInPhase = true; // フェーズ開始
+		phaseCount++; // フェーズカウンター
 		
 		// ** フェーズ時の処理 ***
 		InPhase();
@@ -462,6 +463,12 @@ void AC_My_Player_Controller::HoverMouse()
 // フェーズ時処理
 void AC_My_Player_Controller::InPhase()
 {
+	// ** フェーズ数をデバッグする **
+	FString s = "Phase: ";
+	FString s_phaseCount = FString::FromInt(phaseCount);
+	UKismetSystemLibrary::PrintString(this, s + s_phaseCount);
+	// **
+
 	// ** コマごとに現在のタイルNoを取得 **
 	for (AC_Piece* p : allPieces) {
 		FVector l = p->GetActorLocation(); // コマの位置

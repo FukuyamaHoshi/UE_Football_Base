@@ -75,6 +75,6 @@ private:
 
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 
-	int phaseNum = 0; // フェーズ数カウンター
 	bool isInPhase = false; // フェーズ中
+	int phaseCount = 0; // フェーズカウント
 };
