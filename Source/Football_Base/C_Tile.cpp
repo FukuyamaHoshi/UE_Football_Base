@@ -11,11 +11,19 @@ AC_Tile::AC_Tile()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-	// *** オーバーレイマテリアルの変数にセット(保持するだけ) ***
-	static ConstructorHelpers::FObjectFinder<UMaterial> materialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
-	if (materialAsset.Succeeded())
+	// *** コマ移動マテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
+	if (pieceMoveMaterialAsset.Succeeded())
 	{
-		liteMaterial = materialAsset.Object;
+		pieceMoveMaterial = pieceMoveMaterialAsset.Object;
+	}
+	// ***
+
+	// *** パスレンジマテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> passRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Pass_Range.M_Tile_Pass_Range"));
+	if (passRangeMaterialAsset.Succeeded())
+	{
+		passRangeMaterial = passRangeMaterialAsset.Object;
 	}
 	// ***
 }
@@ -33,7 +41,7 @@ void AC_Tile::Tick(float DeltaTime)
 
 }
 
-
+// コマ移動マテリアルをセット
 void AC_Tile::SetMaterial()
 {
 	TArray<UStaticMeshComponent*> Components; // component配列
@@ -43,9 +51,10 @@ void AC_Tile::SetMaterial()
 	UStaticMeshComponent* StaticMeshComponent = Components[0];
 
 	// マテリアルをセット
-	if (liteMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(liteMaterial);
+	if (pieceMoveMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(pieceMoveMaterial);
 }
 
+// オーバーレイマテリアルを削除する
 void AC_Tile::RemoveMaterial()
 {
 	TArray<UStaticMeshComponent*> Components; // component配列
@@ -56,5 +65,18 @@ void AC_Tile::RemoveMaterial()
 
 	// マテリアルを削除
 	StaticMeshComponent->SetOverlayMaterial(nullptr);
+}
+
+// パスレンジマテリアルをセット
+void AC_Tile::SetPassRangeMaterial()
+{
+	TArray<UStaticMeshComponent*> Components; // component配列
+
+	// stacic componentを取得
+	GetComponents<UStaticMeshComponent>(Components);
+	UStaticMeshComponent* StaticMeshComponent = Components[0];
+
+	// マテリアルをセット
+	if (passRangeMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(passRangeMaterial);
 }
 

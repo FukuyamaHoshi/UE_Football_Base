@@ -360,22 +360,34 @@ bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObj
 	return isGetObject;
 }
 
-// (***暫定) 味方プレイヤーを探してパスをする
-// (*** フェーズ処理でしたい処理も入っている ***)
-void AC_My_Player_Controller::SerchAllyPlayer()
+// (***暫定) ボールホルダーのプレイ選択
+// ( Homeプレイヤーのみ)
+void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
-	// ** ボールホルダー以外のHomeコマ取得 (*** 暫定) **
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
-	// Homeコマ配列からボールホルダー以外のコマを取得 (*** 暫定)
-	int32 i = allHomePieces.IndexOfByPredicate([&](const AC_Piece* p) {
-		return p->currentTileNo != ballHolder->currentTileNo;
-		});
-	AC_Piece* allyPirce = allHomePieces[i]; // コマを取得
+	// ** パスレンジを表示 **
+	TArray <int> passRangeTileNos = GetTileNoInPassRange();
+	// マテリアル表示
+	for (int i : passRangeTileNos) {
+		AC_Tile* t = allTiles[i - 1];
+		t->SetPassRangeMaterial();
+	}
 	// **
 	
+	// ** パスレンジ内の味方取得 **
+	AC_Piece* passTarget = nullptr; // パスターゲットのコマ
+	for (AC_Piece* p : allHomePieces) {
+		if (passRangeTileNos.Contains(p->currentTileNo)) {
+			passTarget = p;
+		}
+	}
+	// **
+
+	if (passTarget == nullptr) return; // null check
+	
 	// ** パス処理 **
-	Pass(allyPirce);
+	Pass(passTarget);
 	// **
 }
 
@@ -488,9 +500,69 @@ void AC_My_Player_Controller::InPhase()
 	}
 	// **
 
+	// *****************************************************************
 	// ↓↓↓ プレイヤー判断処理を書いていく ↓↓↓
 
-	SerchAllyPlayer(); // 味方プレイヤーを探してパスをする
+	SelectPlayForBallHolder(); // ボールホルダーのプレイ選択
+}
+
+// ( ***暫定)パスレンジのタイルＮｏ取得
+// ( Homeプレイヤーのみ )
+// ( 体の向きは考慮しない )
+TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
+{
+	TArray <int> passRangeNos; // パスレンジ列No配列
+	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
+	const int TILE_NUM_Y = 25; // 横のタイル個数
+
+	int ballHolderRow = ballHolderTileNo / TILE_NUM_Y; // ボールホルダーの行
+	int startPassRangeTileNo = ( (ballHolderRow + 1) * TILE_NUM_Y ) + 1; // ボールホルダーの前の行の最初のタイルＮｏ
+	int endPassRangeTileNo = (startPassRangeTileNo + (TILE_NUM_Y * 6)) - 1; // ボールホルダーの前の行の最後のタイルＮｏ
+
+	// ** 上端のタイル取得 **
+	// 左端のタイルNo取得
+	int leftEndTileNo;
+	// タイルの5列目以下か
+	if ( (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y < 5 ) {
+		// 以下
+		leftEndTileNo = startPassRangeTileNo + (TILE_NUM_Y * 5);
+	}
+	else {
+		// 以上
+		leftEndTileNo = (ballHolderTileNo - 4) + (TILE_NUM_Y * 6);
+	}
+
+	// 右端のタイルNo取得
+	int rightEndTileNo;
+	// タイルの21列目(タイル個数y - 4個)以上か
+	if ((ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > (TILE_NUM_Y - 4)) {
+		// 以上
+		rightEndTileNo = endPassRangeTileNo;
+	}
+	else {
+		// 以下
+		rightEndTileNo = (ballHolderTileNo + 4) + (TILE_NUM_Y * 6);
+	}
+	// **
+
+	// ** 4-6行目のパスレンジ (4 * 6マス) 取得 **
+	int columnCount = 0; // 列カウンター
+	int rowCount = 0; // 行カウンター
+	// 行(x)の処理
+	for (int n = 0; rowCount < 6; rowCount++) {
+		columnCount = 0; // リセット
+		
+		// 列(y)の処理
+		for (int i = 0; columnCount < (rightEndTileNo - (TILE_NUM_Y * rowCount)); i++) { // 左端-右端まで
+			columnCount = leftEndTileNo - (TILE_NUM_Y * rowCount) + i; // 列をインクリメント
+			passRangeNos.Add(columnCount);
+		}
+
+	}
+	// **
+
+
+	return passRangeNos;
 }
 
 // フェーズ監視タイマー設定

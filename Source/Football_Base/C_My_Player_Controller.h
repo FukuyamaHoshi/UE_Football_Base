@@ -39,8 +39,8 @@ private:
 	// マウス位置のオブジェクトを取得
 	// ( return: bool(取得できたか), FHitResult&(取得したオブジェクト情報)<参照渡し> )
 	bool GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit);
-	// 味方プレイヤーを探す
-	void SerchAllyPlayer();
+	// ボールホルダーのプレイ選択
+	void SelectPlayForBallHolder();
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
@@ -54,6 +54,8 @@ private:
 	void HoverMouse();
 	// フェーズ時処理
 	void InPhase();
+	// パスレンジのタイルＮｏ取得
+	TArray <int> GetTileNoInPassRange();
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー

@@ -19,16 +19,20 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+private:
+	UMaterial* pieceMoveMaterial = nullptr; // コマ移動マテリアル
+	UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-	UMaterial* liteMaterial = nullptr; // 光るマテリアル
 	int tileNo = 0; // タイルNo
 
-	// オーバーレイマテリアルをセットし、タイルを光らせる
+	// コマ移動マテリアルをセット
 	void SetMaterial();
 	// オーバーレイマテリアルを削除する
 	void RemoveMaterial();
+	// パスレンジマテリアルをセット
+	void SetPassRangeMaterial();
 };
