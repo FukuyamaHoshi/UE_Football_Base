@@ -30,7 +30,7 @@ public:
 	// < 引数：tLocation(目標位置) >
 	void SetMoveTo(FVector tLocation);
 
-
+	int currentTileNo = 0; // 現在のタイルNo
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 
 private:

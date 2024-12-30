@@ -44,6 +44,10 @@ private:
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
+	// ドリブル (前進のみ)
+	void Drrible();
+	// 方向転換 
+	void ChangeOfDirection();
 	// フェーズ監視タイマー設定
 	void SetTimerMonitorPhase();
 	// フェーズを終了していいか監視する
@@ -56,6 +60,8 @@ private:
 	void InPhase();
 	// パスレンジのタイルＮｏ取得
 	TArray <int> GetTileNoInPassRange();
+	// ボールホルダーの向きを取得
+	int GetDirectionOfBallHolder();
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー
@@ -79,4 +85,5 @@ private:
 
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント
+	const int TILE_NUM_Y = 25; // 横のタイル個数
 };

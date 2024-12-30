@@ -221,7 +221,6 @@ AActor* AC_My_Player_Controller::SelectHomePiece() {
 	return selectedActor;
 }
 
-
 // 位置からタイルＮｏ取得
 // ( unreal座標  x: 縦, y: 横 )
 int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
@@ -384,11 +383,28 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	// **
 
-	if (passTarget == nullptr) return; // null check
-	
-	// ** パス処理 **
-	Pass(passTarget);
-	// **
+	if (passTarget != nullptr) { // パスターゲット取得できていれば
+		// パスターゲットが存在
+		// ** パス処理 **
+		Pass(passTarget);
+		// **
+	}
+	else {
+		// パスターゲットが不在
+		// ボールホルダーが前向きか
+		int ballHolderDirection = GetDirectionOfBallHolder(); // ボールホルダーの方向
+		if (ballHolderDirection == TILE_NUM_Y) {
+			// 前向き
+			// ** ドリブル処理 **
+			Drrible(); // *** 前進のみ
+			// **
+		}
+		else {
+			// 前向きでない
+			// ** 方向転換処理 **
+			ChangeOfDirection();
+		}
+	}
 }
 
 // パス
@@ -407,6 +423,43 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 	// ** ボールを移動させる **
 	ball->SetMoveTo(t);
 	// **
+}
+
+// ドリブル (前進のみ)
+void AC_My_Player_Controller::Drrible()
+{
+	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
+	FVector pieceTargetLocation = allTiles[(ballHolderTileNo + TILE_NUM_Y) - 1]->GetActorLocation(); // コマのターゲット位置
+	FVector ballTargetLocation = allTiles[(ballHolderTileNo + (TILE_NUM_Y * 2) ) - 1]->GetActorLocation(); // ボールのターゲット位置
+
+	ballHolder->SetMoveTo(pieceTargetLocation); // 移動(コマ)
+	ball->SetMoveTo(ballTargetLocation); // 移動(ボール)
+}
+
+// (***暫定)方向転換
+// ( Homeプレイヤーのみ )
+void AC_My_Player_Controller::ChangeOfDirection()
+{
+	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
+	int direction = GetDirectionOfBallHolder(); // ボールホルダーの向き
+	FVector targetL; // ターゲット位置
+
+	// 現在。後ろ向きの場合
+	if (direction == -TILE_NUM_Y) {
+		// 右タッチライン上か
+		if (ballHolderTileNo % TILE_NUM_Y == 0) {
+			// 右タッチライン上
+			targetL = allTiles[(ballHolderTileNo - 1) - 1]->GetActorLocation(); // 左向き
+		}
+		else {
+			// 右タッチラインでない
+			targetL = allTiles[(ballHolderTileNo + 1) - 1]->GetActorLocation(); // 右向き
+		}
+	}
+	// 現在、右向き or 左向き
+	if (direction == 1 || direction == -1) targetL = allTiles[(ballHolderTileNo + TILE_NUM_Y) - 1]->GetActorLocation(); // 前向きになる
+
+	ball->SetMoveTo(targetL); // 移動
 }
 
 // フェーズを終了していいか監視する
@@ -489,13 +542,21 @@ void AC_My_Player_Controller::InPhase()
 	}
 	// **
 
-	// ** ボールホルダー取得( ***初回のみの処理 ) **
-	// ( ***最初はHomeのGKがボールホルダー。今は暫定でボールホルダーは決め打ちする )
-	for (AC_Piece* p : allHomePieces) {
-		if (p->ActorHasTag(FName("GK"))) {
-			ballHolder = p;
+	// ** ボールの現在のタイルNoを取得 **
+	FVector bL = ball->GetActorLocation(); // ボールの位置
+	int bN = GetTileNoFromLocation(bL.X, bL.Y); // タイルNo
+	ball->currentTileNo = bN; // タイルNoセット
+	// **
 
-			break;
+	// ** ボールホルダー取得( ***初回のみの処理 ) **
+	// ( ***最初はHomeのGKがボールホルダー ***)
+	if (phaseCount <= 1) { // フェーズ1以下か
+		for (AC_Piece* p : allHomePieces) {
+			if (p->ActorHasTag(FName("GK"))) {
+				ballHolder = p;
+
+				break;
+			}
 		}
 	}
 	// **
@@ -513,19 +574,27 @@ TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
 	TArray <int> passRangeNos; // パスレンジ列No配列
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
-	const int TILE_NUM_Y = 25; // 横のタイル個数
 
-	int ballHolderRow = ballHolderTileNo / TILE_NUM_Y; // ボールホルダーの行
-	int startPassRangeTileNo = ( (ballHolderRow + 1) * TILE_NUM_Y ) + 1; // ボールホルダーの前の行の最初のタイルＮｏ
-	int endPassRangeTileNo = (startPassRangeTileNo + (TILE_NUM_Y * 6)) - 1; // ボールホルダーの前の行の最後のタイルＮｏ
+	int ballHolderRow = ballHolderTileNo / TILE_NUM_Y; // 現在のボールホルダーの行
+	int startPassRangeRowTileNo = 0; // パスレンジ行の最初のタイル
+	// 右端か判定
+	if (ballHolderTileNo % TILE_NUM_Y == 0) {
+		// 右端
+		startPassRangeRowTileNo = (ballHolderRow * TILE_NUM_Y) + 1; // そのまま掛ける
+	}
+	else {
+		// 右端以外
+		startPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) + 1; // 現在のボールホルダーの行に+1してかける
+	}
+	int endPassRangeRowTileNo = (startPassRangeRowTileNo + (TILE_NUM_Y * 6)) - 1; // パスレンジ行の最後のタイル
 
 	// ** 上端のタイル取得 **
 	// 左端のタイルNo取得
 	int leftEndTileNo;
 	// タイルの5列目以下か
-	if ( (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y < 5 ) {
+	if ( (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y < 5 && (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > 0) {
 		// 以下
-		leftEndTileNo = startPassRangeTileNo + (TILE_NUM_Y * 5);
+		leftEndTileNo = startPassRangeRowTileNo + (TILE_NUM_Y * 5);
 	}
 	else {
 		// 以上
@@ -535,9 +604,9 @@ TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 	// 右端のタイルNo取得
 	int rightEndTileNo;
 	// タイルの21列目(タイル個数y - 4個)以上か
-	if ((ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > (TILE_NUM_Y - 4)) {
+	if ((ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > (TILE_NUM_Y - 4) || ballHolderTileNo % TILE_NUM_Y == 0) {
 		// 以上
-		rightEndTileNo = endPassRangeTileNo;
+		rightEndTileNo = endPassRangeRowTileNo;
 	}
 	else {
 		// 以下
@@ -563,6 +632,19 @@ TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 
 
 	return passRangeNos;
+}
+
+// ( ***暫定) ボールホルダーの向きを取得 ( 前: 25, 後ろ: -25, 右: 1, 左: -1 )
+// ( Homeプレイヤーのみ )
+int AC_My_Player_Controller::GetDirectionOfBallHolder()
+{
+	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
+	int ballTileNo = ball->currentTileNo; // ボールのタイルNo
+
+	if ((ballHolderTileNo + TILE_NUM_Y) == ballTileNo) return TILE_NUM_Y; // 前
+	if ((ballHolderTileNo - TILE_NUM_Y) == ballTileNo) return -TILE_NUM_Y; // 後ろ
+	if ((ballHolderTileNo + 1) == ballTileNo) return 1; // 右
+	return -1; // 左
 }
 
 // フェーズ監視タイマー設定

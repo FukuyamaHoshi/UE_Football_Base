@@ -26,6 +26,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// 指定された位置へ動く処理の設定
+	// < 引数：tLocation(目標位置) >
+	void SetMoveTo(FVector tLocation);
+
 	int currentTileNo = 0; // 現在のタイルNo
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
+
+private:
+	// 指定された位置へ動く処理
+	void MoveTo();
+
+	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 };
