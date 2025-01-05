@@ -84,6 +84,7 @@ private:
 	TArray <AC_Piece*> allHomePieces; // すべてのHomeコマ配列
 
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
+	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
 
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント

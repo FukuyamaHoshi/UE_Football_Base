@@ -402,9 +402,11 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// **
 	
 	// ** パスレンジ内の味方取得 **
+	// | リターンパスを禁止 |
 	AC_Piece* passTarget = nullptr; // パスターゲットのコマ
 	for (AC_Piece* p : allHomePieces) {
-		if (passRangeTileNos.Contains(p->currentTileNo)) {
+		// パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
+		if (passRangeTileNos.Contains(p->currentTileNo) && p != preBallHolder) {
 			passTarget = p;
 		}
 	}
@@ -444,6 +446,11 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 	FVector t = targetBackTile->GetActorLocation(); // 目標位置
 	// **
 
+	// ** 前回のボールホルダーを取得 **
+	// | リターンパスを禁止にする |
+	preBallHolder = ballHolder;
+	// **
+	
 	// ** ボールホルダーをターゲットへ切り替える **
 	ballHolder = targetPiece;
 	// **
