@@ -48,6 +48,8 @@ private:
 	void Drrible();
 	// 方向転換 
 	void ChangeOfDirection();
+	// シュート
+	void Shoot();
 	// フェーズ監視タイマー設定
 	void SetTimerMonitorPhase();
 	// フェーズを終了していいか監視する
@@ -86,4 +88,5 @@ private:
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント
 	const int TILE_NUM_Y = 25; // 横のタイル個数
+	TArray <int> passRangeTileNos; // パスレンジタイルNo配列
 };

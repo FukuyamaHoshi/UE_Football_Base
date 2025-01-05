@@ -365,8 +365,35 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
+	// ** シュート処理 **
+	// ペナルティーの高さにいるか (***暫定 Homeチームのみ)
+	if (ballHolder->currentTileNo / TILE_NUM_Y >= 34) {
+		Shoot();
+
+		return;
+	}
+	// **
+
+	// ** 前回フェーズのパスレンジ削除 **
+	// マテリアル削除
+	for (int i : passRangeTileNos) {
+		AC_Tile* t = allTiles[i - 1];
+		t->RemoveMaterial();
+	}
+
+	passRangeTileNos.Empty(); // 配列削除
+	// **
+
 	// ** パスレンジを表示 **
-	TArray <int> passRangeTileNos = GetTileNoInPassRange();
+	passRangeTileNos = GetTileNoInPassRange();
+	
+	// パスレンジが取得できていない場合
+	if (passRangeTileNos.IsEmpty()) {
+		UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
+
+		return;
+	}
+
 	// マテリアル表示
 	for (int i : passRangeTileNos) {
 		AC_Tile* t = allTiles[i - 1];
@@ -408,6 +435,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 }
 
 // パス
+// ( Homeプレイヤーのみ )
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {
 	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
@@ -426,6 +454,7 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 }
 
 // ドリブル (前進のみ)
+// ( Homeプレイヤーのみ )
 void AC_My_Player_Controller::Drrible()
 {
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
@@ -460,6 +489,17 @@ void AC_My_Player_Controller::ChangeOfDirection()
 	if (direction == 1 || direction == -1) targetL = allTiles[(ballHolderTileNo + TILE_NUM_Y) - 1]->GetActorLocation(); // 前向きになる
 
 	ball->SetMoveTo(targetL); // 移動
+}
+
+// シュート
+// ( Homeプレイヤーのみ )
+void AC_My_Player_Controller::Shoot()
+{
+	FVector goalLocation = FVector(2050, 0, -40); // ゴール位置
+
+	// ** ボールを移動させる **
+	ball->SetMoveTo(goalLocation);
+	// **
 }
 
 // フェーズを終了していいか監視する
@@ -569,64 +609,153 @@ void AC_My_Player_Controller::InPhase()
 
 // ( ***暫定)パスレンジのタイルＮｏ取得
 // ( Homeプレイヤーのみ )
-// ( 体の向きは考慮しない )
 TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
-	TArray <int> passRangeNos; // パスレンジ列No配列
-	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
+	TArray<int> passRangeNos; // パスレンジ (*最終)
+	int startPassRangeRowTileNo = 0; // パスレンジ行の最初のタイル (*yが小さい)
+	int endPassRangeRowTileNo = 0; // パスレンジ行の最後のタイル (*yが大きい)
+	bool isForward = false; // 前向き判定
+	bool isSide = false; // 横向きか
 
+	int ballHolderTileNo = ballHolder->currentTileNo; // 現在のボールホルダーのタイルNo
 	int ballHolderRow = ballHolderTileNo / TILE_NUM_Y; // 現在のボールホルダーの行
-	int startPassRangeRowTileNo = 0; // パスレンジ行の最初のタイル
-	// 右端か判定
-	if (ballHolderTileNo % TILE_NUM_Y == 0) {
-		// 右端
-		startPassRangeRowTileNo = (ballHolderRow * TILE_NUM_Y) + 1; // そのまま掛ける
-	}
-	else {
-		// 右端以外
-		startPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) + 1; // 現在のボールホルダーの行に+1してかける
-	}
-	int endPassRangeRowTileNo = (startPassRangeRowTileNo + (TILE_NUM_Y * 6)) - 1; // パスレンジ行の最後のタイル
+	
+	// ** パスレンジの行をすべて取得 **
+	// | startPassRangeRowTileNo: xが最も小さく, 最も左端 |
+	// | endPassRangeRowTileNo : xが最も大きく, 最も右端  |
 
-	// ** 上端のタイル取得 **
-	// 左端のタイルNo取得
-	int leftEndTileNo;
-	// タイルの5列目以下か
-	if ( (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y < 5 && (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > 0) {
-		// 以下
-		leftEndTileNo = startPassRangeRowTileNo + (TILE_NUM_Y * 5);
-	}
-	else {
-		// 以上
-		leftEndTileNo = (ballHolderTileNo - 4) + (TILE_NUM_Y * 6);
-	}
+	int direction = GetDirectionOfBallHolder(); // 体の向き
+	if (direction == 25) {
+		// * 前向き *
+		isForward = true; // フラグON
 
-	// 右端のタイルNo取得
-	int rightEndTileNo;
-	// タイルの21列目(タイル個数y - 4個)以上か
-	if ((ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > (TILE_NUM_Y - 4) || ballHolderTileNo % TILE_NUM_Y == 0) {
-		// 以上
-		rightEndTileNo = endPassRangeRowTileNo;
+		// 最も右端の場合
+		if (ballHolderTileNo % TILE_NUM_Y == 0) {
+			// 最も右端
+			startPassRangeRowTileNo = (ballHolderRow * TILE_NUM_Y) + 1; // そのまま掛ける (*割り切れて,1行目はballHolderRow = 1になる)
+		}
+		else {
+			// それ以外
+			startPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) + 1; // ボールホルダーの行に+1 (*小数点切り捨てのため, 1行目はballHolderRow = 0になる)
+		}
+		endPassRangeRowTileNo = (startPassRangeRowTileNo + (TILE_NUM_Y * 6)) - 1; // パスレンジ最後のタイル
+		// *
 	}
-	else {
-		// 以下
-		rightEndTileNo = (ballHolderTileNo + 4) + (TILE_NUM_Y * 6);
+	else if (direction == -25) {
+		// * 後ろ向き *
+		isForward = false; // フラグOFF
+
+		// 最も右端の場合
+		if (ballHolderTileNo % TILE_NUM_Y == 0) {
+			// 右端
+			endPassRangeRowTileNo = (ballHolderRow * TILE_NUM_Y) - TILE_NUM_Y; // そのまま掛ける (*割り切れて,1行目はballHolderRow = 1になる)
+		}
+		else {
+			// 右端以外
+			endPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) - TILE_NUM_Y; // 現在のボールホルダーの行に+1してかける
+		}
+		startPassRangeRowTileNo = (endPassRangeRowTileNo - (TILE_NUM_Y * 6) + 1); // パスレンジの最初のタイル
+		// *
+	}
+	else{
+		// * 右・左向き *
+		isSide = true; // フラグON
+		startPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) - (TILE_NUM_Y * 4); // 最初のタイル
+		endPassRangeRowTileNo = ((ballHolderRow + 1) * TILE_NUM_Y) + (TILE_NUM_Y * 4); // 最後のタイル
+		// *
 	}
 	// **
 
-	// ** 4-6行目のパスレンジ (4 * 6マス) 取得 **
+	// ** 上端(xが最も大きい)のタイル取得 **
+	// * 左上端のタイルNo取得
+	int leftEndTileNo;
+	// 現在ボールホルダーが左側5マスにいるか
+	if ( (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y < 5 && (ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > 0) { // *5以下とすると0（右端）も範囲に入っていまうため
+		// * 左側5マス *
+		// 横向きか
+		if (isSide) {
+			// 左向きか
+			if (direction == -1) {
+				// *左向き
+				leftEndTileNo = (startPassRangeRowTileNo + (TILE_NUM_Y * 8) - TILE_NUM_Y) + 1;
+			}
+			else {
+				// *右向き
+				leftEndTileNo = (ballHolderTileNo + 1) + (TILE_NUM_Y * 4);
+			}
+		}
+		else {
+			// *前向き　or 後ろ向き
+			leftEndTileNo = startPassRangeRowTileNo + (TILE_NUM_Y * 5);
+		}
+		// *
+	}
+	else {
+		// * 5マス以外 *
+		// 横向きか
+		if (isSide) {
+			// *右・左向き
+			leftEndTileNo = direction == 1 ? (ballHolderTileNo + 1) + (TILE_NUM_Y * 4) : (ballHolderTileNo - 6) + (TILE_NUM_Y * 4);
+		}
+		else {
+			// *前向き　or 後ろ向き
+			leftEndTileNo = isForward ? (ballHolderTileNo - 4) + (TILE_NUM_Y * 6) : (ballHolderTileNo - 4) - TILE_NUM_Y;
+		}
+		// *
+	}
+	// *
+
+	// 右上端のタイルNo取得
+	int rightEndTileNo;
+	// 現在ボールホルダーが右側5マスにいるか
+	if ((ballHolderTileNo + TILE_NUM_Y) % TILE_NUM_Y > (TILE_NUM_Y - 4) || ballHolderTileNo % TILE_NUM_Y == 0) { // *21以上とすると0（右端）が範囲に入らないため
+		// * 右側5マス *
+		rightEndTileNo = direction == -1 ? (ballHolderTileNo - 1) + (TILE_NUM_Y * 4) : endPassRangeRowTileNo;
+		// *
+	}
+	else {
+		// * 5マス以外 *
+		// 横向きか
+		if (isSide) {
+			// 右 or 左向き
+			rightEndTileNo = direction == 1 ? (ballHolderTileNo + 6) + (TILE_NUM_Y * 4) : (ballHolderTileNo - 1) + (TILE_NUM_Y * 4);
+		}
+		else {
+			// 前向き　or 後ろ向き
+			rightEndTileNo = isForward ? (ballHolderTileNo + 4) + (TILE_NUM_Y * 6) : (ballHolderTileNo + 4) - TILE_NUM_Y;
+		}
+		// *
+	}
+	// **
+
+	// ** パスレンジ取得 **
+	// | 前・後ろ向き: 4 * 6 マス |
+	// | 右・左向き: 6 * 9 マス   |
 	int columnCount = 0; // 列カウンター
 	int rowCount = 0; // 行カウンター
+	int rowRange = isSide ? 9 : 6; // 縦(行)のマス数
+	TArray <int> passRangeOutOfFieldNos; // パスレンジ列No配列(フィールド外も含む)
 	// 行(x)の処理
-	for (int n = 0; rowCount < 6; rowCount++) {
+	// | rowRange: 縦幅(x, 行)                       |
+	// | leftEndTileNo → rightEndTileNo: 横幅(y, 列) |
+	// 縦(x)の処理
+	for (int n = 0; rowCount < rowRange; rowCount++) {
 		columnCount = 0; // リセット
 		
-		// 列(y)の処理
-		for (int i = 0; columnCount < (rightEndTileNo - (TILE_NUM_Y * rowCount)); i++) { // 左端-右端まで
+		// 横(y)の処理
+		for (int i = 0; columnCount < (rightEndTileNo - (TILE_NUM_Y * rowCount)); i++) { // 左端 - 右端まで
 			columnCount = leftEndTileNo - (TILE_NUM_Y * rowCount) + i; // 列をインクリメント
-			passRangeNos.Add(columnCount);
+			passRangeOutOfFieldNos.Add(columnCount);
 		}
 
+	}
+	// **
+
+	// ** パスレンジがタイル範囲を超えないようにする **
+	for (int n : passRangeOutOfFieldNos) {
+		if (n > allTiles.Num() || n < 0) continue; // 0 < tileNos < 1000 の範囲
+
+		passRangeNos.Add(n);
 	}
 	// **
 
