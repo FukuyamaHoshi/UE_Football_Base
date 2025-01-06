@@ -82,6 +82,7 @@ private:
 
 	TArray <AC_Piece*> allPieces; // すべてのコマ配列
 	TArray <AC_Piece*> allHomePieces; // すべてのHomeコマ配列
+	TArray <AC_Piece*> allAwayPieces; // すべてのAwayコマ配列
 
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
