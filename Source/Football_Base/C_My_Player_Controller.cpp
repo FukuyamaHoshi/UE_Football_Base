@@ -360,17 +360,21 @@ bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObj
 	return isGetObject;
 }
 
-// (***暫定) ボールホルダーのプレイ選択
-// ( Homeプレイヤーのみ)
+// ボールホルダーのプレイ選択
 void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
+	bool isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
+	TArray< AC_Piece*> ballSidePlayers = isHomeBall ? allHomePieces : allAwayPieces; // ボールホルダー側のプレイヤー
+	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(TILE_NUM_Y); // ボールホルダーが何列目にいるか (小数点含む) **右端タイル処理
+
+
 	// ** シュート処理 **
-	if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeプレイヤーか
+	if (isHomeBall) { // Homeボールか
 		// Home
-		if (ballHolder->currentTileNo / TILE_NUM_Y >= 34) { // ペナルティーの高さにいるか
-			// ** シュート処理 **
+		if (f_ballHolderRow > 34.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
+			// ** シュート処理 **	
 			Shoot();
 			// **
 
@@ -380,7 +384,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	else {
 		// Away
-		if (ballHolder->currentTileNo / TILE_NUM_Y <= 5) { // ペナルティーの高さにいるか
+		if (f_ballHolderRow <= 6.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
 			// ** シュート処理 **
 			Shoot();
 			// **
@@ -400,7 +404,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// **
 
 	// ** パスレンジを表示 **
-	passRangeTileNos = GetTileNoInPassRange();
+	passRangeTileNos = GetTileNoInPassRange(); // パスレンジ取得
 	
 	// パスレンジが取得できていない場合
 	if (passRangeTileNos.IsEmpty()) {
@@ -419,7 +423,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// ** パスレンジ内の味方取得 **
 	// | リターンパスを禁止 |
 	AC_Piece* passTarget = nullptr; // パスターゲットのコマ
-	for (AC_Piece* p : allHomePieces) {
+	for (AC_Piece* p : ballSidePlayers) {
 		// パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
 		if (passRangeTileNos.Contains(p->currentTileNo) && p != preBallHolder) {
 			passTarget = p;
@@ -436,7 +440,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	else {
 		// パスターゲットが不在
 		int ballHolderDirection = GetDirectionOfBallHolder(); // ボールホルダーの方向
-		if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeプレイヤーか
+		if (isHomeBall) { // Homeボールか
 			// Home
 			if (ballHolderDirection == TILE_NUM_Y) { // 前向き化
 				// 前向き
@@ -470,12 +474,12 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 }
 
 // パス
-// ( Homeプレイヤーのみ )
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {
 	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
 	int targetTileNo = targetPiece->currentTileNo; // ターゲットのタイルNo
-	AC_Tile* targetBackTile = allTiles[(targetTileNo - 25) - 1]; // ターゲットの後ろのタイル
+	bool isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
+	AC_Tile* targetBackTile = isHomeBall ? allTiles[(targetTileNo - TILE_NUM_Y) - 1] : allTiles[(targetTileNo + TILE_NUM_Y) - 1]; // ターゲットの後ろのタイル
 	FVector t = targetBackTile->GetActorLocation(); // 目標位置
 	// **
 
@@ -515,16 +519,17 @@ void AC_My_Player_Controller::Drrible()
 	ball->SetMoveTo(ballTargetLocation); // 移動(ボール)
 }
 
-// (***暫定)方向転換
-// ( Homeプレイヤーのみ )
+// 方向転換
 void AC_My_Player_Controller::ChangeOfDirection()
 {
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
 	int direction = GetDirectionOfBallHolder(); // ボールホルダーの向き
 	FVector targetL; // ターゲット位置
+	bool isHome = ballHolder->ActorHasTag(FName("HOME")); // Homeプレイヤーか
+	int forwardDirection = isHome ? TILE_NUM_Y : -TILE_NUM_Y; // ボールホルダーの前の方向
 
 	// 現在。後ろ向きの場合
-	if (direction == -TILE_NUM_Y) {
+	if (direction == -forwardDirection) {
 		// 右タッチライン上か
 		if (ballHolderTileNo % TILE_NUM_Y == 0) {
 			// 右タッチライン上
@@ -536,7 +541,7 @@ void AC_My_Player_Controller::ChangeOfDirection()
 		}
 	}
 	// 現在、右向き or 左向き
-	if (direction == 1 || direction == -1) targetL = allTiles[(ballHolderTileNo + TILE_NUM_Y) - 1]->GetActorLocation(); // 前向きになる
+	if (direction == 1 || direction == -1) targetL = allTiles[(ballHolderTileNo + forwardDirection) - 1]->GetActorLocation(); // 前向きになる
 
 	ball->SetMoveTo(targetL); // 移動
 }
@@ -677,8 +682,7 @@ void AC_My_Player_Controller::InPhase()
 	SelectPlayForBallHolder(); // ボールホルダーのプレイ選択
 }
 
-// ( ***暫定)パスレンジのタイルＮｏ取得
-// ( Homeプレイヤーのみ )
+// パスレンジのタイルＮｏ取得
 TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
 	TArray<int> passRangeNos; // パスレンジ (*最終)
