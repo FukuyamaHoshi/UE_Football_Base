@@ -4,6 +4,7 @@
 #include "C_Ball.h"
 #include <Kismet/KismetMathLibrary.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include "C_Common.h"
 
 // Sets default values
 AC_Ball::AC_Ball()
@@ -42,7 +43,6 @@ void AC_Ball::MoveTo()
     // 引数セット
     FVector currentLocation = GetActorLocation(); // 現在の位置を取得
     float tile = GetWorld()->GetDeltaSeconds(); // 前のフレームからの経過時間を取得
-    float speed = 4.0f; // 補間の速度を設定
 
     // ** 移動終了処理 **
     if (FVector::Distance(currentLocation, targetLocation) < 3.0) {
@@ -54,7 +54,7 @@ void AC_Ball::MoveTo()
     }
 
     // ターゲットまでの位置取得
-    FVector newLocation = UKismetMathLibrary::VInterpTo(currentLocation, targetLocation, tile, speed);
+    FVector newLocation = UKismetMathLibrary::VInterpTo(currentLocation, targetLocation, tile, C_Common::PIECE_SPEED);
 
     // 自身に新しい位置を適用
     SetActorLocation(newLocation);
@@ -62,7 +62,7 @@ void AC_Ball::MoveTo()
 
 void AC_Ball::SetMoveTo(FVector tLocation)
 {
-    tLocation.Z = 10.0f; // ** Zの位置を修正 **
+    tLocation.Z = C_Common::BASE_LOCATION_Z; // ** Zの位置を修正 **
     targetLocation = tLocation; // 目標位置セット
     isMoving = true; // 移動開始
 }

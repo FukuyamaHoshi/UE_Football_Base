@@ -89,6 +89,5 @@ private:
 
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント
-	const int TILE_NUM_Y = 25; // 横のタイル個数
 	TArray <int> passRangeTileNos; // パスレンジタイルNo配列
 };
