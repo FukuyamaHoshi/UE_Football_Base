@@ -17,6 +17,8 @@ public:
     static constexpr int TILE_NUM_Y = 25; // 横(y)のタイル個数
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
+    static constexpr bool DEBUG_MODE = true; // デバッグモード
+    static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
     // **
 
 };

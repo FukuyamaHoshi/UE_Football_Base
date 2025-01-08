@@ -58,8 +58,12 @@ private:
 	void FinishTimerAndPhase();
 	// マウスホバー時処理
 	void HoverMouse();
-	// フェーズ時処理
+	// フェーズ前処理
+	void BeforePhase();
+	// フェーズ中処理
 	void InPhase();
+	// フェーズ後処理 (bool: falseでフェーズ終了)
+	bool AfterPhase();
 	// パスレンジのタイルＮｏ取得
 	TArray <int> GetTileNoInPassRange();
 	// ボールホルダーの向きを取得
@@ -71,22 +75,16 @@ private:
 	int currentHoverTileNo = 0; // 現在ホバーしているタイルNo
 	int selectedPlayerTileNo = 0; // 選択しているプレイヤーのタイルNo
 	int overlayTileNo = 0; // 現在光っているタイルNo
-	
 	TArray <AC_Tile*> allTiles; // すべてのタイル配列
 	AC_Tile* overlayTile; // 光っているタイル
-
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
 	UDecalComponent* currentDecal = nullptr; // 現在表示しているデカール
-
 	AC_Ball* ball; // ボール
-
 	TArray <AC_Piece*> allPieces; // すべてのコマ配列
 	TArray <AC_Piece*> allHomePieces; // すべてのHomeコマ配列
 	TArray <AC_Piece*> allAwayPieces; // すべてのAwayコマ配列
-
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
-
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント
 	TArray <int> passRangeTileNos; // パスレンジタイルNo配列

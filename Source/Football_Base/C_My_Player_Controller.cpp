@@ -89,13 +89,10 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	// フェーズが終了しているか
 	if (isInPhase == false) {
 		isInPhase = true; // フェーズ開始
-		phaseCount++; // フェーズカウンター
-		
-		// ** フェーズ時の処理 ***
-		InPhase();
-		// **
 
-		SetTimerMonitorPhase(); // フェーズ監視タイマーセット
+		// ** フェーズ前処理 **
+		BeforePhase();
+		// **
 	}
 	// **
 
@@ -367,8 +364,9 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
 	bool isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
-	TArray< AC_Piece*> ballSidePlayers = isHomeBall ? allHomePieces : allAwayPieces; // ボールホルダー側のプレイヤー
+	TArray< AC_Piece*> ballSidePlayers = isHomeBall ? allHomePieces : allAwayPieces; // ボールホルダー側のプレイヤー配列
 	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(C_Common::TILE_NUM_Y); // ボールホルダーが何列目にいるか (小数点含む) **右端タイル処理
+	int ballSideForward = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ボールホルダー側の前向き
 
 
 	// ** シュート処理 **
@@ -393,35 +391,9 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 			return;
 		}
 	}
-
-	// ** 前回フェーズのパスレンジ削除 **
-	// マテリアル削除
-	for (int i : passRangeTileNos) {
-		AC_Tile* t = allTiles[i - 1];
-		t->RemoveMaterial();
-	}
-
-	passRangeTileNos.Empty(); // 配列削除
-	// **
-
-	// ** パスレンジを表示 **
-	passRangeTileNos = GetTileNoInPassRange(); // パスレンジ取得
-	
-	// パスレンジが取得できていない場合
-	if (passRangeTileNos.IsEmpty()) {
-		UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
-
-		return;
-	}
-
-	// マテリアル表示
-	for (int i : passRangeTileNos) {
-		AC_Tile* t = allTiles[i - 1];
-		t->SetPassRangeMaterial();
-	}
-	// **
 	
 	// ** パスレンジ内の味方取得 **
+	// | パスレンジはBoforeフェーズで取得済み |
 	// | リターンパスを禁止 |
 	AC_Piece* passTarget = nullptr; // パスターゲットのコマ
 	for (AC_Piece* p : ballSidePlayers) {
@@ -432,46 +404,36 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	// **
 
+	// ** パス or ドリブル or 方向転換 **
 	if (passTarget != nullptr) { // パスターゲット取得できていれば
 		// パスターゲットが存在
+		
 		// ** パス処理 **
 		Pass(passTarget);
 		// **
+
 	}
 	else {
 		// パスターゲットが不在
 		int ballHolderDirection = GetDirectionOfBallHolder(); // ボールホルダーの方向
-		if (isHomeBall) { // Homeボールか
-			// Home
-			if (ballHolderDirection == C_Common::TILE_NUM_Y) { // 前向き化
-				// 前向き
-				// ** ドリブル処理 **
-				Drrible(); // *** 前進のみ
-				// **
-			}
-			else {
-				// 前向きでない
-				// ** 方向転換処理 **
-				ChangeOfDirection();
-				// **
-			}
+		if (ballHolderDirection == ballSideForward) { // 前向きか
+			// 前向き
+			
+			// ** ドリブル処理 **
+			Drrible(); // *** 前進のみ
+			// **
+
 		}
 		else {
-			// Away
-			if (ballHolderDirection == -C_Common::TILE_NUM_Y) { // 前向きか
-				// 前向き
-				// ** ドリブル処理 **
-				Drrible(); // *** 前進のみ
-				// **
-			}
-			else {
-				// 前向きでない
-				// ** 方向転換処理 **
-				ChangeOfDirection();
-				// **
-			}
+			// 前向きでない
+			
+			// ** 方向転換処理 **
+			ChangeOfDirection();
+			// **
+
 		}
 	}
+	// **
 }
 
 // パス
@@ -560,6 +522,10 @@ void AC_My_Player_Controller::Shoot()
 		goalLocation = FVector(-2050, 0, -40);
 	}
 
+	// ** ボールホルダー削除 **
+	ballHolder = nullptr;
+	// **
+
 	// ** ボールを移動させる **
 	ball->SetMoveTo(goalLocation);
 	// **
@@ -584,8 +550,11 @@ void AC_My_Player_Controller::FinishTimerAndPhase()
 	// タイマー終了
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
+	// フェーズ終了時処理
+	bool _isFinish = AfterPhase();
+
 	// フェーズ終了
-	isInPhase = false;
+	isInPhase = _isFinish;
 }
 
 // マウスホバー時処理
@@ -628,13 +597,19 @@ void AC_My_Player_Controller::HoverMouse()
 	// ***
 }
 
-// フェーズ時処理
-void AC_My_Player_Controller::InPhase()
+// フェーズ前処理
+// | フェーズカウント |
+// | コマの初期値セット |
+void AC_My_Player_Controller::BeforePhase()
 {
-	// ** フェーズ数をデバッグする **
-	FString s = "Phase: ";
-	FString s_phaseCount = FString::FromInt(phaseCount);
-	UKismetSystemLibrary::PrintString(this, s + s_phaseCount);
+	// ** フェーズ数カウント **
+	phaseCount++;
+	// フェーズ数をデバッグ表示する
+	if (C_Common::DEBUG_MODE) {
+		FString s = "Phase: ";
+		FString s_phaseCount = FString::FromInt(phaseCount);
+		UKismetSystemLibrary::PrintString(this, s + s_phaseCount);
+	}
 	// **
 
 	// ** コマごとに現在のタイルNoを取得 **
@@ -652,7 +627,7 @@ void AC_My_Player_Controller::InPhase()
 	// **
 
 	// ** ボールホルダー取得( ***初回のみの処理 ) **
-	// | Homeを優先してボールホルダーへ |
+	// | Homeプレイヤーを優先してボールホルダーへ |
 	if (phaseCount <= 1) { // フェーズ1以下か
 		if (allHomePieces.Num() > 0) { // Homeコマがあるか
 			// Home
@@ -677,16 +652,73 @@ void AC_My_Player_Controller::InPhase()
 	}
 	// **
 
-	// *****************************************************************
-	// ↓↓↓ プレイヤー判断処理を書いていく ↓↓↓
+	// ** パスレンジを取得・マテリアル表示 **
+	passRangeTileNos = GetTileNoInPassRange(); // パスレンジ取得
+	// パスレンジが取得できていない場合
+	if (passRangeTileNos.IsEmpty()) {
+		// パスレンジなし
+		UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
+	}
+	else {
+		// パスレンジあり
+		// マテリアル表示
+		for (int i : passRangeTileNos) {
+			AC_Tile* t = allTiles[i - 1];
+			t->SetPassRangeMaterial();
+		}
+	}
+	// **
 
-	SelectPlayForBallHolder(); // ボールホルダーのプレイ選択
+	// ** フェーズ中の処理 (必ず最後!!!) ***
+	// | パスレンジ表示のため間隔を開ける |
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::InPhase, C_Common::INTERVAL_WITHIN_PHASE, false); // 間隔を開けて呼び出し
+	// **
+}
+
+// フェーズ中処理
+// | ボール・プレイヤー移動 |
+// | プレイヤー判断 |
+void AC_My_Player_Controller::InPhase()
+{
+	// ** パスレンジ削除 (*マテリアルのみ) **
+	if (passRangeTileNos.IsEmpty() == false) { // 空でないか
+		// マテリアル削除
+		for (int i : passRangeTileNos) {
+			AC_Tile* t = allTiles[i - 1];
+			t->RemoveMaterial();
+		}
+	}
+	// **
+	 
+	// ** ボールホルダーのプレイ選択 **
+	SelectPlayForBallHolder();
+	// **
+
+	// ** フェーズ監視タイマーセット **
+	SetTimerMonitorPhase();
+	// **
+}
+
+// フェーズ後処理 (bool: falseでフェーズ終了)
+// | 初期値リセット |
+bool AC_My_Player_Controller::AfterPhase()
+{
+	// ** パスレンジ削除 (*配列のみ) **
+	if (passRangeTileNos.IsEmpty() == false) { // 空でないか
+		passRangeTileNos.Empty(); // 配列削除
+	}
+	// **
+
+	return false;
 }
 
 // パスレンジのタイルＮｏ取得
 TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
 	TArray<int> passRangeNos; // パスレンジ (*最終)
+	if (ballHolder == nullptr) return passRangeNos; // ボールホルダーnullチェック
+
 	int startPassRangeRowTileNo = 0; // パスレンジ行の最初のタイル (*yが小さい)
 	int endPassRangeRowTileNo = 0; // パスレンジ行の最後のタイル (*yが大きい)
 	bool isForward = false; // 前向き判定
