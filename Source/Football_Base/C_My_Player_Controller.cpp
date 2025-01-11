@@ -363,40 +363,46 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
 	if (ballHolder == nullptr) return; // ボールホルダーがいない場合、処理しない
 
-	bool isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
-	TArray< AC_Piece*> ballSidePlayers = isHomeBall ? allHomePieces : allAwayPieces; // ボールホルダー側のプレイヤー配列
 	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(C_Common::TILE_NUM_Y); // ボールホルダーが何列目にいるか (小数点含む) **右端タイル処理
 	int ballSideForward = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ボールホルダー側の前向き
 
+	// ** 対人 **
+	// | ボールホルダー側が発火 (処理負荷軽減のため) |
+	if (duelRangeTileNos.IsEmpty() == false) { // 対人レンジが取得できているか
+		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
+			if (duelRangeTileNos.Contains(p->currentTileNo)) { // 対人レンジ内にいれば
+				Duel(p);
 
-	// ** シュート処理 **
+				return;
+			}
+		}
+	}
+	// **
+	
+	// ** シュート **
 	if (isHomeBall) { // Homeボールか
 		// Home
 		if (f_ballHolderRow > 34.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
-			// ** シュート処理 **	
 			Shoot();
-			// **
 
 			return;
 		}
-		// **
 	}
 	else {
 		// Away
 		if (f_ballHolderRow <= 6.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
-			// ** シュート処理 **
 			Shoot();
-			// **
 
 			return;
 		}
 	}
+	// **
 	
-	// ** パスレンジ内の味方取得 **
+	// ** パスターゲット取得 **
 	// | パスレンジはBoforeフェーズで取得済み |
 	// | リターンパスを禁止 |
 	AC_Piece* passTarget = nullptr; // パスターゲットのコマ
-	for (AC_Piece* p : ballSidePlayers) {
+	for (AC_Piece* p : offencePlayers) {
 		// パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
 		if (passRangeTileNos.Contains(p->currentTileNo) && p != preBallHolder) {
 			passTarget = p;
@@ -408,7 +414,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	if (passTarget != nullptr) { // パスターゲット取得できていれば
 		// パスターゲットが存在
 		
-		// ** パス処理 **
+		// ** パス **
 		Pass(passTarget);
 		// **
 
@@ -419,7 +425,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		if (ballHolderDirection == ballSideForward) { // 前向きか
 			// 前向き
 			
-			// ** ドリブル処理 **
+			// ** ドリブル **
 			Drrible(); // *** 前進のみ
 			// **
 
@@ -427,7 +433,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		else {
 			// 前向きでない
 			
-			// ** 方向転換処理 **
+			// ** 方向転換 **
 			ChangeOfDirection();
 			// **
 
@@ -441,7 +447,6 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {
 	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
 	int targetTileNo = targetPiece->currentTileNo; // ターゲットのタイルNo
-	bool isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
 	AC_Tile* targetBackTile = isHomeBall ? allTiles[(targetTileNo - C_Common::TILE_NUM_Y) - 1] : allTiles[(targetTileNo + C_Common::TILE_NUM_Y) - 1]; // ターゲットの後ろのタイル
 	FVector t = targetBackTile->GetActorLocation(); // 目標位置
 	// **
@@ -461,6 +466,7 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 }
 
 // ドリブル (前進のみ)
+// | 1マス前進する |
 void AC_My_Player_Controller::Drrible()
 {
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
@@ -528,6 +534,52 @@ void AC_My_Player_Controller::Shoot()
 
 	// ** ボールを移動させる **
 	ball->SetMoveTo(goalLocation);
+	// **
+}
+
+// 対人
+// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+// | ディフェンダーを2マス進める |
+void AC_My_Player_Controller::Duel(AC_Piece* dueledPlayer)
+{
+	// ** 前回のボールホルダーを取得 **
+	preBallHolder = ballHolder;
+	// **
+
+	// ** ボールホルダーをディフェンダーへ切り替える **
+	ballHolder = dueledPlayer;
+	// **
+
+	// ** 切り替え後のタイルNo取得 ** 
+	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
+	int preBallHolderTileNo = preBallHolder->currentTileNo; // 前回のボールホルダーのタイルNo
+	int ballTileNo = ball->currentTileNo; // ボールタイルNo
+	// **
+
+	// ** 前進する **
+	// | ボール奪取側 (現在オフェンス) : 2マス前進 |
+	// | ボール失った側 (現在ディフェンダー) : 1マス前進 |
+	int forwordTileNo = C_Common::TILE_NUM_Y; // 前1マスのタイルNo
+	int forwordTwoTileNo = C_Common::TILE_NUM_Y * 2; // 前2マスのタイルNo
+	if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeボールか
+		// Home
+		// * ボール失った側 (Away) *
+		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo - forwordTileNo - 1]->GetActorLocation()); // 前回のボールホルダー
+
+		// * ボール奪取側 (Home) *
+		ballHolder->SetMoveTo(allTiles[ballHolderTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ボールホルダー
+		ball->SetMoveTo(allTiles[ballTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ボール
+
+	}
+	else {
+		// Away
+		// * ボール失った側 (Home) *
+		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo + forwordTileNo - 1]->GetActorLocation()); // 前回のボールホルダー
+
+		// * ボール奪取側 (Away) *
+		ballHolder->SetMoveTo(allTiles[ballHolderTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ボールホルダー
+		ball->SetMoveTo(allTiles[ballTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ボール
+	}
 	// **
 }
 
@@ -599,17 +651,13 @@ void AC_My_Player_Controller::HoverMouse()
 
 // フェーズ前処理
 // | フェーズカウント |
-// | コマの初期値セット |
+// | プレイヤー・ボールの初期値セット |
 void AC_My_Player_Controller::BeforePhase()
 {
 	// ** フェーズ数カウント **
 	phaseCount++;
 	// フェーズ数をデバッグ表示する
-	if (C_Common::DEBUG_MODE) {
-		FString s = "Phase: ";
-		FString s_phaseCount = FString::FromInt(phaseCount);
-		UKismetSystemLibrary::PrintString(this, s + s_phaseCount);
-	}
+	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "Phase: " + FString::FromInt(phaseCount));
 	// **
 
 	// ** コマごとに現在のタイルNoを取得 **
@@ -657,7 +705,7 @@ void AC_My_Player_Controller::BeforePhase()
 	// パスレンジが取得できていない場合
 	if (passRangeTileNos.IsEmpty()) {
 		// パスレンジなし
-		UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
 	}
 	else {
 		// パスレンジあり
@@ -666,8 +714,38 @@ void AC_My_Player_Controller::BeforePhase()
 			AC_Tile* t = allTiles[i - 1];
 			t->SetPassRangeMaterial();
 		}
+
+		// ** 対人レンジを取得 **
+		duelRangeTileNos = GetTileNoInDuelRange(passRangeTileNos); // 対人レンジ取得
+		// **
+
 	}
 	// **
+
+	if (ballHolder != nullptr) { // null チェック
+		// ボールホルダーあり
+		// ** どちらがオフェンスか **
+		isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
+		// **
+
+		// ** オフェンスとディフェンスのプレイヤーをセット **
+		// Homeボールか
+		if (isHomeBall) {
+			// Homeボール
+			offencePlayers = allHomePieces;
+			defencePlayers = allAwayPieces;
+		}
+		else {
+			// Awayボール
+			offencePlayers = allAwayPieces;
+			defencePlayers = allHomePieces;
+		}
+		// **
+	}
+	else {
+		// ボールホルダーなし
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "BALL HOLDER NULL !!");
+	}
 
 	// ** フェーズ中の処理 (必ず最後!!!) ***
 	// | パスレンジ表示のため間隔を開ける |
@@ -695,7 +773,7 @@ void AC_My_Player_Controller::InPhase()
 	SelectPlayForBallHolder();
 	// **
 
-	// ** フェーズ監視タイマーセット **
+	// ** フェーズ監視タイマーセット (*最後に呼び出す) **
 	SetTimerMonitorPhase();
 	// **
 }
@@ -880,6 +958,37 @@ int AC_My_Player_Controller::GetDirectionOfBallHolder()
 	if ((ballHolderTileNo - C_Common::TILE_NUM_Y) == ballTileNo) return -C_Common::TILE_NUM_Y; // 後ろ
 	if ((ballHolderTileNo + 1) == ballTileNo) return 1; // 右
 	return -1; // 左
+}
+
+// 対人範囲のタイルNo取得
+// | passRange: パス範囲から取得 |
+TArray<int> AC_My_Player_Controller::GetTileNoInDuelRange(TArray<int> passRange)
+{
+	TArray<int> duelRange; // 対人範囲タイルNo
+	// ** ボールの周囲マスを全て取得 **
+	TArray<int> aroundBallTileNos; // ボール周囲タイルNo
+	int ballTileNo = ball->currentTileNo; // ボールタイルNo
+	// 同列
+	aroundBallTileNos.Add(ballTileNo - 1);
+	aroundBallTileNos.Add(ballTileNo + 1);
+	// 下(x)の列
+	aroundBallTileNos.Add((ballTileNo - C_Common::TILE_NUM_Y) - 1);
+	aroundBallTileNos.Add(ballTileNo - C_Common::TILE_NUM_Y);
+	aroundBallTileNos.Add((ballTileNo - C_Common::TILE_NUM_Y) + 1);
+	// 上(x)の列
+	aroundBallTileNos.Add((ballTileNo + C_Common::TILE_NUM_Y) - 1);
+	aroundBallTileNos.Add(ballTileNo + C_Common::TILE_NUM_Y);
+	aroundBallTileNos.Add((ballTileNo + C_Common::TILE_NUM_Y) + 1);
+	// **
+
+	// ** パスレンジと同じマスを対人レンジとする **
+	for (int n : aroundBallTileNos) {
+		if (passRange.Contains(n)) duelRange.Add(n);
+	}
+	// **
+
+
+	return duelRange;
 }
 
 // フェーズ監視タイマー設定

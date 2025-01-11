@@ -50,6 +50,9 @@ private:
 	void ChangeOfDirection();
 	// シュート
 	void Shoot();
+	// 対人
+	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+	void Duel(AC_Piece* dueledPlayer);
 	// フェーズ監視タイマー設定
 	void SetTimerMonitorPhase();
 	// フェーズを終了していいか監視する
@@ -68,6 +71,9 @@ private:
 	TArray <int> GetTileNoInPassRange();
 	// ボールホルダーの向きを取得
 	int GetDirectionOfBallHolder();
+	// 対人範囲のタイルNo取得
+	// | passRange: パス範囲から取得 |
+	TArray <int> GetTileNoInDuelRange(TArray<int> passRange);
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー
@@ -88,4 +94,8 @@ private:
 	bool isInPhase = false; // フェーズ中
 	int phaseCount = 0; // フェーズカウント
 	TArray <int> passRangeTileNos; // パスレンジタイルNo配列
+	TArray <int> duelRangeTileNos; // 対人レンジタイルNo配列
+	TArray< AC_Piece*> offencePlayers; // オフェンス側のプレイヤー配列
+	TArray< AC_Piece*> defencePlayers; // ディフェンス側のプレイヤー配列
+	bool isHomeBall = false; // Home側がオフェンスか
 };
