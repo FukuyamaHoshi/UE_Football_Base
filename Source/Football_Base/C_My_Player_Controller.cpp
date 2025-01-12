@@ -9,12 +9,13 @@
 #include "Components/DecalComponent.h"
 #include "C_Common.h"
 
+// UKismetSystemLibrary::PrintString(this, "C++ hoge!", true, true, FColor::Cyan, 2.f, TEXT("None"));
+ 
+
 // Called when the game starts or when spawned
 void AC_My_Player_Controller::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// UKismetSystemLibrary::PrintString(this, "C++ hoge!", true, true, FColor::Cyan, 2.f, TEXT("None"));
 
 	SetShowMouseCursor(true); // カーソルを有効にする（ゲーム全体の）
 	
@@ -442,6 +443,20 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// **
 }
 
+// ディフェンダーのプレイ選択
+// | *制限条件は暫定 |
+void AC_My_Player_Controller::SelectPlayForDefender()
+{
+	// * 制限 *
+	if (firstDefender == nullptr) return; // ファーストディフェンダー
+	if (ballHolder == nullptr) return; // ボールホルダー
+	// *
+
+	// ** プレス **
+	Press();
+	// **
+}
+
 // パス
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {
@@ -581,6 +596,16 @@ void AC_My_Player_Controller::Duel(AC_Piece* dueledPlayer)
 		ball->SetMoveTo(allTiles[ballTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ボール
 	}
 	// **
+}
+
+// プレス
+// | ファーストディフェンダーがボールホルダーへ移動する |
+void AC_My_Player_Controller::Press()
+{
+	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // 動くタイルNo
+	FVector nextTileLocation = allTiles[nextTileNo - 1]->GetActorLocation(); // 動くタイル位置
+	
+	firstDefender->SetMoveTo(nextTileLocation); // 移動
 }
 
 // フェーズを終了していいか監視する
@@ -741,6 +766,10 @@ void AC_My_Player_Controller::BeforePhase()
 			defencePlayers = allHomePieces;
 		}
 		// **
+
+		// ** ファーストディフェンダーをセット **
+		firstDefender = GetFirstDefender();
+		// **
 	}
 	else {
 		// ボールホルダーなし
@@ -771,6 +800,10 @@ void AC_My_Player_Controller::InPhase()
 	 
 	// ** ボールホルダーのプレイ選択 **
 	SelectPlayForBallHolder();
+	// **
+
+	// ** ディフェンダーのプレイ選択 **
+	SelectPlayForDefender();
 	// **
 
 	// ** フェーズ監視タイマーセット (*最後に呼び出す) **
@@ -989,6 +1022,87 @@ TArray<int> AC_My_Player_Controller::GetTileNoInDuelRange(TArray<int> passRange)
 
 
 	return duelRange;
+}
+
+// ファーストディフェンダー取得
+// | ボールホルダーに最も近いディフェンダー取得 |
+AC_Piece* AC_My_Player_Controller::GetFirstDefender()
+{
+	if (defencePlayers.IsEmpty()) return nullptr; // null チェック
+
+	// ** ボールホルダーに近い順にソート **
+	TArray <AC_Piece*> players = defencePlayers;
+	players.StableSort([&](const AC_Piece& A, const AC_Piece& B) {
+		return ballHolder->GetDistanceTo(&A) < ballHolder->GetDistanceTo(&B);; // 距離が近い順
+		});
+	// **
+
+
+	return players[0];
+}
+
+// 次に動く最短距離のタイルNo取得
+int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
+{
+	// ** fromTileの周囲マス取得 **
+	// 十字マス
+	int plusX = fromTileNo + C_Common::TILE_NUM_Y;
+	int minusX = fromTileNo - C_Common::TILE_NUM_Y;
+	int plusY = fromTileNo + 1;
+	int minusY = fromTileNo - 1;
+	// 斜めマス
+	int plusXplusY = plusX + 1;
+	int plusXminusY = plusX - 1;
+	int minusXplusY = minusX + 1;
+	int minusXminusY = minusX - 1;
+	
+	TArray <int> _fromAroundTileNos = { plusX, minusX, plusY, minusY, plusXplusY, plusXminusY, minusXplusY, minusXminusY }; // タイルの周囲No
+	// **
+
+	// ** toTileNoとの距離を取得 **
+	TArray <int> _toTileDistances; // toTileNoとの距離の配列
+	for (int n : _fromAroundTileNos) {
+		// * 制限 *
+		// _fromAroundTileNosと要素を合わせる
+		if (n < 1 || n > 1000) { // *タイルNoがタイル数内か
+			_fromAroundTileNos.Remove(n); // 削除
+			
+			continue;
+		}
+		if (allTiles[fromTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > 150.0f) { // *周囲のタイルか (fromtileと周囲タイルの距離が150.0f以内)
+			_fromAroundTileNos.Remove(n); // 削除
+			
+			continue;
+		}
+		// *
+
+		AC_Tile* _aroundTile = allTiles[n - 1]; // 周囲タイル
+		AC_Tile* _toTile = allTiles[toTileNo - 1]; // toタイル
+		_toTileDistances.Add(_toTile->GetDistanceTo(_aroundTile)); // 配列セット
+	}
+	// **
+
+	// ** 最も小さい距離取得 ** 
+	TArray <int> _c_toTileDistances = _toTileDistances; // コピー
+	// 小さい順にソート
+	_c_toTileDistances.StableSort([](const int& A, const int& B) {
+		return A < B;
+		});
+	int minDistance = _c_toTileDistances[0]; // 最も小さい距離
+	// **
+
+	// ** 最も小さい距離のタイルNo取得 **
+	int minDistanceIndex = _toTileDistances.IndexOfByKey(minDistance); // index
+	if (minDistanceIndex == -1) // タイルNo取得できなかった場合
+	{
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NOT GET SHOTEST TILE NO");
+		return _fromAroundTileNos[0]; // 最初のタイルNoを返す
+	}
+	int shotestToTileNo = _fromAroundTileNos[minDistanceIndex]; // タイルNo
+	// **
+
+
+	return shotestToTileNo;
 }
 
 // フェーズ監視タイマー設定

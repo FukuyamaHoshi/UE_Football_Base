@@ -41,6 +41,8 @@ private:
 	bool GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit);
 	// ボールホルダーのプレイ選択
 	void SelectPlayForBallHolder();
+	// ディフェンダーのプレイ選択
+	void SelectPlayForDefender();
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
@@ -53,6 +55,8 @@ private:
 	// 対人
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
 	void Duel(AC_Piece* dueledPlayer);
+	// プレス
+	void Press();
 	// フェーズ監視タイマー設定
 	void SetTimerMonitorPhase();
 	// フェーズを終了していいか監視する
@@ -74,6 +78,10 @@ private:
 	// 対人範囲のタイルNo取得
 	// | passRange: パス範囲から取得 |
 	TArray <int> GetTileNoInDuelRange(TArray<int> passRange);
+	// ファーストディフェンダー取得
+	AC_Piece* GetFirstDefender();
+	// 次に動く最短距離のタイルNo取得
+	int GetShortestNextTileNo(int fromTileNo, int toTileNo);
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー
@@ -98,4 +106,5 @@ private:
 	TArray< AC_Piece*> offencePlayers; // オフェンス側のプレイヤー配列
 	TArray< AC_Piece*> defencePlayers; // ディフェンス側のプレイヤー配列
 	bool isHomeBall = false; // Home側がオフェンスか
+	AC_Piece* firstDefender = nullptr; // ファーストディフェンダー
 };
