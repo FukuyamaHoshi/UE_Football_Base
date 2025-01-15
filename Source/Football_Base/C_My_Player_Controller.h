@@ -57,6 +57,8 @@ private:
 	void Duel(AC_Piece* dueledPlayer);
 	// プレス
 	void Press();
+	// マーキング
+	void Marking(AC_Piece* defencePlayer);
 	// フェーズ監視タイマー設定
 	void SetTimerMonitorPhase();
 	// フェーズを終了していいか監視する
@@ -78,6 +80,9 @@ private:
 	// 対人範囲のタイルNo取得
 	// | passRange: パス範囲から取得 |
 	TArray <int> GetTileNoInDuelRange(TArray<int> passRange);
+	// マークレンジ取得
+	// | currentTileNo: マークレンジ元のタイルＮｏ, playerDirection: 体の向き |
+	TArray <int> GetMarkRange(int currentTileNo, int playerDirection);
 	// ファーストディフェンダー取得
 	AC_Piece* GetFirstDefender();
 	// 次に動く最短距離のタイルNo取得

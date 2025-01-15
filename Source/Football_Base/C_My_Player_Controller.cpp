@@ -412,7 +412,10 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// **
 
 	// ** パス or ドリブル or 方向転換 **
-	if (passTarget != nullptr) { // パスターゲット取得できていれば
+	// * 制限 *
+	// |  ①パスターゲット取得可能 ②ターゲットがマークされていない |
+	if (passTarget != nullptr && passTarget->isMarked == false) {
+		// *
 		// パスターゲットが存在
 		
 		// ** パス **
@@ -453,13 +456,25 @@ void AC_My_Player_Controller::SelectPlayForDefender()
 	// *
 
 	// ** プレス **
+	// | ファーストディフェンダーのみ |
 	Press();
+	// **
+
+	// ** マーキング **
+	// | ファーストディフェンダー除く |
+	for (AC_Piece* p : defencePlayers) {
+		// * 制限 *
+		if (p == firstDefender) continue; // ファーストディフェンダー
+		// *
+
+		Marking(p);
+	}
 	// **
 }
 
 // パス
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
-{
+{	
 	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
 	int targetTileNo = targetPiece->currentTileNo; // ターゲットのタイルNo
 	AC_Tile* targetBackTile = isHomeBall ? allTiles[(targetTileNo - C_Common::TILE_NUM_Y) - 1] : allTiles[(targetTileNo + C_Common::TILE_NUM_Y) - 1]; // ターゲットの後ろのタイル
@@ -602,10 +617,50 @@ void AC_My_Player_Controller::Duel(AC_Piece* dueledPlayer)
 // | ファーストディフェンダーがボールホルダーへ移動する |
 void AC_My_Player_Controller::Press()
 {
+	// * 制限 * 
+	if (duelRangeTileNos.IsEmpty() == false) { // 対人レンジが取得できているか
+		if (duelRangeTileNos.Contains(firstDefender->currentTileNo)) return; // ファーストディフェンダーが対人レンジ内にいるか
+	}
+	// *
+
 	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // 動くタイルNo
 	FVector nextTileLocation = allTiles[nextTileNo - 1]->GetActorLocation(); // 動くタイル位置
 	
 	firstDefender->SetMoveTo(nextTileLocation); // 移動
+}
+
+// マーキング
+// | マークレンジに相手がいるかチェックし、相手の前のマスに移動する |
+void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
+{
+	// ** オフェンス側の前向きを取得 **
+	int forward = defencePlayer->ActorHasTag(FName("HOME")) ? C_Common::BACKWARD_DIRECTION : C_Common::FORWARD_DIRECTION;
+	// **
+
+	for (AC_Piece* p : offencePlayers) { // オフェンスプレイヤーごとに
+		// * 制限 *
+		if (p == ballHolder) continue; // ボールホルダー
+		// *
+
+		// * マークレンジに相手がいるかチェック * //
+		if (defencePlayer->markRange.Contains(p->currentTileNo)) { // マークレンジ内に相手がいる
+			int markLocationTileNo = p->currentTileNo + forward; // マーク位置のタイルNo (相手側の前方マス)
+			// * 制限 *
+			if (defencePlayer->currentTileNo == markLocationTileNo) return; // ディフェンダーがマーク位置に既にいる
+			// *
+			// * //
+			
+			// * 移動 *
+			defencePlayer->SetMoveTo(allTiles[markLocationTileNo - 1]->GetActorLocation());
+			// *
+
+			// * フラグON *
+			p->isMarked = true;
+			// *
+
+			return;
+		}
+	}
 }
 
 // フェーズを終了していいか監視する
@@ -747,7 +802,7 @@ void AC_My_Player_Controller::BeforePhase()
 	}
 	// **
 
-	if (ballHolder != nullptr) { // null チェック
+	if (ballHolder != nullptr) { // null チェック (*現在シュート後,nullになる)
 		// ボールホルダーあり
 		// ** どちらがオフェンスか **
 		isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
@@ -769,6 +824,51 @@ void AC_My_Player_Controller::BeforePhase()
 
 		// ** ファーストディフェンダーをセット **
 		firstDefender = GetFirstDefender();
+		// **
+
+		// ** プレイヤー全員に体の向きをセット **
+		// | ボールホルダー以外 |
+		for (AC_Piece* p : allPieces) {
+			// * 制限 *
+			if (p == ballHolder) continue; // ボールホルダー
+			// *
+
+			int ballRow = (ball->currentTileNo / C_Common::TILE_NUM_Y) + 1; // ボールの列数
+			int playerRow = (p->currentTileNo / C_Common::TILE_NUM_Y) + 1; // プレイヤーの列数
+			// プレイヤーとボールの列の位置を比較
+			if (playerRow < ballRow) { // プレイヤーよりボールの方が前
+				// * 前向き
+				p->direction = C_Common::FORWARD_DIRECTION;
+			}
+			else if (playerRow == ballRow && allAwayPieces.Contains(p)) { // 同列で、アウェイプレイヤー
+				// アウェイプレイヤーのみ後ろ向きへ
+				p->direction = C_Common::FORWARD_DIRECTION;
+			}
+			else { // プレイヤーよりボールの方が後ろ (ホームプレイヤー同列も含む)
+				// *後ろ向き
+				p->direction = C_Common::BACKWARD_DIRECTION;
+			}
+		}
+		// **
+
+		// ** マークレンジをセット **
+		for (AC_Piece* p : defencePlayers) {
+			// * 制限 *
+			if (p == firstDefender) continue; // ファーストディフェンダーの場合,セットしない
+			// *
+
+			TArray <int> _range = GetMarkRange(p->currentTileNo, p->direction); // マークレンジ取得
+
+			if (_range.IsEmpty() == false) { // 空でない場合
+				p->markRange = _range; // セット
+				
+				// マテリアル表示
+				for (int i : _range) {
+					AC_Tile* t = allTiles[i - 1];
+					t->SetMarkRangeMaterial();
+				}
+			}
+		}
 		// **
 	}
 	else {
@@ -797,6 +897,18 @@ void AC_My_Player_Controller::InPhase()
 		}
 	}
 	// **
+
+	// ** マークレンジ削除 (*マテリアルのみ) **
+	for (AC_Piece* p : defencePlayers) {
+		if (p->markRange.IsEmpty()) continue; // 空のチェック
+
+			// マテリアル削除
+			for (int i : p->markRange) {
+				AC_Tile* t = allTiles[i - 1];
+				t->RemoveMaterial();
+		}
+	}
+	// **
 	 
 	// ** ボールホルダーのプレイ選択 **
 	SelectPlayForBallHolder();
@@ -818,6 +930,14 @@ bool AC_My_Player_Controller::AfterPhase()
 	// ** パスレンジ削除 (*配列のみ) **
 	if (passRangeTileNos.IsEmpty() == false) { // 空でないか
 		passRangeTileNos.Empty(); // 配列削除
+	}
+	// **
+
+	// ** マークレンジ削除 (*配列のみ) **
+	for (AC_Piece* p : defencePlayers) {
+		if (p->markRange.IsEmpty()) continue; // 空チェック
+
+		p->markRange.Empty(); // 配列削除
 	}
 	// **
 
@@ -1022,6 +1142,24 @@ TArray<int> AC_My_Player_Controller::GetTileNoInDuelRange(TArray<int> passRange)
 
 
 	return duelRange;
+}
+
+// マークレンジ取得
+// | 体の正面6マス |
+TArray<int> AC_My_Player_Controller::GetMarkRange(int currentTileNo, int playerDirection)
+{
+	// 1列目
+	int forward = currentTileNo + playerDirection;
+	int forwardMinusY = forward - 1;
+	int forwardPlusY = forward + 1;
+	// 2列目
+	int forwardTwo = forward + playerDirection;
+	int forwardTwoMinusY = forwardTwo - 1;
+	int forwardTowPlusY = forwardTwo + 1;
+
+	TArray <int> _range = { forward, forwardMinusY, forwardPlusY, forwardTwo, forwardTwoMinusY, forwardTowPlusY };
+
+	return _range;
 }
 
 // ファーストディフェンダー取得

@@ -26,6 +26,14 @@ AC_Tile::AC_Tile()
 		passRangeMaterial = passRangeMaterialAsset.Object;
 	}
 	// ***
+
+	// *** マークレンジマテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> markRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Mark_Range.M_Tile_Mark_Range"));
+	if (markRangeMaterialAsset.Succeeded())
+	{
+		markRangeMaterial = markRangeMaterialAsset.Object;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -78,5 +86,18 @@ void AC_Tile::SetPassRangeMaterial()
 
 	// マテリアルをセット
 	if (passRangeMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(passRangeMaterial);
+}
+
+// マークレンジマテリアルをセット
+void AC_Tile::SetMarkRangeMaterial()
+{
+	TArray<UStaticMeshComponent*> Components; // component配列
+
+	// stacic componentを取得
+	GetComponents<UStaticMeshComponent>(Components);
+	UStaticMeshComponent* StaticMeshComponent = Components[0];
+
+	// マテリアルをセット
+	if (markRangeMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(markRangeMaterial);
 }
 

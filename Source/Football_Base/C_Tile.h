@@ -22,6 +22,7 @@ protected:
 private:
 	UMaterial* pieceMoveMaterial = nullptr; // コマ移動マテリアル
 	UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
+	UMaterial* markRangeMaterial = nullptr; // マークレンジマテリアル
 	
 public:	
 	// Called every frame
@@ -35,4 +36,6 @@ public:
 	void RemoveMaterial();
 	// パスレンジマテリアルをセット
 	void SetPassRangeMaterial();
+	// マークレンジマテリアルをセット
+	void SetMarkRangeMaterial();
 };

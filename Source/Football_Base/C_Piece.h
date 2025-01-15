@@ -32,6 +32,9 @@ public:
 
 	int currentTileNo = 0; // 現在のタイルNo
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
+	TArray <int> markRange; // マーク範囲 (プレイヤー各々で保持)
+	int direction = 0; // 体の向き (前向き: 25, 後ろ向き: -25)
+	bool isMarked = false; // マークされているか
 
 private:
 	// 指定された位置へ動く処理
