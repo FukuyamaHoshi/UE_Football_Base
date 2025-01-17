@@ -112,4 +112,5 @@ private:
 	TArray< AC_Piece*> defencePlayers; // ディフェンス側のプレイヤー配列
 	bool isHomeBall = false; // Home側がオフェンスか
 	AC_Piece* firstDefender = nullptr; // ファーストディフェンダー
+	TArray <int> moveToTileNos = {}; // プレイヤーとボールが動く先のタイルNo (*動く先のタイルを予約し、重複を防ぐ)
 };

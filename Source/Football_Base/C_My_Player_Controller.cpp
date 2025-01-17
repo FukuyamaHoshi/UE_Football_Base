@@ -477,10 +477,23 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {	
 	// ** ターゲットの後ろのマスの位置取得 (***暫定) **
 	int targetTileNo = targetPiece->currentTileNo; // ターゲットのタイルNo
-	AC_Tile* targetBackTile = isHomeBall ? allTiles[(targetTileNo - C_Common::TILE_NUM_Y) - 1] : allTiles[(targetTileNo + C_Common::TILE_NUM_Y) - 1]; // ターゲットの後ろのタイル
-	FVector t = targetBackTile->GetActorLocation(); // 目標位置
+	int targetBackTileNo = isHomeBall ? targetTileNo - C_Common::TILE_NUM_Y: targetTileNo + C_Common::TILE_NUM_Y; // ターゲットの後ろのタイルNo
+	FVector moveToLocation = allTiles[targetBackTileNo - 1]->GetActorLocation(); // ボールを動かす位置
 	// **
 
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(targetBackTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		moveToTileNos.Add(targetBackTileNo); // 予約する
+	}
+	// **
+	
 	// ** 前回のボールホルダーを取得 **
 	// | リターンパスを禁止にする |
 	preBallHolder = ballHolder;
@@ -489,9 +502,9 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 	// ** ボールホルダーをターゲットへ切り替える **
 	ballHolder = targetPiece;
 	// **
-
+	
 	// ** ボールを移動させる **
-	ball->SetMoveTo(t);
+	ball->SetMoveTo(moveToLocation);
 	// **
 }
 
@@ -500,22 +513,41 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 void AC_My_Player_Controller::Drrible()
 {
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダータイルNo
-	FVector pieceTargetLocation; // コマのターゲット位置
-	FVector ballTargetLocation; // ボールのターゲット位置
+	int playerMoveToTileNo; // プレイヤーの動く先のタイルNo
+	int ballMoveToTileNo; // ボールのの動く先のタイルNo
 
+	// ** 移動先のタイルNo取得 **
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		// Home
-		pieceTargetLocation = allTiles[(ballHolderTileNo + C_Common::TILE_NUM_Y) - 1]->GetActorLocation(); // コマ
-		ballTargetLocation = allTiles[(ballHolderTileNo + (C_Common::TILE_NUM_Y * 2)) - 1]->GetActorLocation(); // ボール
+		playerMoveToTileNo = ballHolderTileNo + C_Common::TILE_NUM_Y; // プレイヤー
+		ballMoveToTileNo = ballHolderTileNo + (C_Common::TILE_NUM_Y * 2); // ボール
 	}
 	else {
 		// Away
-		pieceTargetLocation = allTiles[(ballHolderTileNo - C_Common::TILE_NUM_Y) - 1]->GetActorLocation(); // コマ
-		ballTargetLocation = allTiles[(ballHolderTileNo - (C_Common::TILE_NUM_Y * 2)) - 1]->GetActorLocation(); // ボール
+		playerMoveToTileNo = ballHolderTileNo - C_Common::TILE_NUM_Y; // プレイヤー
+		ballMoveToTileNo = ballHolderTileNo - (C_Common::TILE_NUM_Y * 2); // ボール
 	}
+	// **
 
-	ballHolder->SetMoveTo(pieceTargetLocation); // 移動(コマ)
-	ball->SetMoveTo(ballTargetLocation); // 移動(ボール)
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(playerMoveToTileNo) || moveToTileNos.Contains(ballMoveToTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		// 予約する
+		moveToTileNos.Add(playerMoveToTileNo); // プレイヤー
+		moveToTileNos.Add(ballMoveToTileNo); // ボール
+	}
+	// **
+
+	// ** 移動 **
+	ballHolder->SetMoveTo(allTiles[playerMoveToTileNo - 1]->GetActorLocation()); // プレイヤー
+	ball->SetMoveTo(allTiles[ballMoveToTileNo - 1]->GetActorLocation()); // ボール
+	// **
 }
 
 // 方向転換
@@ -523,26 +555,42 @@ void AC_My_Player_Controller::ChangeOfDirection()
 {
 	int ballHolderTileNo = ballHolder->currentTileNo; // ボールホルダーのタイルNo
 	int direction = GetDirectionOfBallHolder(); // ボールホルダーの向き
-	FVector targetL; // ターゲット位置
-	bool isHome = ballHolder->ActorHasTag(FName("HOME")); // Homeプレイヤーか
-	int forwardDirection = isHome ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ボールホルダーの前の方向
+	int moveToTileNo = 0; // 移動先のタイルNo
+	int forwardDirection = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ボールホルダーの前の方向
 
-	// 現在。後ろ向きの場合
-	if (direction == -forwardDirection) {
+	// ** 移動先のタイルNo取得 **
+	if (direction == -forwardDirection) { // 現在, 後ろ向きか
 		// 右タッチライン上か
 		if (ballHolderTileNo % C_Common::TILE_NUM_Y == 0) {
 			// 右タッチライン上
-			targetL = allTiles[(ballHolderTileNo - 1) - 1]->GetActorLocation(); // 左向き
+			moveToTileNo = ballHolderTileNo - 1; // 左向き
 		}
 		else {
 			// 右タッチラインでない
-			targetL = allTiles[(ballHolderTileNo + 1) - 1]->GetActorLocation(); // 右向き
+			moveToTileNo = ballHolderTileNo + 1; // 右向き
 		}
 	}
 	// 現在、右向き or 左向き
-	if (direction == 1 || direction == -1) targetL = allTiles[(ballHolderTileNo + forwardDirection) - 1]->GetActorLocation(); // 前向きになる
+	if (direction == 1 || direction == -1) moveToTileNo = ballHolderTileNo + forwardDirection; // 前向きになる
+	// **
 
-	ball->SetMoveTo(targetL); // 移動
+
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(moveToTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		moveToTileNos.Add(moveToTileNo); // 予約する
+	}
+	// **
+
+	// ** 移動 ** 
+	ball->SetMoveTo(allTiles[moveToTileNo - 1]->GetActorLocation());
+	// **
 }
 
 // シュート
@@ -623,10 +671,25 @@ void AC_My_Player_Controller::Press()
 	}
 	// *
 
-	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // 動くタイルNo
+	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // 移動先のタイルNo
+
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(nextTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		moveToTileNos.Add(nextTileNo); // 予約する
+	}
+	// **
+
+	// ** 移動 **
 	FVector nextTileLocation = allTiles[nextTileNo - 1]->GetActorLocation(); // 動くタイル位置
-	
 	firstDefender->SetMoveTo(nextTileLocation); // 移動
+	// **
 }
 
 // マーキング
@@ -649,6 +712,19 @@ void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
 			if (defencePlayer->currentTileNo == markLocationTileNo) return; // ディフェンダーがマーク位置に既にいる
 			// *
 			// * //
+
+			// ** 移動先のタイルを予約する **
+			if (moveToTileNos.Contains(markLocationTileNo)) { // タイルが予約されているか
+				// 予約あり
+
+				return; // 移動しない
+			}
+			else {
+				// 予約なし
+
+				moveToTileNos.Add(markLocationTileNo); // 予約する
+			}
+			// **
 			
 			// * 移動 *
 			defencePlayer->SetMoveTo(allTiles[markLocationTileNo - 1]->GetActorLocation());
@@ -939,6 +1015,10 @@ bool AC_My_Player_Controller::AfterPhase()
 
 		p->markRange.Empty(); // 配列削除
 	}
+	// **
+
+	// ** タイル予約削除 **
+	moveToTileNos.Empty();
 	// **
 
 	return false;
