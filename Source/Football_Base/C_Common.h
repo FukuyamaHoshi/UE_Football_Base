@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,14 +13,29 @@ public:
     C_Common();
     ~C_Common();
 
-    // ** Global�ϐ� **
-    static constexpr int TILE_NUM_Y = 25; // ��(y)�̃^�C����
-    static constexpr double BASE_LOCATION_Z = 10.0; // �R�}�̕W���̈ʒuZ
-    static constexpr float PIECE_SPEED = 4.0f; // �R�}�̈ړ����x
-    static constexpr bool DEBUG_MODE = true; // �f�o�b�O���[�h
-    static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-in�t�F�[�Y�̊Ԋu�b���@(*�p�X�����W��\�������鎞��)
-    static constexpr int FORWARD_DIRECTION = 25; // �O���� (*�t�B�[���h�Œ�)
-    static constexpr int BACKWARD_DIRECTION = -25; // ������ (*�t�B�[���h�Œ�)
+    // ** Global変数 **
+    static constexpr int TILE_NUM_Y = 25; // 横(y)のタイル個数
+    static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
+    static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
+    static constexpr bool DEBUG_MODE = true; // デバッグモード
+    static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
+    static constexpr int FORWARD_DIRECTION = 25; // 前向き (*フィールド固定)
+    static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)
     // **
 
+
+    
+    
+    // ***** ゲーム内時間ごとの名称 *****************
+    // ーーラウンド （試合数）ーー
+    //  ①初期配置フェーズ：プレイヤーを手移動可能な時間
+    //  ②侵入フェーズ：対戦準備位置へ移動する
+    //  ⓷対戦フェーズ
+    //    ーステップー
+    //    ⑴準備ステップフェーズ
+    //    ⑵プレイステップフェーズ
+    //    ⑶リセットステップフェーズ
+    //    ー
+    // ーー
+    // ********************************************
 };

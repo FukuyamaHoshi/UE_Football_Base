@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -26,91 +26,94 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	// “ü—Íİ’è
+	// å…¥åŠ›è¨­å®š
 	void SetupInput();
-	// ¶ƒNƒŠƒbƒN(ƒvƒŒƒX)ƒCƒxƒ“ƒg
+	// å·¦ã‚¯ãƒªãƒƒã‚¯(ãƒ—ãƒ¬ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
 	void PressedLeft();
-	// ¶ƒNƒŠƒbƒN(ƒŠƒŠ[ƒX)ƒCƒxƒ“ƒg
+	// å·¦ã‚¯ãƒªãƒƒã‚¯(ãƒªãƒªãƒ¼ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
 	void ReleasedLeft();
-	// ©•ª‚Ìƒ`[ƒ€‚ÌƒRƒ}‚ğ‘I‘ğ
+	// (*ãƒ‡ãƒãƒƒã‚°æ™‚ã®ã¿)ã‚¹ãƒšãƒ¼ã‚¹ã‚­ãƒ¼(ãƒ—ãƒ¬ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
+	void PressedSpaceBar();
+	// è‡ªåˆ†ã®ãƒãƒ¼ãƒ ã®ã‚³ãƒã‚’é¸æŠ
 	AActor* SelectHomePiece();
-	// ˆÊ’u‚©‚çƒ^ƒCƒ‹‚m‚æ“¾
+	// ä½ç½®ã‹ã‚‰ã‚¿ã‚¤ãƒ«ï¼®ï½å–å¾—
 	int GetTileNoFromLocation(float x, float y);
-	// ƒ}ƒEƒXˆÊ’u‚ÌƒIƒuƒWƒFƒNƒg‚ğæ“¾
-	// ( return: bool(æ“¾‚Å‚«‚½‚©), FHitResult&(æ“¾‚µ‚½ƒIƒuƒWƒFƒNƒgî•ñ)<QÆ“n‚µ> )
+	// ãƒã‚¦ã‚¹ä½ç½®ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å–å¾—
+	// ( return: bool(å–å¾—ã§ããŸã‹), FHitResult&(å–å¾—ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±)<å‚ç…§æ¸¡ã—> )
 	bool GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit);
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌƒvƒŒƒC‘I‘ğ
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ
 	void SelectPlayForBallHolder();
-	// ƒfƒBƒtƒFƒ“ƒ_[‚ÌƒvƒŒƒC‘I‘ğ
+	// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ
 	void SelectPlayForDefender();
-	// ƒpƒX
-	// ( ˆø”: targetPiece(ƒRƒ}) )
+	// ãƒ‘ã‚¹
+	// ( å¼•æ•°: targetPiece(ã‚³ãƒ) )
 	void Pass(AC_Piece* targetPiece);
-	// ƒhƒŠƒuƒ‹ (‘Oi‚Ì‚İ)
+	// ãƒ‰ãƒªãƒ–ãƒ« (å‰é€²ã®ã¿)
 	void Drrible();
-	// •ûŒü“]Š· 
+	// æ–¹å‘è»¢æ› 
 	void ChangeOfDirection();
-	// ƒVƒ…[ƒg
+	// ã‚·ãƒ¥ãƒ¼ãƒˆ
 	void Shoot();
-	// ‘Îl
-	// | dueledPlayer: ‘Îl‚ğ‚³‚ê‚éƒvƒŒƒCƒ„[ (”­‰Î,ƒfƒBƒtƒFƒ“ƒ_[) |
+	// å¯¾äºº
+	// | dueledPlayer: å¯¾äººã‚’ã•ã‚Œã‚‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ (ç™ºç«æ™‚,ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼) |
 	void Duel(AC_Piece* dueledPlayer);
-	// ƒvƒŒƒX
+	// ãƒ—ãƒ¬ã‚¹
 	void Press();
-	// ƒ}[ƒLƒ“ƒO
+	// ãƒãƒ¼ã‚­ãƒ³ã‚°
 	void Marking(AC_Piece* defencePlayer);
-	// ƒtƒF[ƒYŠÄ‹ƒ^ƒCƒ}[İ’è
-	void SetTimerMonitorPhase();
-	// ƒtƒF[ƒY‚ğI—¹‚µ‚Ä‚¢‚¢‚©ŠÄ‹‚·‚é
-	void MonitorFinishPhase();
-	// (ƒtƒF[ƒY)ƒ^ƒCƒ}[‚ÆƒtƒF[ƒY‚ğI—¹‚·‚é
-	void FinishTimerAndPhase();
-	// ƒ}ƒEƒXƒzƒo[ˆ—
+	// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºã‚’ç›£è¦–ã™ã‚‹ã‚¿ã‚¤ãƒãƒ¼è¨­å®š
+	void SetTimerMonitorPlayStepPhase();
+	// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºã‚’çµ‚äº†ã—ã¦ã„ã„ã‹ç›£è¦–
+	void MonitorFinishPlayStepPhase();
+	// (ãƒ•ã‚§ãƒ¼ã‚º)ã‚¿ã‚¤ãƒãƒ¼ã¨ã‚¹ãƒ†ãƒƒãƒ—ã‚’çµ‚äº†
+	void FinishTimerAndStep();
+	// ãƒã‚¦ã‚¹ãƒ›ãƒãƒ¼æ™‚å‡¦ç†
 	void HoverMouse();
-	// ƒtƒF[ƒY‘Oˆ—
-	void BeforePhase();
-	// ƒtƒF[ƒY’†ˆ—
-	void InPhase();
-	// ƒtƒF[ƒYŒãˆ— (bool: false‚ÅƒtƒF[ƒYI—¹)
-	bool AfterPhase();
-	// ƒpƒXƒŒƒ“ƒW‚Ìƒ^ƒCƒ‹‚m‚æ“¾
+	// â‘¢-â‘´ æº–å‚™ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º
+	void PrepareStepPhase();
+	// â‘¢-â‘µ ãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º
+	void PlayStepPhase();
+	// â‘¢-â‘¶ ãƒªã‚»ãƒƒãƒˆã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º (bool: falseã§ãƒ•ã‚§ãƒ¼ã‚ºçµ‚äº†)
+	bool ResetStepPhase();
+	// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã®ã‚¿ã‚¤ãƒ«ï¼®ï½å–å¾—
 	TArray <int> GetTileNoInPassRange();
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌŒü‚«‚ğæ“¾
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®å‘ãã‚’å–å¾—
 	int GetDirectionOfBallHolder();
-	// ‘Îl”ÍˆÍ‚Ìƒ^ƒCƒ‹Noæ“¾
-	// | passRange: ƒpƒX”ÍˆÍ‚©‚çæ“¾ |
+	// å¯¾äººç¯„å›²ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
+	// | passRange: ãƒ‘ã‚¹ç¯„å›²ã‹ã‚‰å–å¾— |
 	TArray <int> GetTileNoInDuelRange(TArray<int> passRange);
-	// ƒ}[ƒNƒŒƒ“ƒWæ“¾
-	// | currentTileNo: ƒ}[ƒNƒŒƒ“ƒWŒ³‚Ìƒ^ƒCƒ‹‚m‚, playerDirection: ‘Ì‚ÌŒü‚« |
+	// ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å–å¾—
+	// | currentTileNo: ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å…ƒã®ã‚¿ã‚¤ãƒ«ï¼®ï½, playerDirection: ä½“ã®å‘ã |
 	TArray <int> GetMarkRange(int currentTileNo, int playerDirection);
-	// ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[æ“¾
+	// ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼å–å¾—
 	AC_Piece* GetFirstDefender();
-	// Ÿ‚É“®‚­Å’Z‹——£‚Ìƒ^ƒCƒ‹Noæ“¾
+	// æ¬¡ã«å‹•ãæœ€çŸ­è·é›¢ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
 	int GetShortestNextTileNo(int fromTileNo, int toTileNo);
 
 	
-	AActor* selectedPlayer; // ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[
-	bool isGrap = false; // Grap(ƒvƒŒƒCƒ„[‘I‘ğ’†)ƒtƒ‰ƒO
-	int currentHoverTileNo = 0; // Œ»İƒzƒo[‚µ‚Ä‚¢‚éƒ^ƒCƒ‹No
-	int selectedPlayerTileNo = 0; // ‘I‘ğ‚µ‚Ä‚¢‚éƒvƒŒƒCƒ„[‚Ìƒ^ƒCƒ‹No
-	int overlayTileNo = 0; // Œ»İŒõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹No
-	TArray <AC_Tile*> allTiles; // ‚·‚×‚Ä‚Ìƒ^ƒCƒ‹”z—ñ
-	AC_Tile* overlayTile; // Œõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹
-	UMaterial* playerSelectedDecal = nullptr; // ƒvƒŒƒCƒ„[‘I‘ğƒfƒJ[ƒ‹
-	UDecalComponent* currentDecal = nullptr; // Œ»İ•\¦‚µ‚Ä‚¢‚éƒfƒJ[ƒ‹
-	AC_Ball* ball; // ƒ{[ƒ‹
-	TArray <AC_Piece*> allPieces; // ‚·‚×‚Ä‚ÌƒRƒ}”z—ñ
-	TArray <AC_Piece*> allHomePieces; // ‚·‚×‚Ä‚ÌHomeƒRƒ}”z—ñ
-	TArray <AC_Piece*> allAwayPieces; // ‚·‚×‚Ä‚ÌAwayƒRƒ}”z—ñ
-	AC_Piece* ballHolder = nullptr; // ƒ{[ƒ‹ƒzƒ‹ƒ_[
-	AC_Piece* preBallHolder = nullptr; // ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[
-	bool isInPhase = false; // ƒtƒF[ƒY’†
-	int phaseCount = 0; // ƒtƒF[ƒYƒJƒEƒ“ƒg
-	TArray <int> passRangeTileNos; // ƒpƒXƒŒƒ“ƒWƒ^ƒCƒ‹No”z—ñ
-	TArray <int> duelRangeTileNos; // ‘ÎlƒŒƒ“ƒWƒ^ƒCƒ‹No”z—ñ
-	TArray< AC_Piece*> offencePlayers; // ƒIƒtƒFƒ“ƒX‘¤‚ÌƒvƒŒƒCƒ„[”z—ñ
-	TArray< AC_Piece*> defencePlayers; // ƒfƒBƒtƒFƒ“ƒX‘¤‚ÌƒvƒŒƒCƒ„[”z—ñ
-	bool isHomeBall = false; // Home‘¤‚ªƒIƒtƒFƒ“ƒX‚©
-	AC_Piece* firstDefender = nullptr; // ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[
-	TArray <int> moveToTileNos = {}; // ƒvƒŒƒCƒ„[‚Æƒ{[ƒ‹‚ª“®‚­æ‚Ìƒ^ƒCƒ‹No (*“®‚­æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚µAd•¡‚ğ–h‚®)
+	AActor* selectedPlayer; // é¸æŠã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+	bool isGrap = false; // Grap(ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠä¸­)ãƒ•ãƒ©ã‚°
+	int currentHoverTileNo = 0; // ç¾åœ¨ãƒ›ãƒãƒ¼ã—ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«No
+	int selectedPlayerTileNo = 0; // é¸æŠã—ã¦ã„ã‚‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¿ã‚¤ãƒ«No
+	int overlayTileNo = 0; // ç¾åœ¨å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«No
+	TArray <AC_Tile*> allTiles; // ã™ã¹ã¦ã®ã‚¿ã‚¤ãƒ«é…åˆ—
+	AC_Tile* overlayTile; // å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«
+	UMaterial* playerSelectedDecal = nullptr; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠãƒ‡ã‚«ãƒ¼ãƒ«
+	UDecalComponent* currentDecal = nullptr; // ç¾åœ¨è¡¨ç¤ºã—ã¦ã„ã‚‹ãƒ‡ã‚«ãƒ¼ãƒ«
+	AC_Ball* ball; // ãƒœãƒ¼ãƒ«
+	TArray <AC_Piece*> allPieces; // ã™ã¹ã¦ã®ã‚³ãƒé…åˆ—
+	TArray <AC_Piece*> allHomePieces; // ã™ã¹ã¦ã®Homeã‚³ãƒé…åˆ—
+	TArray <AC_Piece*> allAwayPieces; // ã™ã¹ã¦ã®Awayã‚³ãƒé…åˆ—
+	AC_Piece* ballHolder = nullptr; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
+	AC_Piece* preBallHolder = nullptr; // å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
+	bool isInitialPlacePhase = true; // åˆæœŸé…ç½®ãƒ•ã‚§ãƒ¼ã‚ºãƒ•ãƒ©ã‚°
+	bool isPlayStepPhase = false; // ãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºä¸­
+	int stepCount = 0; // ã‚¹ãƒ†ãƒƒãƒ—ã‚«ã‚¦ãƒ³ãƒˆ
+	TArray <int> passRangeTileNos; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã‚¿ã‚¤ãƒ«Noé…åˆ—
+	TArray <int> duelRangeTileNos; // å¯¾äººãƒ¬ãƒ³ã‚¸ã‚¿ã‚¤ãƒ«Noé…åˆ—
+	TArray< AC_Piece*> offencePlayers; // ã‚ªãƒ•ã‚§ãƒ³ã‚¹å´ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…åˆ—
+	TArray< AC_Piece*> defencePlayers; // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹å´ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…åˆ—
+	bool isHomeBall = false; // Homeå´ãŒã‚ªãƒ•ã‚§ãƒ³ã‚¹ã‹
+	AC_Piece* firstDefender = nullptr; // ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼
+	TArray <int> moveToTileNos = {}; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ãƒœãƒ¼ãƒ«ãŒå‹•ãå…ˆã®ã‚¿ã‚¤ãƒ«No (*å‹•ãå…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã—ã€é‡è¤‡ã‚’é˜²ã)
 };

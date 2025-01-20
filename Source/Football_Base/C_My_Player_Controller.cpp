@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_My_Player_Controller.h"
@@ -17,57 +17,63 @@ void AC_My_Player_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetShowMouseCursor(true); // ƒJ[ƒ\ƒ‹‚ğ—LŒø‚É‚·‚éiƒQ[ƒ€‘S‘Ì‚Ìj
-	
-	SetupInput(); // “ü—Íİ’è
+	// ** ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º **
+	if (C_Common::DEBUG_MODE) {
+		UKismetSystemLibrary::PrintString(this, "CURRENT MODE IS DEBUG", true, true, FColor::Cyan, 10.0f, TEXT("None"));
+	}
+	// **
 
-	// *** ‘S‚Ä‚Ìƒ^ƒCƒ‹‚ğæ“¾ ***
-	TArray<AActor*> actorTiles; // ƒ^ƒCƒ‹ƒAƒNƒ^[”z—ñ
-	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), actorTiles); // ƒNƒ‰ƒX‚Å’T‚·
+	SetShowMouseCursor(true); // ã‚«ãƒ¼ã‚½ãƒ«ã‚’æœ‰åŠ¹ã«ã™ã‚‹ï¼ˆã‚²ãƒ¼ãƒ å…¨ä½“ã®ï¼‰
+	
+	SetupInput(); // å…¥åŠ›è¨­å®š
+
+	// *** å…¨ã¦ã®ã‚¿ã‚¤ãƒ«ã‚’å–å¾— ***
+	TArray<AActor*> actorTiles; // ã‚¿ã‚¤ãƒ«ã‚¢ã‚¯ã‚¿ãƒ¼é…åˆ—
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), actorTiles); // ã‚¯ãƒ©ã‚¹ã§æ¢ã™
 
 	for (AActor* a : actorTiles) {
-		AC_Tile* tile = Cast<AC_Tile>(a); // ƒLƒƒƒXƒg
-		allTiles.Add(tile); // ’Ç‰Á
+		AC_Tile* tile = Cast<AC_Tile>(a); // ã‚­ãƒ£ã‚¹ãƒˆ
+		allTiles.Add(tile); // è¿½åŠ 
 	}
 	 // ***
 
-	// *** ƒ^ƒCƒ‹Noİ’è ***
-	// // ‘S‚Ä‚Ìƒ^ƒCƒ‹”z—ñ‚ğƒ\[ƒg
-	// x‚ª¬‚³‚¢ && y‚ª¬‚³‚¢‡‚Éƒ\[ƒg
+	// *** ã‚¿ã‚¤ãƒ«Noè¨­å®š ***
+	// // å…¨ã¦ã®ã‚¿ã‚¤ãƒ«é…åˆ—ã‚’ã‚½ãƒ¼ãƒˆ
+	// xãŒå°ã•ã„ && yãŒå°ã•ã„é †ã«ã‚½ãƒ¼ãƒˆ
 	allTiles.StableSort([](const AC_Tile& A, const AC_Tile& B) {
 		if (A.GetActorLocation().X != B.GetActorLocation().X) {
-			// x‚ª“¯‚¶‚Å‚È‚¢(“¯‚¶—ñ‚Å‚Å‚È‚¢)
-			return A.GetActorLocation().X < B.GetActorLocation().X; // x‚ª¬‚³‚¢•û
+			// xãŒåŒã˜ã§ãªã„(åŒã˜åˆ—ã§ã§ãªã„)
+			return A.GetActorLocation().X < B.GetActorLocation().X; // xãŒå°ã•ã„æ–¹
 		}
 		else {
-			// “¯‚¶—ñ‚È‚ç
-			return A.GetActorLocation().Y < B.GetActorLocation().Y; // y‚ª¬‚³‚¢•û
+			// åŒã˜åˆ—ãªã‚‰
+			return A.GetActorLocation().Y < B.GetActorLocation().Y; // yãŒå°ã•ã„æ–¹
 		}
 		});
 
-	// ƒ^ƒCƒ‹‚ÉNo‚ğİ’è
+	// ã‚¿ã‚¤ãƒ«ã«Noã‚’è¨­å®š
 	for (int i = 0; i < allTiles.Num(); ++i) {
 		allTiles[i]->tileNo = i + 1;
 	}
 	// ***
 
-	// *** ƒfƒJ[ƒ‹æ“¾ ***
-	// (ƒRƒ“ƒXƒgƒ‰ƒNƒ^ˆÈŠO‚Ìƒ}ƒeƒŠƒAƒ‹‚ÍLoadObjectg—p)
+	// *** ãƒ‡ã‚«ãƒ¼ãƒ«å–å¾— ***
+	// (ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ä»¥å¤–ã®ãƒãƒ†ãƒªã‚¢ãƒ«ã¯LoadObjectä½¿ç”¨)
 	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
 	// ***
 
-	// *** ƒ{[ƒ‹æ“¾ ***
-	AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // ƒNƒ‰ƒX‚Å’T‚·
-	ball = Cast<AC_Ball>(aBall); // ƒLƒƒƒXƒg
+	// *** ãƒœãƒ¼ãƒ«å–å¾— ***
+	AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // ã‚¯ãƒ©ã‚¹ã§æ¢ã™
+	ball = Cast<AC_Ball>(aBall); // ã‚­ãƒ£ã‚¹ãƒˆ
 	// ***
 
-	// *** ƒRƒ}æ“¾ ***
-	TArray<AActor*> a_allPieces; // ƒRƒ}ƒAƒNƒ^[”z—ñ
-	UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // ƒNƒ‰ƒX‚Å’T‚·
-	// Œ^•ÏŠ·
+	// *** ã‚³ãƒå–å¾— ***
+	TArray<AActor*> a_allPieces; // ã‚³ãƒã‚¢ã‚¯ã‚¿ãƒ¼é…åˆ—
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // ã‚¯ãƒ©ã‚¹ã§æ¢ã™
+	// å‹å¤‰æ›
 	for (AActor* a : a_allPieces) {
-		AC_Piece* piece = Cast<AC_Piece>(a); // ƒLƒƒƒXƒg
-		// Home‚ÆAway‚ÌƒRƒ}‚Ì”z—ñì¬
+		AC_Piece* piece = Cast<AC_Piece>(a); // ã‚­ãƒ£ã‚¹ãƒˆ
+		// Homeã¨Awayã®ã‚³ãƒã®é…åˆ—ä½œæˆ
 		if (piece->ActorHasTag(FName("HOME"))) {
 			// Home
 			allHomePieces.Add(piece);
@@ -76,7 +82,7 @@ void AC_My_Player_Controller::BeginPlay()
 			// Away
 			allAwayPieces.Add(piece);
 		}
-		allPieces.Add(piece); // ’Ç‰Á
+		allPieces.Add(piece); // è¿½åŠ 
 	}
 	// ***
 }
@@ -86,134 +92,157 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// ** ƒtƒF[ƒYˆ— **
-	// ƒtƒF[ƒY‚ªI—¹‚µ‚Ä‚¢‚é‚©
-	if (isInPhase == false) {
-		isInPhase = true; // ƒtƒF[ƒYŠJn
+	// ** â‘ åˆæœŸé…ç½®ãƒ•ã‚§ãƒ¼ã‚ºå‡¦ç† **
+	if (isInitialPlacePhase) {
+		// ** ãƒã‚¦ã‚¹ãƒ›ãƒãƒ¼æ™‚ **
+		// Grapä¸­ã‹
+		if (isGrap) HoverMouse();
+		// **
 
-		// ** ƒtƒF[ƒY‘Oˆ— **
-		BeforePhase();
+		return;
+	}
+
+	// ** â“·å¯¾æˆ¦ãƒ•ã‚§ãƒ¼ã‚ºå‡¦ç† **
+	// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºãŒçµ‚äº†ã—ã¦ã„ã‚‹ã‹
+	if (isPlayStepPhase == false) {
+		isPlayStepPhase = true; // â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºé–‹å§‹
+
+		// ** â‘¢-â‘´ æº–å‚™ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºé–‹å§‹ **
+		PrepareStepPhase();
 		// **
 	}
 	// **
-
-	// ** ƒ}ƒEƒXƒzƒo[ **
-	// Grap’†‚©
-	if (isGrap) HoverMouse();
-	// **
 }
 
-// “ü—Íİ’è
+// å…¥åŠ›è¨­å®š
 void AC_My_Player_Controller::SetupInput()
 {
-	// “ü—Í‚ğ—LŒø‚É‚·‚é
+	// å…¥åŠ›ã‚’æœ‰åŠ¹ã«ã™ã‚‹
 	EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	// ¶ƒNƒŠƒbƒN‚ÌƒvƒŒƒX‚Ì‚İƒoƒCƒ“ƒh
+	// å·¦ã‚¯ãƒªãƒƒã‚¯ã®ãƒ—ãƒ¬ã‚¹ã‚’ãƒã‚¤ãƒ³ãƒ‰
 	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AC_My_Player_Controller::PressedLeft);
-	// ¶ƒNƒŠƒbƒN‚ÌƒvƒŒƒX‚Ì‚İƒoƒCƒ“ƒh
+	// å·¦ã‚¯ãƒªãƒƒã‚¯ã®ãƒªãƒªãƒ¼ã‚¹ã‚’ãƒã‚¤ãƒ³ãƒ‰
 	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AC_My_Player_Controller::ReleasedLeft);
+	
+	// ã‚¹ãƒšãƒ¼ã‚¹ã‚­ãƒ¼ã®ãƒ—ãƒ¬ã‚¹ã®ã¿ãƒã‚¤ãƒ³ãƒ‰(*ãƒ‡ãƒãƒƒã‚°æ™‚ã®ã¿)
+	if (C_Common::DEBUG_MODE) InputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AC_My_Player_Controller::PressedSpaceBar);
 }
 
-// ¶ƒNƒŠƒbƒN(ƒvƒŒƒX)ƒCƒxƒ“ƒg
+// å·¦ã‚¯ãƒªãƒƒã‚¯(ãƒ—ãƒ¬ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
+// | ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’é¸æŠã€€or è§£é™¤ã™ã‚‹ |
 void AC_My_Player_Controller::PressedLeft()
 {
-	AActor* p = SelectHomePiece(); // Home‚ÌƒRƒ}‚ğ‘I‘ğ‚µAæ“¾
+	// * åˆ¶é™ *
+	if (isInitialPlacePhase == false) return; // åˆæœŸé…ç½®ãƒ•ã‚§ãƒ¼ã‚ºã®ã¿
+	// *
 
-	// ** ƒvƒŒƒCƒ„[ˆÈŠO‚ğƒNƒŠƒbƒN‚µ‚½ (‘I‘ğ‰ğœ) **
+	AActor* p = SelectHomePiece(); // Homeã®ã‚³ãƒã‚’é¸æŠã—ã€å–å¾—
+
+	// ** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä»¥å¤–ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ãŸæ™‚ (é¸æŠè§£é™¤) **
 	if (p == nullptr) {
-		selectedPlayer = nullptr; // •Ï”‚ğ‹ó‚É‚·‚é
-		selectedPlayerTileNo = 0; // ƒ^ƒCƒ‹No‚ğ‹ó‚É‚·‚é
-		isGrap = false; // Grap‰ğœ
+		selectedPlayer = nullptr; // å¤‰æ•°ã‚’ç©ºã«ã™ã‚‹
+		selectedPlayerTileNo = 0; // ã‚¿ã‚¤ãƒ«Noã‚’ç©ºã«ã™ã‚‹
+		isGrap = false; // Grapè§£é™¤
 
-		// ƒfƒJ[ƒ‹íœ
+		// ãƒ‡ã‚«ãƒ¼ãƒ«å‰Šé™¤
 		if (currentDecal != nullptr) {
 			currentDecal->DestroyComponent();
 		}
 
-		return; // ˆ—I—¹
+		return; // å‡¦ç†çµ‚äº†
 	}
 	// **
 
-	// ** ƒvƒŒƒCƒ„[‘I‘ğ‚ğˆê“x‚Ì‚İ‚É‚·‚é **
-	// (æ“¾‚µ‚½ƒvƒŒƒCƒ„[‚Æ‘O‚ÉƒNƒŠƒbƒN‚³‚ê‚½ƒvƒŒƒCƒ„[‚ªˆÙ‚È‚ê‚Î•Ï”‚É•Û‚·‚é)
+	// ** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠã‚’ä¸€åº¦ã®ã¿ã«ã™ã‚‹ **
+	// (å–å¾—ã—ãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨å‰ã«ã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç•°ãªã‚Œã°å¤‰æ•°ã«ä¿æŒã™ã‚‹)
 	if (p == selectedPlayer)
 	{
-		// * ‘O‰ñ‚Æ‘I‘ğ‚µ‚½ƒvƒŒƒCƒ„[‚ª“¯‚¶
-		return; // ‚È‚É‚à‚µ‚È‚¢
+		// * å‰å›ã¨é¸æŠã—ãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒåŒã˜
+		return; // ãªã«ã‚‚ã—ãªã„
 	}
 	else{
-		// * ‘O‰ñ‚Æ‘I‘ğ‚µ‚½ƒvƒŒƒCƒ„[‚ªˆÙ‚È‚é
+		// * å‰å›ã¨é¸æŠã—ãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç•°ãªã‚‹
 		if (currentDecal != nullptr) {
-			currentDecal->DestroyComponent(); // ƒfƒJ[ƒ‹íœ
+			currentDecal->DestroyComponent(); // ãƒ‡ã‚«ãƒ¼ãƒ«å‰Šé™¤
 		}
 		
-		selectedPlayer = p; // ƒvƒŒƒCƒ„[‚ğ•ÏX
+		selectedPlayer = p; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å¤‰æ›´
 	}
 	// **
 
-	// ** ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[‚Ìƒ^ƒCƒ‹Noæ“¾ **
-	FVector playerLocation = selectedPlayer -> GetActorLocation(); // ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[‚ÌˆÊ’u
-	selectedPlayerTileNo = GetTileNoFromLocation(playerLocation.X, playerLocation.Y); // ƒ^ƒCƒ‹‚m‚ƒZƒbƒg
+	// ** é¸æŠã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¿ã‚¤ãƒ«Noå–å¾— **
+	FVector playerLocation = selectedPlayer -> GetActorLocation(); // é¸æŠã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®
+	selectedPlayerTileNo = GetTileNoFromLocation(playerLocation.X, playerLocation.Y); // ã‚¿ã‚¤ãƒ«ï¼®ï½ã‚»ãƒƒãƒˆ
 	// **
 
-	// ** ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[‚Ìƒ^ƒCƒ‹ˆÊ’u‚ÉƒfƒJ[ƒ‹•\¦ **
-	FVector tileLocation = allTiles[selectedPlayerTileNo - 1]->GetActorLocation(); // ƒ^ƒCƒ‹ˆÊ’uæ“¾
-	tileLocation = FVector(tileLocation.X, tileLocation.Y, 40); // ˆÊ’u’²®
-	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // ƒfƒJ[ƒ‹•\¦, Ši”[
+	// ** é¸æŠã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¿ã‚¤ãƒ«ä½ç½®ã«ãƒ‡ã‚«ãƒ¼ãƒ«è¡¨ç¤º **
+	FVector tileLocation = allTiles[selectedPlayerTileNo - 1]->GetActorLocation(); // ã‚¿ã‚¤ãƒ«ä½ç½®å–å¾—
+	tileLocation = FVector(tileLocation.X, tileLocation.Y, 40); // ä½ç½®èª¿æ•´
+	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // ãƒ‡ã‚«ãƒ¼ãƒ«è¡¨ç¤º, æ ¼ç´
 	// **
 
-	// ** ƒvƒŒƒCƒ„[‘I‘ğ’†ƒtƒ‰ƒO **
-	isGrap = true; // ƒvƒŒƒCƒ„[‘I‘ğ’†
+	// ** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠä¸­ãƒ•ãƒ©ã‚° **
+	isGrap = true; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é¸æŠä¸­
 	// **
 }
 
-// ¶ƒNƒŠƒbƒN(ƒŠƒŠ[ƒX)ƒCƒxƒ“ƒg
+// å·¦ã‚¯ãƒªãƒƒã‚¯(ãƒªãƒªãƒ¼ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
+// | é¸æŠã—ãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç§»å‹• }
 void AC_My_Player_Controller::ReleasedLeft()
 {
-	// Grap‚Ì‚İˆ—
+	// Grapæ™‚ã®ã¿å‡¦ç†
 	if (isGrap == false) return;
-	isGrap = false; // ƒtƒ‰ƒOØ‚è‘Ö‚¦
+	isGrap = false; // ãƒ•ãƒ©ã‚°åˆ‡ã‚Šæ›¿ãˆ
 
-	// Œõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚ª‚ ‚é‚©
+	// å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ãŒã‚ã‚‹ã‹
 	if (overlayTileNo == 0) return;
 
-	// *** ƒvƒŒƒCƒ„[(ƒRƒ})ˆÚ“® ***
-	FVector overlayTileLocation = overlayTile->GetActorLocation(); // Œõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚ÌˆÊ’u
-	overlayTileLocation.Z = 10; // z‚ÍŒÅ’è
-	selectedPlayer->SetActorLocation(overlayTileLocation); // ˆÚ“®
-	selectedPlayerTileNo = overlayTileNo; // ƒ^ƒCƒ‹î•ñXV (ƒvƒŒƒCƒ„[‚Ì)
+	// *** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼(ã‚³ãƒ)ç§»å‹• ***
+	FVector overlayTileLocation = overlayTile->GetActorLocation(); // å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ã®ä½ç½®
+	overlayTileLocation.Z = 10; // zã¯å›ºå®š
+	selectedPlayer->SetActorLocation(overlayTileLocation); // ç§»å‹•
+	selectedPlayerTileNo = overlayTileNo; // ã‚¿ã‚¤ãƒ«æƒ…å ±æ›´æ–° (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®)
 	// ***
 
-	// *** ƒfƒJ[ƒ‹‚ÌˆÊ’u•ÏX ***
-	currentDecal->DestroyComponent(); // Œ»İ‚ÌƒfƒJ[ƒ‹íœ
-	overlayTileLocation.Z = 40; // z‚¾‚¯•ÏX
-	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), overlayTileLocation, FRotator(-90, 0, 0)); // ƒfƒJ[ƒ‹•\¦, Ši”[
+	// *** ãƒ‡ã‚«ãƒ¼ãƒ«ã®ä½ç½®å¤‰æ›´ ***
+	currentDecal->DestroyComponent(); // ç¾åœ¨ã®ãƒ‡ã‚«ãƒ¼ãƒ«å‰Šé™¤
+	overlayTileLocation.Z = 40; // zã ã‘å¤‰æ›´
+	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), overlayTileLocation, FRotator(-90, 0, 0)); // ãƒ‡ã‚«ãƒ¼ãƒ«è¡¨ç¤º, æ ¼ç´
 	// ***
 
-	// ƒ^ƒCƒ‹‚ÌƒI[ƒo[ƒŒƒCíœ
+	// ã‚¿ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤å‰Šé™¤
 	overlayTile->RemoveMaterial();
 
-	// ƒI[ƒo[ƒŒƒCƒ^ƒCƒ‹‚Ì•Ï”‚ğƒŠƒZƒbƒg
-	overlayTileNo = 0; // ƒ^ƒCƒ‹No
-	overlayTile = nullptr; // ƒ^ƒCƒ‹‚ÌÀ‘Ô
+	// ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ã‚¿ã‚¤ãƒ«ã®å¤‰æ•°ã‚’ãƒªã‚»ãƒƒãƒˆ
+	overlayTileNo = 0; // ã‚¿ã‚¤ãƒ«No
+	overlayTile = nullptr; // ã‚¿ã‚¤ãƒ«ã®å®Ÿæ…‹
 }
 
-// ©•ª‚Ìƒ`[ƒ€‚ÌƒRƒ}‚ğ‘I‘ğ (ƒvƒŒƒCƒ„[ˆÈŠO‚ğƒNƒŠƒbƒN‚µ‚½‚Æ‚«‚Ínullptr‚ğ•Ô‚·)
+// (*ãƒ‡ãƒãƒƒã‚°æ™‚ã®ã¿)ã‚¹ãƒšãƒ¼ã‚¹ã‚­ãƒ¼(ãƒ—ãƒ¬ã‚¹)ã‚¤ãƒ™ãƒ³ãƒˆ
+// | â‘ åˆæœŸé…ç½®ãƒ•ã‚§ãƒ¼ã‚ºã‚’çµ‚äº†ã™ã‚‹ |
+void AC_My_Player_Controller::PressedSpaceBar()
+{
+	if (C_Common::DEBUG_MODE == false) return;
+
+	isInitialPlacePhase = false;
+}
+
+// è‡ªåˆ†ã®ãƒãƒ¼ãƒ ã®ã‚³ãƒã‚’é¸æŠ (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä»¥å¤–ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ãŸã¨ãã¯nullptrã‚’è¿”ã™)
 AActor* AC_My_Player_Controller::SelectHomePiece() {
-	// *** ƒNƒŠƒbƒN‚µ‚½PhisicsBody‚ÌˆÊ’u‚ğæ“¾ ***
-	// æ“¾‚·‚éƒIƒuƒWƒFƒNƒgƒ^ƒCƒv‚ğİ’è(PhisicsBody‚ğİ’è)
+	// *** ã‚¯ãƒªãƒƒã‚¯ã—ãŸPhisicsBodyã®ä½ç½®ã‚’å–å¾— ***
+	// å–å¾—ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚¿ã‚¤ãƒ—ã‚’è¨­å®š(PhisicsBodyã‚’è¨­å®š)
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
-	FHitResult outHit; // Œ‹‰Ê‚ğŠi”[
+	FHitResult outHit; // çµæœã‚’æ ¼ç´
 
-	// ƒAƒNƒ^[æ“¾
+	// ã‚¢ã‚¯ã‚¿ãƒ¼å–å¾—
 	bool b_Phisics = GetObjectFromMouseLocation(objectTypes, outHit);
 
-	// PhisicsBody‚©
+	// PhisicsBodyã‹
 	if (b_Phisics == false) return nullptr;
-	AActor* selectedActor = outHit.GetActor(); // ‘I‘ğ‚³‚ê‚½Actoræ“¾
+	AActor* selectedActor = outHit.GetActor(); // é¸æŠã•ã‚ŒãŸActorå–å¾—
 
-	//// HOMEƒ^ƒO‚©
+	//// HOMEã‚¿ã‚°ã‹
 	bool t = selectedActor -> ActorHasTag(FName(TEXT("HOME")));
 	if (t == false) return nullptr;
 
@@ -221,24 +250,24 @@ AActor* AC_My_Player_Controller::SelectHomePiece() {
 	return selectedActor;
 }
 
-// ˆÊ’u‚©‚çƒ^ƒCƒ‹‚m‚æ“¾
-// ( unrealÀ•W  x: c, y: ‰¡ )
+// ä½ç½®ã‹ã‚‰ã‚¿ã‚¤ãƒ«ï¼®ï½å–å¾—
+// ( unrealåº§æ¨™  x: ç¸¦, y: æ¨ª )
 int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
 {
-	// ƒ^ƒCƒ‹No
-	int tileNoY = 0; // ƒ^ƒCƒ‹No y (‰¡)
-	int tileNoX = 0; // ƒ^ƒCƒ‹No x (c)
-	int tileNo = 0; // ƒ^ƒCƒ‹No
+	// ã‚¿ã‚¤ãƒ«No
+	int tileNoY = 0; // ã‚¿ã‚¤ãƒ«No y (æ¨ª)
+	int tileNoX = 0; // ã‚¿ã‚¤ãƒ«No x (ç¸¦)
+	int tileNo = 0; // ã‚¿ã‚¤ãƒ«No
 
-	bool isPositiveY = true; // x‚ª³‚Ì®”‚©
-	const int tileSize = 100; // ƒ^ƒCƒ‹‚Ì‘å‚«‚³ (100cm)
-	const int tilesNumY = 25; // ƒ^ƒCƒ‹‚Ì‰¡(y)‚ÌŒÂ”
+	bool isPositiveY = true; // xãŒæ­£ã®æ•´æ•°ã‹
+	const int tileSize = 100; // ã‚¿ã‚¤ãƒ«ã®å¤§ãã• (100cm)
+	const int tilesNumY = 25; // ã‚¿ã‚¤ãƒ«ã®æ¨ª(y)ã®å€‹æ•°
 
-	// *** ƒ^ƒCƒ‹No y(‰¡)‚ğ‹‚ß‚é ***
-	// -‚Ì‚Ìˆ—
+	// *** ã‚¿ã‚¤ãƒ«No y(æ¨ª)ã‚’æ±‚ã‚ã‚‹ ***
+	// -ã®æ™‚ã®å‡¦ç†
 	if (y < 0) {
-		y = abs(y); // â‘Î’l‚É•ÏŠ·
-		isPositiveY = false; // ƒtƒ‰ƒO•ÏX
+		y = abs(y); // çµ¶å¯¾å€¤ã«å¤‰æ›
+		isPositiveY = false; // ãƒ•ãƒ©ã‚°å¤‰æ›´
 	}
 	
 	if (y < 50)	tileNoY = 13;
@@ -256,11 +285,11 @@ int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
 	else if (y < 1250) tileNoY = (isPositiveY) ? 25 : 1;
 	// ***
 
-	// *** ƒ^ƒCƒ‹No x(c)‚ğ‹‚ß‚é ***
-	int tX = x / tileSize; // ’†‰›‚©‚ç‰½—ñ–Ê‚Ìƒ^ƒCƒ‹‚©
-	// •‰‚Ì®”‚Ì
+	// *** ã‚¿ã‚¤ãƒ«No x(ç¸¦)ã‚’æ±‚ã‚ã‚‹ ***
+	int tX = x / tileSize; // ä¸­å¤®ã‹ã‚‰ä½•åˆ—é¢ã®ã‚¿ã‚¤ãƒ«ã‹
+	// è² ã®æ•´æ•°ã®æ™‚
 	if (x < 0) {
-		tX = abs(tX); // â‘Î’l‚Ö
+		tX = abs(tX); // çµ¶å¯¾å€¤ã¸
 	}
 
 	switch (tX) {
@@ -327,51 +356,51 @@ int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
 	}
 	// ***
 
-	// *** ƒ^ƒCƒ‹Noæ“¾ ***
-	// ( (ƒ^ƒCƒ‹c(x) - 1ŒÂ) * ƒtƒB[ƒ‹ƒh‚Ì‰¡‚Ìƒ^ƒCƒ‹ŒÂ” ) + ƒ^ƒCƒ‹‰¡(y)
+	// *** ã‚¿ã‚¤ãƒ«Noå–å¾— ***
+	// ( (ã‚¿ã‚¤ãƒ«ç¸¦(x) - 1å€‹) * ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®æ¨ªã®ã‚¿ã‚¤ãƒ«å€‹æ•° ) + ã‚¿ã‚¤ãƒ«æ¨ª(y)
 	tileNo = ((tileNoX - 1) * tilesNumY) + tileNoY;
 
 
 	return tileNo;
 }
 
-// ƒ}ƒEƒXˆÊ’u‚ÌƒIƒuƒWƒFƒNƒg‚ğæ“¾
-	// ( return: bool(æ“¾‚Å‚«‚½‚©), FHitResult&(æ“¾‚µ‚½ƒIƒuƒWƒFƒNƒgî•ñ)<QÆ“n‚µ> )
+// ãƒã‚¦ã‚¹ä½ç½®ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å–å¾—
+	// ( return: bool(å–å¾—ã§ããŸã‹), FHitResult&(å–å¾—ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæƒ…å ±)<å‚ç…§æ¸¡ã—> )
 bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit)
 {
-	// ƒ}ƒEƒX‚ÌˆÊ’u‚ğæ“¾
+	// ãƒã‚¦ã‚¹ã®ä½ç½®ã‚’å–å¾—
 	FVector worldLocation;
 	FVector worldDirection;
-	APlayerController::DeprojectMousePositionToWorld(worldLocation, worldDirection); // ƒ}ƒEƒXˆÊ’u‚ğ‚RDÀ•W‚Åæ“¾
-	bool isGetObject = false; // object‚ğŠ“¾‚Å‚«‚½‚©
+	APlayerController::DeprojectMousePositionToWorld(worldLocation, worldDirection); // ãƒã‚¦ã‚¹ä½ç½®ã‚’ï¼“Dåº§æ¨™ã§å–å¾—
+	bool isGetObject = false; // objectã‚’æ‰€å¾—ã§ããŸã‹
 
-	// •ûŒü‚ğ•ÏŠ·
+	// æ–¹å‘ã‚’å¤‰æ›
 	const int distance = 10000;
 	worldDirection = (worldDirection * distance) + worldLocation;
 
-	TArray<AActor*> ignoreActors; // –³‹‚·‚éƒAƒNƒ^[
-	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::Type::None; // ƒfƒoƒbƒOƒ‚[ƒh
+	TArray<AActor*> ignoreActors; // ç„¡è¦–ã™ã‚‹ã‚¢ã‚¯ã‚¿ãƒ¼
+	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::Type::None; // ãƒ‡ãƒãƒƒã‚°ãƒ¢ãƒ¼ãƒ‰
 
-	// ˆÊ’uæ“¾
+	// ä½ç½®å–å¾—
 	isGetObject = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), worldLocation, worldDirection, objectTypes, false, ignoreActors, drawDebugType, outHit, true);
 	
 	
 	return isGetObject;
 }
 
-// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌƒvƒŒƒC‘I‘ğ
+// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ
 void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
-	if (ballHolder == nullptr) return; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ª‚¢‚È‚¢ê‡Aˆ—‚µ‚È‚¢
+	if (ballHolder == nullptr) return; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒã„ãªã„å ´åˆã€å‡¦ç†ã—ãªã„
 
-	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(C_Common::TILE_NUM_Y); // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ª‰½—ñ–Ú‚É‚¢‚é‚© (¬”“_ŠÜ‚Ş) **‰E’[ƒ^ƒCƒ‹ˆ—
-	int ballSideForward = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‘¤‚Ì‘OŒü‚«
+	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(C_Common::TILE_NUM_Y); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒä½•åˆ—ç›®ã«ã„ã‚‹ã‹ (å°æ•°ç‚¹å«ã‚€) **å³ç«¯ã‚¿ã‚¤ãƒ«å‡¦ç†
+	int ballSideForward = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å´ã®å‰å‘ã
 
-	// ** ‘Îl **
-	// | ƒ{[ƒ‹ƒzƒ‹ƒ_[‘¤‚ª”­‰Î (ˆ—•‰‰×ŒyŒ¸‚Ì‚½‚ß) |
-	if (duelRangeTileNos.IsEmpty() == false) { // ‘ÎlƒŒƒ“ƒW‚ªæ“¾‚Å‚«‚Ä‚¢‚é‚©
-		for (AC_Piece* p : defencePlayers) { // ƒfƒBƒtƒFƒ“ƒ_[‚Ì’†‚Å
-			if (duelRangeTileNos.Contains(p->currentTileNo)) { // ‘ÎlƒŒƒ“ƒW“à‚É‚¢‚ê‚Î
+	// ** å¯¾äºº **
+	// | ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å´ãŒç™ºç« (å‡¦ç†è² è·è»½æ¸›ã®ãŸã‚) |
+	if (duelRangeTileNos.IsEmpty() == false) { // å¯¾äººãƒ¬ãƒ³ã‚¸ãŒå–å¾—ã§ãã¦ã„ã‚‹ã‹
+		for (AC_Piece* p : defencePlayers) { // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®ä¸­ã§
+			if (duelRangeTileNos.Contains(p->currentTileNo)) { // å¯¾äººãƒ¬ãƒ³ã‚¸å†…ã«ã„ã‚Œã°
 				Duel(p);
 
 				return;
@@ -380,10 +409,10 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	// **
 	
-	// ** ƒVƒ…[ƒg **
-	if (isHomeBall) { // Homeƒ{[ƒ‹‚©
+	// ** ã‚·ãƒ¥ãƒ¼ãƒˆ **
+	if (isHomeBall) { // Homeãƒœãƒ¼ãƒ«ã‹
 		// Home
-		if (f_ballHolderRow > 34.0) { // ƒyƒiƒ‹ƒeƒB[‚Ì‚‚³‚É‚¢‚é‚© (Š„‚èØ‚ê‚½‚ç‰E’[‚Ìƒ^ƒCƒ‹)
+		if (f_ballHolderRow > 34.0) { // ãƒšãƒŠãƒ«ãƒ†ã‚£ãƒ¼ã®é«˜ã•ã«ã„ã‚‹ã‹ (å‰²ã‚Šåˆ‡ã‚ŒãŸã‚‰å³ç«¯ã®ã‚¿ã‚¤ãƒ«)
 			Shoot();
 
 			return;
@@ -391,7 +420,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	else {
 		// Away
-		if (f_ballHolderRow <= 6.0) { // ƒyƒiƒ‹ƒeƒB[‚Ì‚‚³‚É‚¢‚é‚© (Š„‚èØ‚ê‚½‚ç‰E’[‚Ìƒ^ƒCƒ‹)
+		if (f_ballHolderRow <= 6.0) { // ãƒšãƒŠãƒ«ãƒ†ã‚£ãƒ¼ã®é«˜ã•ã«ã„ã‚‹ã‹ (å‰²ã‚Šåˆ‡ã‚ŒãŸã‚‰å³ç«¯ã®ã‚¿ã‚¤ãƒ«)
 			Shoot();
 
 			return;
@@ -399,45 +428,45 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	// **
 	
-	// ** ƒpƒXƒ^[ƒQƒbƒgæ“¾ **
-	// | ƒpƒXƒŒƒ“ƒW‚ÍBoforeƒtƒF[ƒY‚Åæ“¾Ï‚İ |
-	// | ƒŠƒ^[ƒ“ƒpƒX‚ğ‹Ö~ |
-	AC_Piece* passTarget = nullptr; // ƒpƒXƒ^[ƒQƒbƒg‚ÌƒRƒ}
+	// ** ãƒ‘ã‚¹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆå–å¾— **
+	// | ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã¯Boforeãƒ•ã‚§ãƒ¼ã‚ºã§å–å¾—æ¸ˆã¿ |
+	// | ãƒªã‚¿ãƒ¼ãƒ³ãƒ‘ã‚¹ã‚’ç¦æ­¢ |
+	AC_Piece* passTarget = nullptr; // ãƒ‘ã‚¹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ã‚³ãƒ
 	for (AC_Piece* p : offencePlayers) {
-		// ƒpƒXƒŒƒ“ƒW“à‚ÌHomeƒRƒ} && ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Å‚È‚¢ ( *ƒŠƒ^[ƒ“ƒpƒX‹Ö~ˆ— )
+		// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸å†…ã®Homeã‚³ãƒ && å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã§ãªã„ ( *ãƒªã‚¿ãƒ¼ãƒ³ãƒ‘ã‚¹ç¦æ­¢å‡¦ç† )
 		if (passRangeTileNos.Contains(p->currentTileNo) && p != preBallHolder) {
 			passTarget = p;
 		}
 	}
 	// **
 
-	// ** ƒpƒX or ƒhƒŠƒuƒ‹ or •ûŒü“]Š· **
-	// * §ŒÀ *
-	// |  ‡@ƒpƒXƒ^[ƒQƒbƒgæ“¾‰Â”\ ‡Aƒ^[ƒQƒbƒg‚ªƒ}[ƒN‚³‚ê‚Ä‚¢‚È‚¢ |
+	// ** ãƒ‘ã‚¹ or ãƒ‰ãƒªãƒ–ãƒ« or æ–¹å‘è»¢æ› **
+	// * åˆ¶é™ *
+	// |  â‘ ãƒ‘ã‚¹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆå–å¾—å¯èƒ½ â‘¡ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒãƒãƒ¼ã‚¯ã•ã‚Œã¦ã„ãªã„ |
 	if (passTarget != nullptr && passTarget->isMarked == false) {
 		// *
-		// ƒpƒXƒ^[ƒQƒbƒg‚ª‘¶İ
+		// ãƒ‘ã‚¹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒå­˜åœ¨
 		
-		// ** ƒpƒX **
+		// ** ãƒ‘ã‚¹ **
 		Pass(passTarget);
 		// **
 
 	}
 	else {
-		// ƒpƒXƒ^[ƒQƒbƒg‚ª•sİ
-		int ballHolderDirection = GetDirectionOfBallHolder(); // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ì•ûŒü
-		if (ballHolderDirection == ballSideForward) { // ‘OŒü‚«‚©
-			// ‘OŒü‚«
+		// ãƒ‘ã‚¹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒä¸åœ¨
+		int ballHolderDirection = GetDirectionOfBallHolder(); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®æ–¹å‘
+		if (ballHolderDirection == ballSideForward) { // å‰å‘ãã‹
+			// å‰å‘ã
 			
-			// ** ƒhƒŠƒuƒ‹ **
-			Drrible(); // *** ‘Oi‚Ì‚İ
+			// ** ãƒ‰ãƒªãƒ–ãƒ« **
+			Drrible(); // *** å‰é€²ã®ã¿
 			// **
 
 		}
 		else {
-			// ‘OŒü‚«‚Å‚È‚¢
+			// å‰å‘ãã§ãªã„
 			
-			// ** •ûŒü“]Š· **
+			// ** æ–¹å‘è»¢æ› **
 			ChangeOfDirection();
 			// **
 
@@ -446,25 +475,25 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// **
 }
 
-// ƒfƒBƒtƒFƒ“ƒ_[‚ÌƒvƒŒƒC‘I‘ğ
-// | *§ŒÀğŒ‚Íb’è |
+// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ
+// | *åˆ¶é™æ¡ä»¶ã¯æš«å®š |
 void AC_My_Player_Controller::SelectPlayForDefender()
 {
-	// * §ŒÀ *
-	if (firstDefender == nullptr) return; // ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[
-	if (ballHolder == nullptr) return; // ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	// * åˆ¶é™ *
+	if (firstDefender == nullptr) return; // ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼
+	if (ballHolder == nullptr) return; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 	// *
 
-	// ** ƒvƒŒƒX **
-	// | ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[‚Ì‚İ |
+	// ** ãƒ—ãƒ¬ã‚¹ **
+	// | ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®ã¿ |
 	Press();
 	// **
 
-	// ** ƒ}[ƒLƒ“ƒO **
-	// | ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[œ‚­ |
+	// ** ãƒãƒ¼ã‚­ãƒ³ã‚° **
+	// | ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼é™¤ã |
 	for (AC_Piece* p : defencePlayers) {
-		// * §ŒÀ *
-		if (p == firstDefender) continue; // ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[
+		// * åˆ¶é™ *
+		if (p == firstDefender) continue; // ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼
 		// *
 
 		Marking(p);
@@ -472,132 +501,132 @@ void AC_My_Player_Controller::SelectPlayForDefender()
 	// **
 }
 
-// ƒpƒX
+// ãƒ‘ã‚¹
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 {	
-	// ** ƒ^[ƒQƒbƒg‚ÌŒã‚ë‚Ìƒ}ƒX‚ÌˆÊ’uæ“¾ (***b’è) **
-	int targetTileNo = targetPiece->currentTileNo; // ƒ^[ƒQƒbƒg‚Ìƒ^ƒCƒ‹No
-	int targetBackTileNo = isHomeBall ? targetTileNo - C_Common::TILE_NUM_Y: targetTileNo + C_Common::TILE_NUM_Y; // ƒ^[ƒQƒbƒg‚ÌŒã‚ë‚Ìƒ^ƒCƒ‹No
-	FVector moveToLocation = allTiles[targetBackTileNo - 1]->GetActorLocation(); // ƒ{[ƒ‹‚ğ“®‚©‚·ˆÊ’u
+	// ** ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®å¾Œã‚ã®ãƒã‚¹ã®ä½ç½®å–å¾— (***æš«å®š) **
+	int targetTileNo = targetPiece->currentTileNo; // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ã‚¿ã‚¤ãƒ«No
+	int targetBackTileNo = isHomeBall ? targetTileNo - C_Common::TILE_NUM_Y: targetTileNo + C_Common::TILE_NUM_Y; // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®å¾Œã‚ã®ã‚¿ã‚¤ãƒ«No
+	FVector moveToLocation = allTiles[targetBackTileNo - 1]->GetActorLocation(); // ãƒœãƒ¼ãƒ«ã‚’å‹•ã‹ã™ä½ç½®
 	// **
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚·‚é **
-	if (moveToTileNos.Contains(targetBackTileNo)) { // ƒ^ƒCƒ‹‚ª—\–ñ‚³‚ê‚Ä‚¢‚é‚©
-		// —\–ñ‚ ‚è
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã™ã‚‹ **
+	if (moveToTileNos.Contains(targetBackTileNo)) { // ã‚¿ã‚¤ãƒ«ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹ã‹
+		// äºˆç´„ã‚ã‚Š
 
-		return; // ˆÚ“®‚µ‚È‚¢
+		return; // ç§»å‹•ã—ãªã„
 	}
 	else {
-		// —\–ñ‚È‚µ
+		// äºˆç´„ãªã—
 
-		moveToTileNos.Add(targetBackTileNo); // —\–ñ‚·‚é
+		moveToTileNos.Add(targetBackTileNo); // äºˆç´„ã™ã‚‹
 	}
 	// **
 	
-	// ** ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚ğæ“¾ **
-	// | ƒŠƒ^[ƒ“ƒpƒX‚ğ‹Ö~‚É‚·‚é |
+	// ** å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’å–å¾— **
+	// | ãƒªã‚¿ãƒ¼ãƒ³ãƒ‘ã‚¹ã‚’ç¦æ­¢ã«ã™ã‚‹ |
 	preBallHolder = ballHolder;
 	// **
 	
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ğƒ^[ƒQƒbƒg‚ÖØ‚è‘Ö‚¦‚é **
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¸åˆ‡ã‚Šæ›¿ãˆã‚‹ **
 	ballHolder = targetPiece;
 	// **
 	
-	// ** ƒ{[ƒ‹‚ğˆÚ“®‚³‚¹‚é **
+	// ** ãƒœãƒ¼ãƒ«ã‚’ç§»å‹•ã•ã›ã‚‹ **
 	ball->SetMoveTo(moveToLocation);
 	// **
 }
 
-// ƒhƒŠƒuƒ‹ (‘Oi‚Ì‚İ)
-// | 1ƒ}ƒX‘Oi‚·‚é |
+// ãƒ‰ãƒªãƒ–ãƒ« (å‰é€²ã®ã¿)
+// | 1ãƒã‚¹å‰é€²ã™ã‚‹ |
 void AC_My_Player_Controller::Drrible()
 {
-	int ballHolderTileNo = ballHolder->currentTileNo; // ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒ^ƒCƒ‹No
-	int playerMoveToTileNo; // ƒvƒŒƒCƒ„[‚Ì“®‚­æ‚Ìƒ^ƒCƒ‹No
-	int ballMoveToTileNo; // ƒ{[ƒ‹‚Ì‚Ì“®‚­æ‚Ìƒ^ƒCƒ‹No
+	int ballHolderTileNo = ballHolder->currentTileNo; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚¿ã‚¤ãƒ«No
+	int playerMoveToTileNo; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å‹•ãå…ˆã®ã‚¿ã‚¤ãƒ«No
+	int ballMoveToTileNo; // ãƒœãƒ¼ãƒ«ã®ã®å‹•ãå…ˆã®ã‚¿ã‚¤ãƒ«No
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹Noæ“¾ **
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«Noå–å¾— **
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		// Home
-		playerMoveToTileNo = ballHolderTileNo + C_Common::TILE_NUM_Y; // ƒvƒŒƒCƒ„[
-		ballMoveToTileNo = ballHolderTileNo + (C_Common::TILE_NUM_Y * 2); // ƒ{[ƒ‹
+		playerMoveToTileNo = ballHolderTileNo + C_Common::TILE_NUM_Y; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+		ballMoveToTileNo = ballHolderTileNo + (C_Common::TILE_NUM_Y * 2); // ãƒœãƒ¼ãƒ«
 	}
 	else {
 		// Away
-		playerMoveToTileNo = ballHolderTileNo - C_Common::TILE_NUM_Y; // ƒvƒŒƒCƒ„[
-		ballMoveToTileNo = ballHolderTileNo - (C_Common::TILE_NUM_Y * 2); // ƒ{[ƒ‹
+		playerMoveToTileNo = ballHolderTileNo - C_Common::TILE_NUM_Y; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+		ballMoveToTileNo = ballHolderTileNo - (C_Common::TILE_NUM_Y * 2); // ãƒœãƒ¼ãƒ«
 	}
 	// **
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚·‚é **
-	if (moveToTileNos.Contains(playerMoveToTileNo) || moveToTileNos.Contains(ballMoveToTileNo)) { // ƒ^ƒCƒ‹‚ª—\–ñ‚³‚ê‚Ä‚¢‚é‚©
-		// —\–ñ‚ ‚è
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã™ã‚‹ **
+	if (moveToTileNos.Contains(playerMoveToTileNo) || moveToTileNos.Contains(ballMoveToTileNo)) { // ã‚¿ã‚¤ãƒ«ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹ã‹
+		// äºˆç´„ã‚ã‚Š
 
-		return; // ˆÚ“®‚µ‚È‚¢
+		return; // ç§»å‹•ã—ãªã„
 	}
 	else {
-		// —\–ñ‚È‚µ
+		// äºˆç´„ãªã—
 
-		// —\–ñ‚·‚é
-		moveToTileNos.Add(playerMoveToTileNo); // ƒvƒŒƒCƒ„[
-		moveToTileNos.Add(ballMoveToTileNo); // ƒ{[ƒ‹
+		// äºˆç´„ã™ã‚‹
+		moveToTileNos.Add(playerMoveToTileNo); // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+		moveToTileNos.Add(ballMoveToTileNo); // ãƒœãƒ¼ãƒ«
 	}
 	// **
 
-	// ** ˆÚ“® **
-	ballHolder->SetMoveTo(allTiles[playerMoveToTileNo - 1]->GetActorLocation()); // ƒvƒŒƒCƒ„[
-	ball->SetMoveTo(allTiles[ballMoveToTileNo - 1]->GetActorLocation()); // ƒ{[ƒ‹
+	// ** ç§»å‹• **
+	ballHolder->SetMoveTo(allTiles[playerMoveToTileNo - 1]->GetActorLocation()); // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+	ball->SetMoveTo(allTiles[ballMoveToTileNo - 1]->GetActorLocation()); // ãƒœãƒ¼ãƒ«
 	// **
 }
 
-// •ûŒü“]Š·
+// æ–¹å‘è»¢æ›
 void AC_My_Player_Controller::ChangeOfDirection()
 {
-	int ballHolderTileNo = ballHolder->currentTileNo; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìƒ^ƒCƒ‹No
-	int direction = GetDirectionOfBallHolder(); // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌŒü‚«
-	int moveToTileNo = 0; // ˆÚ“®æ‚Ìƒ^ƒCƒ‹No
-	int forwardDirection = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ì‘O‚Ì•ûŒü
+	int ballHolderTileNo = ballHolder->currentTileNo; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ã‚¿ã‚¤ãƒ«No
+	int direction = GetDirectionOfBallHolder(); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®å‘ã
+	int moveToTileNo = 0; // ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«No
+	int forwardDirection = isHomeBall ? C_Common::TILE_NUM_Y : -C_Common::TILE_NUM_Y; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®å‰ã®æ–¹å‘
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹Noæ“¾ **
-	if (direction == -forwardDirection) { // Œ»İ, Œã‚ëŒü‚«‚©
-		// ‰Eƒ^ƒbƒ`ƒ‰ƒCƒ“ã‚©
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«Noå–å¾— **
+	if (direction == -forwardDirection) { // ç¾åœ¨, å¾Œã‚å‘ãã‹
+		// å³ã‚¿ãƒƒãƒãƒ©ã‚¤ãƒ³ä¸Šã‹
 		if (ballHolderTileNo % C_Common::TILE_NUM_Y == 0) {
-			// ‰Eƒ^ƒbƒ`ƒ‰ƒCƒ“ã
-			moveToTileNo = ballHolderTileNo - 1; // ¶Œü‚«
+			// å³ã‚¿ãƒƒãƒãƒ©ã‚¤ãƒ³ä¸Š
+			moveToTileNo = ballHolderTileNo - 1; // å·¦å‘ã
 		}
 		else {
-			// ‰Eƒ^ƒbƒ`ƒ‰ƒCƒ“‚Å‚È‚¢
-			moveToTileNo = ballHolderTileNo + 1; // ‰EŒü‚«
+			// å³ã‚¿ãƒƒãƒãƒ©ã‚¤ãƒ³ã§ãªã„
+			moveToTileNo = ballHolderTileNo + 1; // å³å‘ã
 		}
 	}
-	// Œ»İA‰EŒü‚« or ¶Œü‚«
-	if (direction == 1 || direction == -1) moveToTileNo = ballHolderTileNo + forwardDirection; // ‘OŒü‚«‚É‚È‚é
+	// ç¾åœ¨ã€å³å‘ã or å·¦å‘ã
+	if (direction == 1 || direction == -1) moveToTileNo = ballHolderTileNo + forwardDirection; // å‰å‘ãã«ãªã‚‹
 	// **
 
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚·‚é **
-	if (moveToTileNos.Contains(moveToTileNo)) { // ƒ^ƒCƒ‹‚ª—\–ñ‚³‚ê‚Ä‚¢‚é‚©
-		// —\–ñ‚ ‚è
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã™ã‚‹ **
+	if (moveToTileNos.Contains(moveToTileNo)) { // ã‚¿ã‚¤ãƒ«ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹ã‹
+		// äºˆç´„ã‚ã‚Š
 
-		return; // ˆÚ“®‚µ‚È‚¢
+		return; // ç§»å‹•ã—ãªã„
 	}
 	else {
-		// —\–ñ‚È‚µ
+		// äºˆç´„ãªã—
 
-		moveToTileNos.Add(moveToTileNo); // —\–ñ‚·‚é
+		moveToTileNos.Add(moveToTileNo); // äºˆç´„ã™ã‚‹
 	}
 	// **
 
-	// ** ˆÚ“® ** 
+	// ** ç§»å‹• ** 
 	ball->SetMoveTo(allTiles[moveToTileNo - 1]->GetActorLocation());
 	// **
 }
 
-// ƒVƒ…[ƒg
+// ã‚·ãƒ¥ãƒ¼ãƒˆ
 void AC_My_Player_Controller::Shoot()
 {
-	FVector goalLocation; // ƒS[ƒ‹ˆÊ’u
-	if (ballHolder->ActorHasTag(FName("HOME"))) { // HomeƒvƒŒƒCƒ„[‚©
+	FVector goalLocation; // ã‚´ãƒ¼ãƒ«ä½ç½®
+	if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‹
 		// Home
 		goalLocation = FVector(2050, 0, -40);
 	}
@@ -606,131 +635,131 @@ void AC_My_Player_Controller::Shoot()
 		goalLocation = FVector(-2050, 0, -40);
 	}
 
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[íœ **
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å‰Šé™¤ **
 	ballHolder = nullptr;
 	// **
 
-	// ** ƒ{[ƒ‹‚ğˆÚ“®‚³‚¹‚é **
+	// ** ãƒœãƒ¼ãƒ«ã‚’ç§»å‹•ã•ã›ã‚‹ **
 	ball->SetMoveTo(goalLocation);
 	// **
 }
 
-// ‘Îl
-// | dueledPlayer: ‘Îl‚ğ‚³‚ê‚éƒvƒŒƒCƒ„[ (”­‰Î,ƒfƒBƒtƒFƒ“ƒ_[) |
-// | ƒfƒBƒtƒFƒ“ƒ_[‚ğ2ƒ}ƒXi‚ß‚é |
+// å¯¾äºº
+// | dueledPlayer: å¯¾äººã‚’ã•ã‚Œã‚‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ (ç™ºç«æ™‚,ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼) |
+// | ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã‚’2ãƒã‚¹é€²ã‚ã‚‹ |
 void AC_My_Player_Controller::Duel(AC_Piece* dueledPlayer)
 {
-	// ** ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚ğæ“¾ **
+	// ** å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’å–å¾— **
 	preBallHolder = ballHolder;
 	// **
 
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ğƒfƒBƒtƒFƒ“ƒ_[‚ÖØ‚è‘Ö‚¦‚é **
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã¸åˆ‡ã‚Šæ›¿ãˆã‚‹ **
 	ballHolder = dueledPlayer;
 	// **
 
-	// ** Ø‚è‘Ö‚¦Œã‚Ìƒ^ƒCƒ‹Noæ“¾ ** 
-	int ballHolderTileNo = ballHolder->currentTileNo; // ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒ^ƒCƒ‹No
-	int preBallHolderTileNo = preBallHolder->currentTileNo; // ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìƒ^ƒCƒ‹No
-	int ballTileNo = ball->currentTileNo; // ƒ{[ƒ‹ƒ^ƒCƒ‹No
+	// ** åˆ‡ã‚Šæ›¿ãˆå¾Œã®ã‚¿ã‚¤ãƒ«Noå–å¾— ** 
+	int ballHolderTileNo = ballHolder->currentTileNo; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚¿ã‚¤ãƒ«No
+	int preBallHolderTileNo = preBallHolder->currentTileNo; // å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ã‚¿ã‚¤ãƒ«No
+	int ballTileNo = ball->currentTileNo; // ãƒœãƒ¼ãƒ«ã‚¿ã‚¤ãƒ«No
 	// **
 
-	// ** ‘Oi‚·‚é **
-	// | ƒ{[ƒ‹’Dæ‘¤ (Œ»İƒIƒtƒFƒ“ƒX) : 2ƒ}ƒX‘Oi |
-	// | ƒ{[ƒ‹¸‚Á‚½‘¤ (Œ»İƒfƒBƒtƒFƒ“ƒ_[) : 1ƒ}ƒX‘Oi |
-	int forwordTileNo = C_Common::TILE_NUM_Y; // ‘O1ƒ}ƒX‚Ìƒ^ƒCƒ‹No
-	int forwordTwoTileNo = C_Common::TILE_NUM_Y * 2; // ‘O2ƒ}ƒX‚Ìƒ^ƒCƒ‹No
-	if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeƒ{[ƒ‹‚©
+	// ** å‰é€²ã™ã‚‹ **
+	// | ãƒœãƒ¼ãƒ«å¥ªå–å´ (ç¾åœ¨ã‚ªãƒ•ã‚§ãƒ³ã‚¹) : 2ãƒã‚¹å‰é€² |
+	// | ãƒœãƒ¼ãƒ«å¤±ã£ãŸå´ (ç¾åœ¨ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼) : 1ãƒã‚¹å‰é€² |
+	int forwordTileNo = C_Common::TILE_NUM_Y; // å‰1ãƒã‚¹ã®ã‚¿ã‚¤ãƒ«No
+	int forwordTwoTileNo = C_Common::TILE_NUM_Y * 2; // å‰2ãƒã‚¹ã®ã‚¿ã‚¤ãƒ«No
+	if (ballHolder->ActorHasTag(FName("HOME"))) { // Homeãƒœãƒ¼ãƒ«ã‹
 		// Home
-		// * ƒ{[ƒ‹¸‚Á‚½‘¤ (Away) *
-		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo - forwordTileNo - 1]->GetActorLocation()); // ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[
+		// * ãƒœãƒ¼ãƒ«å¤±ã£ãŸå´ (Away) *
+		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo - forwordTileNo - 1]->GetActorLocation()); // å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 
-		// * ƒ{[ƒ‹’Dæ‘¤ (Home) *
-		ballHolder->SetMoveTo(allTiles[ballHolderTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ƒ{[ƒ‹ƒzƒ‹ƒ_[
-		ball->SetMoveTo(allTiles[ballTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ƒ{[ƒ‹
+		// * ãƒœãƒ¼ãƒ«å¥ªå–å´ (Home) *
+		ballHolder->SetMoveTo(allTiles[ballHolderTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
+		ball->SetMoveTo(allTiles[ballTileNo + forwordTwoTileNo - 1]->GetActorLocation()); // ãƒœãƒ¼ãƒ«
 
 	}
 	else {
 		// Away
-		// * ƒ{[ƒ‹¸‚Á‚½‘¤ (Home) *
-		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo + forwordTileNo - 1]->GetActorLocation()); // ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[
+		// * ãƒœãƒ¼ãƒ«å¤±ã£ãŸå´ (Home) *
+		preBallHolder->SetMoveTo(allTiles[preBallHolderTileNo + forwordTileNo - 1]->GetActorLocation()); // å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 
-		// * ƒ{[ƒ‹’Dæ‘¤ (Away) *
-		ballHolder->SetMoveTo(allTiles[ballHolderTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ƒ{[ƒ‹ƒzƒ‹ƒ_[
-		ball->SetMoveTo(allTiles[ballTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ƒ{[ƒ‹
+		// * ãƒœãƒ¼ãƒ«å¥ªå–å´ (Away) *
+		ballHolder->SetMoveTo(allTiles[ballHolderTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
+		ball->SetMoveTo(allTiles[ballTileNo - forwordTwoTileNo - 1]->GetActorLocation()); // ãƒœãƒ¼ãƒ«
 	}
 	// **
 }
 
-// ƒvƒŒƒX
-// | ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[‚ªƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÖˆÚ“®‚·‚é |
+// ãƒ—ãƒ¬ã‚¹
+// | ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ãŒãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã¸ç§»å‹•ã™ã‚‹ |
 void AC_My_Player_Controller::Press()
 {
-	// * §ŒÀ * 
-	if (duelRangeTileNos.IsEmpty() == false) { // ‘ÎlƒŒƒ“ƒW‚ªæ“¾‚Å‚«‚Ä‚¢‚é‚©
-		if (duelRangeTileNos.Contains(firstDefender->currentTileNo)) return; // ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[‚ª‘ÎlƒŒƒ“ƒW“à‚É‚¢‚é‚©
+	// * åˆ¶é™ * 
+	if (duelRangeTileNos.IsEmpty() == false) { // å¯¾äººãƒ¬ãƒ³ã‚¸ãŒå–å¾—ã§ãã¦ã„ã‚‹ã‹
+		if (duelRangeTileNos.Contains(firstDefender->currentTileNo)) return; // ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ãŒå¯¾äººãƒ¬ãƒ³ã‚¸å†…ã«ã„ã‚‹ã‹
 	}
 	// *
 
-	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // ˆÚ“®æ‚Ìƒ^ƒCƒ‹No
+	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«No
 
-	// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚·‚é **
-	if (moveToTileNos.Contains(nextTileNo)) { // ƒ^ƒCƒ‹‚ª—\–ñ‚³‚ê‚Ä‚¢‚é‚©
-		// —\–ñ‚ ‚è
+	// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã™ã‚‹ **
+	if (moveToTileNos.Contains(nextTileNo)) { // ã‚¿ã‚¤ãƒ«ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹ã‹
+		// äºˆç´„ã‚ã‚Š
 
-		return; // ˆÚ“®‚µ‚È‚¢
+		return; // ç§»å‹•ã—ãªã„
 	}
 	else {
-		// —\–ñ‚È‚µ
+		// äºˆç´„ãªã—
 
-		moveToTileNos.Add(nextTileNo); // —\–ñ‚·‚é
+		moveToTileNos.Add(nextTileNo); // äºˆç´„ã™ã‚‹
 	}
 	// **
 
-	// ** ˆÚ“® **
-	FVector nextTileLocation = allTiles[nextTileNo - 1]->GetActorLocation(); // “®‚­ƒ^ƒCƒ‹ˆÊ’u
-	firstDefender->SetMoveTo(nextTileLocation); // ˆÚ“®
+	// ** ç§»å‹• **
+	FVector nextTileLocation = allTiles[nextTileNo - 1]->GetActorLocation(); // å‹•ãã‚¿ã‚¤ãƒ«ä½ç½®
+	firstDefender->SetMoveTo(nextTileLocation); // ç§»å‹•
 	// **
 }
 
-// ƒ}[ƒLƒ“ƒO
-// | ƒ}[ƒNƒŒƒ“ƒW‚É‘Šè‚ª‚¢‚é‚©ƒ`ƒFƒbƒN‚µA‘Šè‚Ì‘O‚Ìƒ}ƒX‚ÉˆÚ“®‚·‚é |
+// ãƒãƒ¼ã‚­ãƒ³ã‚°
+// | ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ã«ç›¸æ‰‹ãŒã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ã—ã€ç›¸æ‰‹ã®å‰ã®ãƒã‚¹ã«ç§»å‹•ã™ã‚‹ |
 void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
 {
-	// ** ƒIƒtƒFƒ“ƒX‘¤‚Ì‘OŒü‚«‚ğæ“¾ **
+	// ** ã‚ªãƒ•ã‚§ãƒ³ã‚¹å´ã®å‰å‘ãã‚’å–å¾— **
 	int forward = defencePlayer->ActorHasTag(FName("HOME")) ? C_Common::BACKWARD_DIRECTION : C_Common::FORWARD_DIRECTION;
 	// **
 
-	for (AC_Piece* p : offencePlayers) { // ƒIƒtƒFƒ“ƒXƒvƒŒƒCƒ„[‚²‚Æ‚É
-		// * §ŒÀ *
-		if (p == ballHolder) continue; // ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	for (AC_Piece* p : offencePlayers) { // ã‚ªãƒ•ã‚§ãƒ³ã‚¹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã”ã¨ã«
+		// * åˆ¶é™ *
+		if (p == ballHolder) continue; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 		// *
 
-		// * ƒ}[ƒNƒŒƒ“ƒW‚É‘Šè‚ª‚¢‚é‚©ƒ`ƒFƒbƒN * //
-		if (defencePlayer->markRange.Contains(p->currentTileNo)) { // ƒ}[ƒNƒŒƒ“ƒW“à‚É‘Šè‚ª‚¢‚é
-			int markLocationTileNo = p->currentTileNo + forward; // ƒ}[ƒNˆÊ’u‚Ìƒ^ƒCƒ‹No (‘Šè‘¤‚Ì‘O•ûƒ}ƒX)
-			// * §ŒÀ *
-			if (defencePlayer->currentTileNo == markLocationTileNo) return; // ƒfƒBƒtƒFƒ“ƒ_[‚ªƒ}[ƒNˆÊ’u‚ÉŠù‚É‚¢‚é
+		// * ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ã«ç›¸æ‰‹ãŒã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ * //
+		if (defencePlayer->markRange.Contains(p->currentTileNo)) { // ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å†…ã«ç›¸æ‰‹ãŒã„ã‚‹
+			int markLocationTileNo = p->currentTileNo + forward; // ãƒãƒ¼ã‚¯ä½ç½®ã®ã‚¿ã‚¤ãƒ«No (ç›¸æ‰‹å´ã®å‰æ–¹ãƒã‚¹)
+			// * åˆ¶é™ *
+			if (defencePlayer->currentTileNo == markLocationTileNo) return; // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ãŒãƒãƒ¼ã‚¯ä½ç½®ã«æ—¢ã«ã„ã‚‹
 			// *
 			// * //
 
-			// ** ˆÚ“®æ‚Ìƒ^ƒCƒ‹‚ğ—\–ñ‚·‚é **
-			if (moveToTileNos.Contains(markLocationTileNo)) { // ƒ^ƒCƒ‹‚ª—\–ñ‚³‚ê‚Ä‚¢‚é‚©
-				// —\–ñ‚ ‚è
+			// ** ç§»å‹•å…ˆã®ã‚¿ã‚¤ãƒ«ã‚’äºˆç´„ã™ã‚‹ **
+			if (moveToTileNos.Contains(markLocationTileNo)) { // ã‚¿ã‚¤ãƒ«ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹ã‹
+				// äºˆç´„ã‚ã‚Š
 
-				return; // ˆÚ“®‚µ‚È‚¢
+				return; // ç§»å‹•ã—ãªã„
 			}
 			else {
-				// —\–ñ‚È‚µ
+				// äºˆç´„ãªã—
 
-				moveToTileNos.Add(markLocationTileNo); // —\–ñ‚·‚é
+				moveToTileNos.Add(markLocationTileNo); // äºˆç´„ã™ã‚‹
 			}
 			// **
 			
-			// * ˆÚ“® *
+			// * ç§»å‹• *
 			defencePlayer->SetMoveTo(allTiles[markLocationTileNo - 1]->GetActorLocation());
 			// *
 
-			// * ƒtƒ‰ƒOON *
+			// * ãƒ•ãƒ©ã‚°ON *
 			p->isMarked = true;
 			// *
 
@@ -739,101 +768,103 @@ void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
 	}
 }
 
-// ƒtƒF[ƒY‚ğI—¹‚µ‚Ä‚¢‚¢‚©ŠÄ‹‚·‚é
-void AC_My_Player_Controller::MonitorFinishPhase()
+// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºã‚’çµ‚äº†ã—ã¦ã„ã„ã‹ç›£è¦–
+void AC_My_Player_Controller::MonitorFinishPlayStepPhase()
 {
-	// ** ƒRƒ}‚Æƒ{[ƒ‹‚ªˆÚ“®‚µ‚Ä‚¢‚È‚¢‚© **
+	// ** ã‚³ãƒã¨ãƒœãƒ¼ãƒ«ãŒç§»å‹•ã—ã¦ã„ãªã„ã‹ **
 	for (AC_Piece* p : allPieces) {
 		if (p->isMoving) return;
 	}
 	if (ball->isMoving) return;
 	// **
 
-	FinishTimerAndPhase(); // ƒ^ƒCƒ}[‚ÆƒtƒF[ƒY‚ğI—¹
+	FinishTimerAndStep(); // ã‚¿ã‚¤ãƒãƒ¼ã¨ã‚¹ãƒ†ãƒƒãƒ—ã‚’çµ‚äº†
 }
 
-// (ƒtƒF[ƒY)ƒ^ƒCƒ}[‚ÆƒtƒF[ƒY‚ğI—¹‚·‚é
-void AC_My_Player_Controller::FinishTimerAndPhase()
+// (ãƒ•ã‚§ãƒ¼ã‚º)ã‚¿ã‚¤ãƒãƒ¼ã¨ã‚¹ãƒ†ãƒƒãƒ—ã‚’çµ‚äº†
+void AC_My_Player_Controller::FinishTimerAndStep()
 {
-	// ƒ^ƒCƒ}[I—¹
+	// ã‚¿ã‚¤ãƒãƒ¼çµ‚äº†
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 
-	// ƒtƒF[ƒYI—¹ˆ—
-	bool _isFinish = AfterPhase();
+	// ** â‘¢-â‘¶ ãƒªã‚»ãƒƒãƒˆã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºé–‹å§‹ **
+	bool _isFinish = ResetStepPhase();
+	// **
 
-	// ƒtƒF[ƒYI—¹
-	isInPhase = _isFinish;
+	// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºçµ‚äº†
+	isPlayStepPhase = _isFinish;
 }
 
-// ƒ}ƒEƒXƒzƒo[ˆ—
+// ãƒã‚¦ã‚¹ãƒ›ãƒãƒ¼æ™‚å‡¦ç†
+// | é¸æŠä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç§»å‹•æ™‚ã«ã‚¿ã‚¤ãƒ«ã‚’å…‰ã‚‰ã›ã‚‹ |
 void AC_My_Player_Controller::HoverMouse()
 {
-	// *** ƒzƒo[’†‚Ìƒ^ƒCƒ‹(WorldStatic)‚ÌˆÊ’u‚ğæ“¾ ***
-	// æ“¾‚·‚éƒIƒuƒWƒFƒNƒgƒ^ƒCƒv‚ğİ’è(WorldStatic‚ğİ’è)
+	// *** ãƒ›ãƒãƒ¼ä¸­ã®ã‚¿ã‚¤ãƒ«(WorldStatic)ã®ä½ç½®ã‚’å–å¾— ***
+	// å–å¾—ã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚¿ã‚¤ãƒ—ã‚’è¨­å®š(WorldStaticã‚’è¨­å®š)
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-	FHitResult outHit; // Œ‹‰Ê‚ğŠi”[
+	FHitResult outHit; // çµæœã‚’æ ¼ç´
 
-	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // ƒAƒNƒ^[î•ñæ“¾
+	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // ã‚¢ã‚¯ã‚¿ãƒ¼æƒ…å ±å–å¾—
 	// ***
 
-	// ƒ^ƒCƒ‹‚Å‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+	// ã‚¿ã‚¤ãƒ«ã§ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
 	if (isTile == false) return;
 
-	// *** Œ»İƒzƒo[’†‚Ìƒ^ƒCƒ‹No ***
-	currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // Œ»İƒzƒo[‚µ‚Ä‚¢‚éƒ^ƒCƒ‹No
+	// *** ç¾åœ¨ãƒ›ãƒãƒ¼ä¸­ã®ã‚¿ã‚¤ãƒ«No ***
+	currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // ç¾åœ¨ãƒ›ãƒãƒ¼ã—ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«No
 	// ***
 
-	// *** ‘I‘ğ‚³‚ê‚½ƒvƒŒƒCƒ„[‚ª‚¢‚éƒ^ƒCƒ‹‚ÆAŒ»İŒõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚É‚ÍˆÚ“®‚Å‚«‚È‚¢‚æ‚¤‚É‚·‚é ***
-	// ƒzƒo[’†‚Ìƒ^ƒCƒ‹‚Æ‘I‘ğ’†‚ÌƒvƒŒƒCƒ„[‚ª‚¢‚éƒ^ƒCƒ‹‚ª“¯‚¶‚È‚çˆ—‚µ‚È‚¢
+	// *** é¸æŠã•ã‚ŒãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒã„ã‚‹ã‚¿ã‚¤ãƒ«ã¨ã€ç¾åœ¨å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ã«ã¯ç§»å‹•ã§ããªã„ã‚ˆã†ã«ã™ã‚‹ ***
+	// ãƒ›ãƒãƒ¼ä¸­ã®ã‚¿ã‚¤ãƒ«ã¨é¸æŠä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒã„ã‚‹ã‚¿ã‚¤ãƒ«ãŒåŒã˜ãªã‚‰å‡¦ç†ã—ãªã„
 	if (currentHoverTileNo == selectedPlayerTileNo) return;
-	// ƒzƒo[’†‚Ìƒ^ƒCƒ‹‚ÆŒ»İŒõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚ª“¯‚¶‚È‚çˆ—‚µ‚È‚¢
+	// ãƒ›ãƒãƒ¼ä¸­ã®ã‚¿ã‚¤ãƒ«ã¨ç¾åœ¨å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ãŒåŒã˜ãªã‚‰å‡¦ç†ã—ãªã„
 	if (currentHoverTileNo == overlayTileNo) return;
 	// ***
 
 
-	// *** ƒ^ƒCƒ‹‚ğŒõ‚ç‚¹‚éˆ— ***
-	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hover‚µ‚Ä‚¢‚éƒ^ƒCƒ‹æ“¾
-	// ƒ^ƒCƒ‹‚Ì1‚Â‚Ì‚İŒõ‚ç‚¹‚é‚æ‚¤‚É‚·‚é «««
-	// ƒ}ƒeƒŠƒAƒ‹íœ
+	// *** ã‚¿ã‚¤ãƒ«ã‚’å…‰ã‚‰ã›ã‚‹å‡¦ç† ***
+	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverã—ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«å–å¾—
+	// ã‚¿ã‚¤ãƒ«ã®1ã¤ã®ã¿å…‰ã‚‰ã›ã‚‹ã‚ˆã†ã«ã™ã‚‹ â†“â†“â†“
+	// ãƒãƒ†ãƒªã‚¢ãƒ«å‰Šé™¤
 	if (overlayTile != nullptr) overlayTile->RemoveMaterial();
-	overlayTile = hoverTile; // Œõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚ğŠi”[
-	// ªªª
-	// ƒ}ƒeƒŠƒAƒ‹ƒZƒbƒg(ƒ^ƒCƒ‹‚ğŒõ‚ç‚¹‚é)
+	overlayTile = hoverTile; // å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ã‚’æ ¼ç´
+	// â†‘â†‘â†‘
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚»ãƒƒãƒˆ(ã‚¿ã‚¤ãƒ«ã‚’å…‰ã‚‰ã›ã‚‹)
 	overlayTile->SetMaterial();
-	overlayTileNo = currentHoverTileNo; // ƒzƒo[’†‚Ìƒ^ƒCƒ‹‚ÆŒ»İŒõ‚Á‚Ä‚¢‚éƒ^ƒCƒ‹‚ª“¯‚¶‚É‚·‚é(•¡”‰ñƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg‚µ‚È‚¢‚æ‚¤‚É‚·‚é)
+	overlayTileNo = currentHoverTileNo; // ãƒ›ãƒãƒ¼ä¸­ã®ã‚¿ã‚¤ãƒ«ã¨ç¾åœ¨å…‰ã£ã¦ã„ã‚‹ã‚¿ã‚¤ãƒ«ãŒåŒã˜ã«ã™ã‚‹(è¤‡æ•°å›ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆã—ãªã„ã‚ˆã†ã«ã™ã‚‹)
 	// ***
 }
 
-// ƒtƒF[ƒY‘Oˆ—
-// | ƒtƒF[ƒYƒJƒEƒ“ƒg |
-// | ƒvƒŒƒCƒ„[Eƒ{[ƒ‹‚Ì‰Šú’lƒZƒbƒg |
-void AC_My_Player_Controller::BeforePhase()
+// â‘¢-â‘´ æº–å‚™ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º
+// | ãƒ•ã‚§ãƒ¼ã‚ºã‚«ã‚¦ãƒ³ãƒˆ |
+// | ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»ãƒœãƒ¼ãƒ«ã®åˆæœŸå€¤ã‚»ãƒƒãƒˆ |
+void AC_My_Player_Controller::PrepareStepPhase()
 {
-	// ** ƒtƒF[ƒY”ƒJƒEƒ“ƒg **
-	phaseCount++;
-	// ƒtƒF[ƒY”‚ğƒfƒoƒbƒO•\¦‚·‚é
-	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "Phase: " + FString::FromInt(phaseCount));
+	// ** ã‚¹ãƒ†ãƒƒãƒ—æ•°ã‚«ã‚¦ãƒ³ãƒˆ **
+	stepCount++;
+	// ãƒ•ã‚§ãƒ¼ã‚ºæ•°ã‚’ãƒ‡ãƒãƒƒã‚°è¡¨ç¤ºã™ã‚‹
+	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "STEP: " + FString::FromInt(stepCount));
 	// **
 
-	// ** ƒRƒ}‚²‚Æ‚ÉŒ»İ‚Ìƒ^ƒCƒ‹No‚ğæ“¾ **
+	// ** ã‚³ãƒã”ã¨ã«ç¾åœ¨ã®ã‚¿ã‚¤ãƒ«Noã‚’å–å¾— **
 	for (AC_Piece* p : allPieces) {
-		FVector l = p->GetActorLocation(); // ƒRƒ}‚ÌˆÊ’u
-		int n = GetTileNoFromLocation(l.X, l.Y); // ƒ^ƒCƒ‹No
-		p->currentTileNo = n; // ƒ^ƒCƒ‹NoƒZƒbƒg
+		FVector l = p->GetActorLocation(); // ã‚³ãƒã®ä½ç½®
+		int n = GetTileNoFromLocation(l.X, l.Y); // ã‚¿ã‚¤ãƒ«No
+		p->currentTileNo = n; // ã‚¿ã‚¤ãƒ«Noã‚»ãƒƒãƒˆ
 	}
 	// **
 
-	// ** ƒ{[ƒ‹‚ÌŒ»İ‚Ìƒ^ƒCƒ‹No‚ğæ“¾ **
-	FVector bL = ball->GetActorLocation(); // ƒ{[ƒ‹‚ÌˆÊ’u
-	int bN = GetTileNoFromLocation(bL.X, bL.Y); // ƒ^ƒCƒ‹No
-	ball->currentTileNo = bN; // ƒ^ƒCƒ‹NoƒZƒbƒg
+	// ** ãƒœãƒ¼ãƒ«ã®ç¾åœ¨ã®ã‚¿ã‚¤ãƒ«Noã‚’å–å¾— **
+	FVector bL = ball->GetActorLocation(); // ãƒœãƒ¼ãƒ«ã®ä½ç½®
+	int bN = GetTileNoFromLocation(bL.X, bL.Y); // ã‚¿ã‚¤ãƒ«No
+	ball->currentTileNo = bN; // ã‚¿ã‚¤ãƒ«Noã‚»ãƒƒãƒˆ
 	// **
 
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[æ“¾( ***‰‰ñ‚Ì‚İ‚Ìˆ— ) **
-	// | HomeƒvƒŒƒCƒ„[‚ğ—Dæ‚µ‚Äƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ö |
-	if (phaseCount <= 1) { // ƒtƒF[ƒY1ˆÈ‰º‚©
-		if (allHomePieces.Num() > 0) { // HomeƒRƒ}‚ª‚ ‚é‚©
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å–å¾—( ***åˆå›ã®ã¿ã®å‡¦ç† ) **
+	// | Homeãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å„ªå…ˆã—ã¦ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã¸ |
+	if (stepCount <= 1) { // ã‚¹ãƒ†ãƒƒãƒ—1ä»¥ä¸‹ã‹
+		if (allHomePieces.Num() > 0) { // Homeã‚³ãƒãŒã‚ã‚‹ã‹
 			// Home
 			for (AC_Piece* p : allHomePieces) {
 				if (p->ActorHasTag(FName("GK"))) {
@@ -856,89 +887,89 @@ void AC_My_Player_Controller::BeforePhase()
 	}
 	// **
 
-	// ** ƒpƒXƒŒƒ“ƒW‚ğæ“¾Eƒ}ƒeƒŠƒAƒ‹•\¦ **
-	passRangeTileNos = GetTileNoInPassRange(); // ƒpƒXƒŒƒ“ƒWæ“¾
-	// ƒpƒXƒŒƒ“ƒW‚ªæ“¾‚Å‚«‚Ä‚¢‚È‚¢ê‡
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã‚’å–å¾—ãƒ»ãƒãƒ†ãƒªã‚¢ãƒ«è¡¨ç¤º **
+	passRangeTileNos = GetTileNoInPassRange(); // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸å–å¾—
+	// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãŒå–å¾—ã§ãã¦ã„ãªã„å ´åˆ
 	if (passRangeTileNos.IsEmpty()) {
-		// ƒpƒXƒŒƒ“ƒW‚È‚µ
+		// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãªã—
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "PASS RANGE NULL !!");
 	}
 	else {
-		// ƒpƒXƒŒƒ“ƒW‚ ‚è
-		// ƒ}ƒeƒŠƒAƒ‹•\¦
+		// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã‚ã‚Š
+		// ãƒãƒ†ãƒªã‚¢ãƒ«è¡¨ç¤º
 		for (int i : passRangeTileNos) {
 			AC_Tile* t = allTiles[i - 1];
 			t->SetPassRangeMaterial();
 		}
 
-		// ** ‘ÎlƒŒƒ“ƒW‚ğæ“¾ **
-		duelRangeTileNos = GetTileNoInDuelRange(passRangeTileNos); // ‘ÎlƒŒƒ“ƒWæ“¾
+		// ** å¯¾äººãƒ¬ãƒ³ã‚¸ã‚’å–å¾— **
+		duelRangeTileNos = GetTileNoInDuelRange(passRangeTileNos); // å¯¾äººãƒ¬ãƒ³ã‚¸å–å¾—
 		// **
 
 	}
 	// **
 
-	if (ballHolder != nullptr) { // null ƒ`ƒFƒbƒN (*Œ»İƒVƒ…[ƒgŒã,null‚É‚È‚é)
-		// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ ‚è
-		// ** ‚Ç‚¿‚ç‚ªƒIƒtƒFƒ“ƒX‚© **
-		isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeƒ{[ƒ‹‚©
+	if (ballHolder != nullptr) { // null ãƒã‚§ãƒƒã‚¯ (*ç¾åœ¨ã‚·ãƒ¥ãƒ¼ãƒˆå¾Œ,nullã«ãªã‚‹)
+		// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚ã‚Š
+		// ** ã©ã¡ã‚‰ãŒã‚ªãƒ•ã‚§ãƒ³ã‚¹ã‹ **
+		isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeãƒœãƒ¼ãƒ«ã‹
 		// **
 
-		// ** ƒIƒtƒFƒ“ƒX‚ÆƒfƒBƒtƒFƒ“ƒX‚ÌƒvƒŒƒCƒ„[‚ğƒZƒbƒg **
-		// Homeƒ{[ƒ‹‚©
+		// ** ã‚ªãƒ•ã‚§ãƒ³ã‚¹ã¨ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ã‚»ãƒƒãƒˆ **
+		// Homeãƒœãƒ¼ãƒ«ã‹
 		if (isHomeBall) {
-			// Homeƒ{[ƒ‹
+			// Homeãƒœãƒ¼ãƒ«
 			offencePlayers = allHomePieces;
 			defencePlayers = allAwayPieces;
 		}
 		else {
-			// Awayƒ{[ƒ‹
+			// Awayãƒœãƒ¼ãƒ«
 			offencePlayers = allAwayPieces;
 			defencePlayers = allHomePieces;
 		}
 		// **
 
-		// ** ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[‚ğƒZƒbƒg **
+		// ** ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã‚’ã‚»ãƒƒãƒˆ **
 		firstDefender = GetFirstDefender();
 		// **
 
-		// ** ƒvƒŒƒCƒ„[‘Sˆõ‚É‘Ì‚ÌŒü‚«‚ğƒZƒbƒg **
-		// | ƒ{[ƒ‹ƒzƒ‹ƒ_[ˆÈŠO |
+		// ** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å…¨å“¡ã«ä½“ã®å‘ãã‚’ã‚»ãƒƒãƒˆ **
+		// | ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ä»¥å¤– |
 		for (AC_Piece* p : allPieces) {
-			// * §ŒÀ *
-			if (p == ballHolder) continue; // ƒ{[ƒ‹ƒzƒ‹ƒ_[
+			// * åˆ¶é™ *
+			if (p == ballHolder) continue; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 			// *
 
-			int ballRow = (ball->currentTileNo / C_Common::TILE_NUM_Y) + 1; // ƒ{[ƒ‹‚Ì—ñ”
-			int playerRow = (p->currentTileNo / C_Common::TILE_NUM_Y) + 1; // ƒvƒŒƒCƒ„[‚Ì—ñ”
-			// ƒvƒŒƒCƒ„[‚Æƒ{[ƒ‹‚Ì—ñ‚ÌˆÊ’u‚ğ”äŠr
-			if (playerRow < ballRow) { // ƒvƒŒƒCƒ„[‚æ‚èƒ{[ƒ‹‚Ì•û‚ª‘O
-				// * ‘OŒü‚«
+			int ballRow = (ball->currentTileNo / C_Common::TILE_NUM_Y) + 1; // ãƒœãƒ¼ãƒ«ã®åˆ—æ•°
+			int playerRow = (p->currentTileNo / C_Common::TILE_NUM_Y) + 1; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åˆ—æ•°
+			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ãƒœãƒ¼ãƒ«ã®åˆ—ã®ä½ç½®ã‚’æ¯”è¼ƒ
+			if (playerRow < ballRow) { // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ˆã‚Šãƒœãƒ¼ãƒ«ã®æ–¹ãŒå‰
+				// * å‰å‘ã
 				p->direction = C_Common::FORWARD_DIRECTION;
 			}
-			else if (playerRow == ballRow && allAwayPieces.Contains(p)) { // “¯—ñ‚ÅAƒAƒEƒFƒCƒvƒŒƒCƒ„[
-				// ƒAƒEƒFƒCƒvƒŒƒCƒ„[‚Ì‚İŒã‚ëŒü‚«‚Ö
+			else if (playerRow == ballRow && allAwayPieces.Contains(p)) { // åŒåˆ—ã§ã€ã‚¢ã‚¦ã‚§ã‚¤ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+				// ã‚¢ã‚¦ã‚§ã‚¤ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã¿å¾Œã‚å‘ãã¸
 				p->direction = C_Common::FORWARD_DIRECTION;
 			}
-			else { // ƒvƒŒƒCƒ„[‚æ‚èƒ{[ƒ‹‚Ì•û‚ªŒã‚ë (ƒz[ƒ€ƒvƒŒƒCƒ„[“¯—ñ‚àŠÜ‚Ş)
-				// *Œã‚ëŒü‚«
+			else { // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ˆã‚Šãƒœãƒ¼ãƒ«ã®æ–¹ãŒå¾Œã‚ (ãƒ›ãƒ¼ãƒ ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åŒåˆ—ã‚‚å«ã‚€)
+				// *å¾Œã‚å‘ã
 				p->direction = C_Common::BACKWARD_DIRECTION;
 			}
 		}
 		// **
 
-		// ** ƒ}[ƒNƒŒƒ“ƒW‚ğƒZƒbƒg **
+		// ** ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ã‚’ã‚»ãƒƒãƒˆ **
 		for (AC_Piece* p : defencePlayers) {
-			// * §ŒÀ *
-			if (p == firstDefender) continue; // ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[‚Ìê‡,ƒZƒbƒg‚µ‚È‚¢
+			// * åˆ¶é™ *
+			if (p == firstDefender) continue; // ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®å ´åˆ,ã‚»ãƒƒãƒˆã—ãªã„
 			// *
 
-			TArray <int> _range = GetMarkRange(p->currentTileNo, p->direction); // ƒ}[ƒNƒŒƒ“ƒWæ“¾
+			TArray <int> _range = GetMarkRange(p->currentTileNo, p->direction); // ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å–å¾—
 
-			if (_range.IsEmpty() == false) { // ‹ó‚Å‚È‚¢ê‡
-				p->markRange = _range; // ƒZƒbƒg
+			if (_range.IsEmpty() == false) { // ç©ºã§ãªã„å ´åˆ
+				p->markRange = _range; // ã‚»ãƒƒãƒˆ
 				
-				// ƒ}ƒeƒŠƒAƒ‹•\¦
+				// ãƒãƒ†ãƒªã‚¢ãƒ«è¡¨ç¤º
 				for (int i : _range) {
 					AC_Tile* t = allTiles[i - 1];
 					t->SetMarkRangeMaterial();
@@ -948,25 +979,25 @@ void AC_My_Player_Controller::BeforePhase()
 		// **
 	}
 	else {
-		// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚È‚µ
+		// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãªã—
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "BALL HOLDER NULL !!");
 	}
 
-	// ** ƒtƒF[ƒY’†‚Ìˆ— (•K‚¸ÅŒã!!!) ***
-	// | ƒpƒXƒŒƒ“ƒW•\¦‚Ì‚½‚ßŠÔŠu‚ğŠJ‚¯‚é |
+	// ** ãƒ•ã‚§ãƒ¼ã‚ºä¸­ã®å‡¦ç† (å¿…ãšæœ€å¾Œ!!!) ***
+	// | ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸è¡¨ç¤ºã®ãŸã‚é–“éš”ã‚’é–‹ã‘ã‚‹ |
 	FTimerHandle handle;
-	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::InPhase, C_Common::INTERVAL_WITHIN_PHASE, false); // ŠÔŠu‚ğŠJ‚¯‚ÄŒÄ‚Ño‚µ
+	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::PlayStepPhase, C_Common::INTERVAL_WITHIN_PHASE, false); // é–“éš”ã‚’é–‹ã‘ã¦å‘¼ã³å‡ºã—
 	// **
 }
 
-// ƒtƒF[ƒY’†ˆ—
-// | ƒ{[ƒ‹EƒvƒŒƒCƒ„[ˆÚ“® |
-// | ƒvƒŒƒCƒ„[”»’f |
-void AC_My_Player_Controller::InPhase()
+// â‘¢-â‘µ ãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º
+// | ãƒœãƒ¼ãƒ«ãƒ»ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç§»å‹• |
+// | ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åˆ¤æ–­ |
+void AC_My_Player_Controller::PlayStepPhase()
 {
-	// ** ƒpƒXƒŒƒ“ƒWíœ (*ƒ}ƒeƒŠƒAƒ‹‚Ì‚İ) **
-	if (passRangeTileNos.IsEmpty() == false) { // ‹ó‚Å‚È‚¢‚©
-		// ƒ}ƒeƒŠƒAƒ‹íœ
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸å‰Šé™¤ (*ãƒãƒ†ãƒªã‚¢ãƒ«ã®ã¿) **
+	if (passRangeTileNos.IsEmpty() == false) { // ç©ºã§ãªã„ã‹
+		// ãƒãƒ†ãƒªã‚¢ãƒ«å‰Šé™¤
 		for (int i : passRangeTileNos) {
 			AC_Tile* t = allTiles[i - 1];
 			t->RemoveMaterial();
@@ -974,11 +1005,11 @@ void AC_My_Player_Controller::InPhase()
 	}
 	// **
 
-	// ** ƒ}[ƒNƒŒƒ“ƒWíœ (*ƒ}ƒeƒŠƒAƒ‹‚Ì‚İ) **
+	// ** ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å‰Šé™¤ (*ãƒãƒ†ãƒªã‚¢ãƒ«ã®ã¿) **
 	for (AC_Piece* p : defencePlayers) {
-		if (p->markRange.IsEmpty()) continue; // ‹ó‚Ìƒ`ƒFƒbƒN
+		if (p->markRange.IsEmpty()) continue; // ç©ºã®ãƒã‚§ãƒƒã‚¯
 
-			// ƒ}ƒeƒŠƒAƒ‹íœ
+			// ãƒãƒ†ãƒªã‚¢ãƒ«å‰Šé™¤
 			for (int i : p->markRange) {
 				AC_Tile* t = allTiles[i - 1];
 				t->RemoveMaterial();
@@ -986,192 +1017,192 @@ void AC_My_Player_Controller::InPhase()
 	}
 	// **
 	 
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌƒvƒŒƒC‘I‘ğ **
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ **
 	SelectPlayForBallHolder();
 	// **
 
-	// ** ƒfƒBƒtƒFƒ“ƒ_[‚ÌƒvƒŒƒC‘I‘ğ **
+	// ** ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ã®ãƒ—ãƒ¬ã‚¤é¸æŠ **
 	SelectPlayForDefender();
 	// **
 
-	// ** ƒtƒF[ƒYŠÄ‹ƒ^ƒCƒ}[ƒZƒbƒg (*ÅŒã‚ÉŒÄ‚Ño‚·) **
-	SetTimerMonitorPhase();
+	// ** â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºç›£è¦–ã‚¿ã‚¤ãƒãƒ¼ã‚»ãƒƒãƒˆ (*æœ€å¾Œã«å‘¼ã³å‡ºã™) **
+	SetTimerMonitorPlayStepPhase();
 	// **
 }
 
-// ƒtƒF[ƒYŒãˆ— (bool: false‚ÅƒtƒF[ƒYI—¹)
-// | ‰Šú’lƒŠƒZƒbƒg |
-bool AC_My_Player_Controller::AfterPhase()
+// â‘¢-3 ãƒªã‚»ãƒƒãƒˆã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚º (bool: falseã§ãƒ•ã‚§ãƒ¼ã‚ºçµ‚äº†)
+// | åˆæœŸå€¤ãƒªã‚»ãƒƒãƒˆ |
+bool AC_My_Player_Controller::ResetStepPhase()
 {
-	// ** ƒpƒXƒŒƒ“ƒWíœ (*”z—ñ‚Ì‚İ) **
-	if (passRangeTileNos.IsEmpty() == false) { // ‹ó‚Å‚È‚¢‚©
-		passRangeTileNos.Empty(); // ”z—ñíœ
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸å‰Šé™¤ (*é…åˆ—ã®ã¿) **
+	if (passRangeTileNos.IsEmpty() == false) { // ç©ºã§ãªã„ã‹
+		passRangeTileNos.Empty(); // é…åˆ—å‰Šé™¤
 	}
 	// **
 
-	// ** ƒ}[ƒNƒŒƒ“ƒWíœ (*”z—ñ‚Ì‚İ) **
+	// ** ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å‰Šé™¤ (*é…åˆ—ã®ã¿) **
 	for (AC_Piece* p : defencePlayers) {
-		if (p->markRange.IsEmpty()) continue; // ‹óƒ`ƒFƒbƒN
+		if (p->markRange.IsEmpty()) continue; // ç©ºãƒã‚§ãƒƒã‚¯
 
-		p->markRange.Empty(); // ”z—ñíœ
+		p->markRange.Empty(); // é…åˆ—å‰Šé™¤
 	}
 	// **
 
-	// ** ƒ^ƒCƒ‹—\–ñíœ **
+	// ** ã‚¿ã‚¤ãƒ«äºˆç´„å‰Šé™¤ **
 	moveToTileNos.Empty();
 	// **
 
 	return false;
 }
 
-// ƒpƒXƒŒƒ“ƒW‚Ìƒ^ƒCƒ‹‚m‚æ“¾
+// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã®ã‚¿ã‚¤ãƒ«ï¼®ï½å–å¾—
 TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
-	TArray<int> passRangeNos; // ƒpƒXƒŒƒ“ƒW (*ÅI)
-	if (ballHolder == nullptr) return passRangeNos; // ƒ{[ƒ‹ƒzƒ‹ƒ_[nullƒ`ƒFƒbƒN
+	TArray<int> passRangeNos; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ (*æœ€çµ‚)
+	if (ballHolder == nullptr) return passRangeNos; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼nullãƒã‚§ãƒƒã‚¯
 
-	int startPassRangeRowTileNo = 0; // ƒpƒXƒŒƒ“ƒWs‚ÌÅ‰‚Ìƒ^ƒCƒ‹ (*y‚ª¬‚³‚¢)
-	int endPassRangeRowTileNo = 0; // ƒpƒXƒŒƒ“ƒWs‚ÌÅŒã‚Ìƒ^ƒCƒ‹ (*y‚ª‘å‚«‚¢)
-	bool isForward = false; // ‘OŒü‚«”»’è
-	bool isSide = false; // ‰¡Œü‚«‚©
+	int startPassRangeRowTileNo = 0; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸è¡Œã®æœ€åˆã®ã‚¿ã‚¤ãƒ« (*yãŒå°ã•ã„)
+	int endPassRangeRowTileNo = 0; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸è¡Œã®æœ€å¾Œã®ã‚¿ã‚¤ãƒ« (*yãŒå¤§ãã„)
+	bool isForward = false; // å‰å‘ãåˆ¤å®š
+	bool isSide = false; // æ¨ªå‘ãã‹
 
-	int ballHolderTileNo = ballHolder->currentTileNo; // Œ»İ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìƒ^ƒCƒ‹No
-	int ballHolderRow = ballHolderTileNo / C_Common::TILE_NUM_Y; // Œ»İ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìs
+	int ballHolderTileNo = ballHolder->currentTileNo; // ç¾åœ¨ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ã‚¿ã‚¤ãƒ«No
+	int ballHolderRow = ballHolderTileNo / C_Common::TILE_NUM_Y; // ç¾åœ¨ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®è¡Œ
 	
-	// ** ƒpƒXƒŒƒ“ƒW‚Ìs‚ğ‚·‚×‚Äæ“¾ **
-	// | startPassRangeRowTileNo: x‚ªÅ‚à¬‚³‚­, Å‚à¶’[ |
-	// | endPassRangeRowTileNo : x‚ªÅ‚à‘å‚«‚­, Å‚à‰E’[  |
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã®è¡Œã‚’ã™ã¹ã¦å–å¾— **
+	// | startPassRangeRowTileNo: xãŒæœ€ã‚‚å°ã•ã, æœ€ã‚‚å·¦ç«¯ |
+	// | endPassRangeRowTileNo : xãŒæœ€ã‚‚å¤§ãã, æœ€ã‚‚å³ç«¯  |
 
-	int direction = GetDirectionOfBallHolder(); // ‘Ì‚ÌŒü‚«
+	int direction = GetDirectionOfBallHolder(); // ä½“ã®å‘ã
 	if (direction == 25) {
-		// * ‘OŒü‚« *
-		isForward = true; // ƒtƒ‰ƒOON
+		// * å‰å‘ã *
+		isForward = true; // ãƒ•ãƒ©ã‚°ON
 
-		// Å‚à‰E’[‚Ìê‡
+		// æœ€ã‚‚å³ç«¯ã®å ´åˆ
 		if (ballHolderTileNo % C_Common::TILE_NUM_Y == 0) {
-			// Å‚à‰E’[
-			startPassRangeRowTileNo = (ballHolderRow * C_Common::TILE_NUM_Y) + 1; // ‚»‚Ì‚Ü‚ÜŠ|‚¯‚é (*Š„‚èØ‚ê‚Ä,1s–Ú‚ÍballHolderRow = 1‚É‚È‚é)
+			// æœ€ã‚‚å³ç«¯
+			startPassRangeRowTileNo = (ballHolderRow * C_Common::TILE_NUM_Y) + 1; // ãã®ã¾ã¾æ›ã‘ã‚‹ (*å‰²ã‚Šåˆ‡ã‚Œã¦,1è¡Œç›®ã¯ballHolderRow = 1ã«ãªã‚‹)
 		}
 		else {
-			// ‚»‚êˆÈŠO
-			startPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) + 1; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìs‚É+1 (*¬”“_Ø‚èÌ‚Ä‚Ì‚½‚ß, 1s–Ú‚ÍballHolderRow = 0‚É‚È‚é)
+			// ãã‚Œä»¥å¤–
+			startPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) + 1; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®è¡Œã«+1 (*å°æ•°ç‚¹åˆ‡ã‚Šæ¨ã¦ã®ãŸã‚, 1è¡Œç›®ã¯ballHolderRow = 0ã«ãªã‚‹)
 		}
-		endPassRangeRowTileNo = (startPassRangeRowTileNo + (C_Common::TILE_NUM_Y * 6)) - 1; // ƒpƒXƒŒƒ“ƒWÅŒã‚Ìƒ^ƒCƒ‹
+		endPassRangeRowTileNo = (startPassRangeRowTileNo + (C_Common::TILE_NUM_Y * 6)) - 1; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸æœ€å¾Œã®ã‚¿ã‚¤ãƒ«
 		// *
 	}
 	else if (direction == -25) {
-		// * Œã‚ëŒü‚« *
-		isForward = false; // ƒtƒ‰ƒOOFF
+		// * å¾Œã‚å‘ã *
+		isForward = false; // ãƒ•ãƒ©ã‚°OFF
 
-		// Å‚à‰E’[‚Ìê‡
+		// æœ€ã‚‚å³ç«¯ã®å ´åˆ
 		if (ballHolderTileNo % C_Common::TILE_NUM_Y == 0) {
-			// ‰E’[
-			endPassRangeRowTileNo = (ballHolderRow * C_Common::TILE_NUM_Y) - C_Common::TILE_NUM_Y; // ‚»‚Ì‚Ü‚ÜŠ|‚¯‚é (*Š„‚èØ‚ê‚Ä,1s–Ú‚ÍballHolderRow = 1‚É‚È‚é)
+			// å³ç«¯
+			endPassRangeRowTileNo = (ballHolderRow * C_Common::TILE_NUM_Y) - C_Common::TILE_NUM_Y; // ãã®ã¾ã¾æ›ã‘ã‚‹ (*å‰²ã‚Šåˆ‡ã‚Œã¦,1è¡Œç›®ã¯ballHolderRow = 1ã«ãªã‚‹)
 		}
 		else {
-			// ‰E’[ˆÈŠO
-			endPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) - C_Common::TILE_NUM_Y; // Œ»İ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Ìs‚É+1‚µ‚Ä‚©‚¯‚é
+			// å³ç«¯ä»¥å¤–
+			endPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) - C_Common::TILE_NUM_Y; // ç¾åœ¨ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®è¡Œã«+1ã—ã¦ã‹ã‘ã‚‹
 		}
-		startPassRangeRowTileNo = (endPassRangeRowTileNo - (C_Common::TILE_NUM_Y * 6) + 1); // ƒpƒXƒŒƒ“ƒW‚ÌÅ‰‚Ìƒ^ƒCƒ‹
+		startPassRangeRowTileNo = (endPassRangeRowTileNo - (C_Common::TILE_NUM_Y * 6) + 1); // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã®æœ€åˆã®ã‚¿ã‚¤ãƒ«
 		// *
 	}
 	else{
-		// * ‰EE¶Œü‚« *
-		isSide = true; // ƒtƒ‰ƒOON
-		startPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) - (C_Common::TILE_NUM_Y * 4); // Å‰‚Ìƒ^ƒCƒ‹
-		endPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) + (C_Common::TILE_NUM_Y * 4); // ÅŒã‚Ìƒ^ƒCƒ‹
+		// * å³ãƒ»å·¦å‘ã *
+		isSide = true; // ãƒ•ãƒ©ã‚°ON
+		startPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) - (C_Common::TILE_NUM_Y * 4); // æœ€åˆã®ã‚¿ã‚¤ãƒ«
+		endPassRangeRowTileNo = ((ballHolderRow + 1) * C_Common::TILE_NUM_Y) + (C_Common::TILE_NUM_Y * 4); // æœ€å¾Œã®ã‚¿ã‚¤ãƒ«
 		// *
 	}
 	// **
 
-	// ** ã’[(x‚ªÅ‚à‘å‚«‚¢)‚Ìƒ^ƒCƒ‹æ“¾ **
-	// * ¶ã’[‚Ìƒ^ƒCƒ‹Noæ“¾
+	// ** ä¸Šç«¯(xãŒæœ€ã‚‚å¤§ãã„)ã®ã‚¿ã‚¤ãƒ«å–å¾— **
+	// * å·¦ä¸Šç«¯ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
 	int leftEndTileNo;
-	// Œ»İƒ{[ƒ‹ƒzƒ‹ƒ_[‚ª¶‘¤5ƒ}ƒX‚É‚¢‚é‚©
-	if ( (ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y < 5 && (ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y > 0) { // *5ˆÈ‰º‚Æ‚·‚é‚Æ0i‰E’[j‚à”ÍˆÍ‚É“ü‚Á‚Ä‚¢‚Ü‚¤‚½‚ß
-		// * ¶‘¤5ƒ}ƒX *
-		// ‰¡Œü‚«‚©
+	// ç¾åœ¨ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒå·¦å´5ãƒã‚¹ã«ã„ã‚‹ã‹
+	if ( (ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y < 5 && (ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y > 0) { // *5ä»¥ä¸‹ã¨ã™ã‚‹ã¨0ï¼ˆå³ç«¯ï¼‰ã‚‚ç¯„å›²ã«å…¥ã£ã¦ã„ã¾ã†ãŸã‚
+		// * å·¦å´5ãƒã‚¹ *
+		// æ¨ªå‘ãã‹
 		if (isSide) {
-			// ¶Œü‚«‚©
+			// å·¦å‘ãã‹
 			if (direction == -1) {
-				// *¶Œü‚«
+				// *å·¦å‘ã
 				leftEndTileNo = (startPassRangeRowTileNo + (C_Common::TILE_NUM_Y * 8) - C_Common::TILE_NUM_Y) + 1;
 			}
 			else {
-				// *‰EŒü‚«
+				// *å³å‘ã
 				leftEndTileNo = (ballHolderTileNo + 1) + (C_Common::TILE_NUM_Y * 4);
 			}
 		}
 		else {
-			// *‘OŒü‚«@or Œã‚ëŒü‚«
+			// *å‰å‘ãã€€or å¾Œã‚å‘ã
 			leftEndTileNo = startPassRangeRowTileNo + (C_Common::TILE_NUM_Y * 5);
 		}
 		// *
 	}
 	else {
-		// * 5ƒ}ƒXˆÈŠO *
-		// ‰¡Œü‚«‚©
+		// * 5ãƒã‚¹ä»¥å¤– *
+		// æ¨ªå‘ãã‹
 		if (isSide) {
-			// *‰EE¶Œü‚«
+			// *å³ãƒ»å·¦å‘ã
 			leftEndTileNo = direction == 1 ? (ballHolderTileNo + 1) + (C_Common::TILE_NUM_Y * 4) : (ballHolderTileNo - 6) + (C_Common::TILE_NUM_Y * 4);
 		}
 		else {
-			// *‘OŒü‚«@or Œã‚ëŒü‚«
+			// *å‰å‘ãã€€or å¾Œã‚å‘ã
 			leftEndTileNo = isForward ? (ballHolderTileNo - 4) + (C_Common::TILE_NUM_Y * 6) : (ballHolderTileNo - 4) - C_Common::TILE_NUM_Y;
 		}
 		// *
 	}
 	// *
 
-	// ‰Eã’[‚Ìƒ^ƒCƒ‹Noæ“¾
+	// å³ä¸Šç«¯ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
 	int rightEndTileNo;
-	// Œ»İƒ{[ƒ‹ƒzƒ‹ƒ_[‚ª‰E‘¤5ƒ}ƒX‚É‚¢‚é‚©
-	if ((ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y > (C_Common::TILE_NUM_Y - 4) || ballHolderTileNo % C_Common::TILE_NUM_Y == 0) { // *21ˆÈã‚Æ‚·‚é‚Æ0i‰E’[j‚ª”ÍˆÍ‚É“ü‚ç‚È‚¢‚½‚ß
-		// * ‰E‘¤5ƒ}ƒX *
+	// ç¾åœ¨ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒå³å´5ãƒã‚¹ã«ã„ã‚‹ã‹
+	if ((ballHolderTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y > (C_Common::TILE_NUM_Y - 4) || ballHolderTileNo % C_Common::TILE_NUM_Y == 0) { // *21ä»¥ä¸Šã¨ã™ã‚‹ã¨0ï¼ˆå³ç«¯ï¼‰ãŒç¯„å›²ã«å…¥ã‚‰ãªã„ãŸã‚
+		// * å³å´5ãƒã‚¹ *
 		rightEndTileNo = direction == -1 ? (ballHolderTileNo - 1) + (C_Common::TILE_NUM_Y * 4) : endPassRangeRowTileNo;
 		// *
 	}
 	else {
-		// * 5ƒ}ƒXˆÈŠO *
-		// ‰¡Œü‚«‚©
+		// * 5ãƒã‚¹ä»¥å¤– *
+		// æ¨ªå‘ãã‹
 		if (isSide) {
-			// ‰E or ¶Œü‚«
+			// å³ or å·¦å‘ã
 			rightEndTileNo = direction == 1 ? (ballHolderTileNo + 6) + (C_Common::TILE_NUM_Y * 4) : (ballHolderTileNo - 1) + (C_Common::TILE_NUM_Y * 4);
 		}
 		else {
-			// ‘OŒü‚«@or Œã‚ëŒü‚«
+			// å‰å‘ãã€€or å¾Œã‚å‘ã
 			rightEndTileNo = isForward ? (ballHolderTileNo + 4) + (C_Common::TILE_NUM_Y * 6) : (ballHolderTileNo + 4) - C_Common::TILE_NUM_Y;
 		}
 		// *
 	}
 	// **
 
-	// ** ƒpƒXƒŒƒ“ƒWæ“¾ **
-	// | ‘OEŒã‚ëŒü‚«: 4 * 6 ƒ}ƒX |
-	// | ‰EE¶Œü‚«: 6 * 9 ƒ}ƒX   |
-	int columnCount = 0; // —ñƒJƒEƒ“ƒ^[
-	int rowCount = 0; // sƒJƒEƒ“ƒ^[
-	int rowRange = isSide ? 9 : 6; // c(s)‚Ìƒ}ƒX”
-	TArray <int> passRangeOutOfFieldNos; // ƒpƒXƒŒƒ“ƒW—ñNo”z—ñ(ƒtƒB[ƒ‹ƒhŠO‚àŠÜ‚Ş)
-	// s(x)‚Ìˆ—
-	// | rowRange: c•(x, s)                       |
-	// | leftEndTileNo ¨ rightEndTileNo: ‰¡•(y, —ñ) |
-	// c(x)‚Ìˆ—
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸å–å¾— **
+	// | å‰ãƒ»å¾Œã‚å‘ã: 4 * 6 ãƒã‚¹ |
+	// | å³ãƒ»å·¦å‘ã: 6 * 9 ãƒã‚¹   |
+	int columnCount = 0; // åˆ—ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
+	int rowCount = 0; // è¡Œã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
+	int rowRange = isSide ? 9 : 6; // ç¸¦(è¡Œ)ã®ãƒã‚¹æ•°
+	TArray <int> passRangeOutOfFieldNos; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸åˆ—Noé…åˆ—(ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰å¤–ã‚‚å«ã‚€)
+	// è¡Œ(x)ã®å‡¦ç†
+	// | rowRange: ç¸¦å¹…(x, è¡Œ)                       |
+	// | leftEndTileNo â†’ rightEndTileNo: æ¨ªå¹…(y, åˆ—) |
+	// ç¸¦(x)ã®å‡¦ç†
 	for (int n = 0; rowCount < rowRange; rowCount++) {
-		columnCount = 0; // ƒŠƒZƒbƒg
+		columnCount = 0; // ãƒªã‚»ãƒƒãƒˆ
 		
-		// ‰¡(y)‚Ìˆ—
-		for (int i = 0; columnCount < (rightEndTileNo - (C_Common::TILE_NUM_Y * rowCount)); i++) { // ¶’[ - ‰E’[‚Ü‚Å
-			columnCount = leftEndTileNo - (C_Common::TILE_NUM_Y * rowCount) + i; // —ñ‚ğƒCƒ“ƒNƒŠƒƒ“ƒg
+		// æ¨ª(y)ã®å‡¦ç†
+		for (int i = 0; columnCount < (rightEndTileNo - (C_Common::TILE_NUM_Y * rowCount)); i++) { // å·¦ç«¯ - å³ç«¯ã¾ã§
+			columnCount = leftEndTileNo - (C_Common::TILE_NUM_Y * rowCount) + i; // åˆ—ã‚’ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
 			passRangeOutOfFieldNos.Add(columnCount);
 		}
 
 	}
 	// **
 
-	// ** ƒpƒXƒŒƒ“ƒW‚ªƒ^ƒCƒ‹”ÍˆÍ‚ğ’´‚¦‚È‚¢‚æ‚¤‚É‚·‚é **
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãŒã‚¿ã‚¤ãƒ«ç¯„å›²ã‚’è¶…ãˆãªã„ã‚ˆã†ã«ã™ã‚‹ **
 	for (int n : passRangeOutOfFieldNos) {
-		if (n > allTiles.Num() || n < 0) continue; // 0 < tileNos < 1000 ‚Ì”ÍˆÍ
+		if (n > allTiles.Num() || n < 0) continue; // 0 < tileNos < 1000 ã®ç¯„å›²
 
 		passRangeNos.Add(n);
 	}
@@ -1181,40 +1212,40 @@ TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 	return passRangeNos;
 }
 
-// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌŒü‚«‚ğæ“¾ ( ‘O: 25, Œã‚ë: -25, ‰E: 1, ¶: -1 )
+// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®å‘ãã‚’å–å¾— ( å‰: 25, å¾Œã‚: -25, å³: 1, å·¦: -1 )
 int AC_My_Player_Controller::GetDirectionOfBallHolder()
 {
-	int ballHolderTileNo = ballHolder->currentTileNo; // ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒ^ƒCƒ‹No
-	int ballTileNo = ball->currentTileNo; // ƒ{[ƒ‹‚Ìƒ^ƒCƒ‹No
+	int ballHolderTileNo = ballHolder->currentTileNo; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚¿ã‚¤ãƒ«No
+	int ballTileNo = ball->currentTileNo; // ãƒœãƒ¼ãƒ«ã®ã‚¿ã‚¤ãƒ«No
 
-	if ((ballHolderTileNo + C_Common::TILE_NUM_Y) == ballTileNo) return C_Common::TILE_NUM_Y; // ‘O
-	if ((ballHolderTileNo - C_Common::TILE_NUM_Y) == ballTileNo) return -C_Common::TILE_NUM_Y; // Œã‚ë
-	if ((ballHolderTileNo + 1) == ballTileNo) return 1; // ‰E
-	return -1; // ¶
+	if ((ballHolderTileNo + C_Common::TILE_NUM_Y) == ballTileNo) return C_Common::TILE_NUM_Y; // å‰
+	if ((ballHolderTileNo - C_Common::TILE_NUM_Y) == ballTileNo) return -C_Common::TILE_NUM_Y; // å¾Œã‚
+	if ((ballHolderTileNo + 1) == ballTileNo) return 1; // å³
+	return -1; // å·¦
 }
 
-// ‘Îl”ÍˆÍ‚Ìƒ^ƒCƒ‹Noæ“¾
-// | passRange: ƒpƒX”ÍˆÍ‚©‚çæ“¾ |
+// å¯¾äººç¯„å›²ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
+// | passRange: ãƒ‘ã‚¹ç¯„å›²ã‹ã‚‰å–å¾— |
 TArray<int> AC_My_Player_Controller::GetTileNoInDuelRange(TArray<int> passRange)
 {
-	TArray<int> duelRange; // ‘Îl”ÍˆÍƒ^ƒCƒ‹No
-	// ** ƒ{[ƒ‹‚ÌüˆÍƒ}ƒX‚ğ‘S‚Äæ“¾ **
-	TArray<int> aroundBallTileNos; // ƒ{[ƒ‹üˆÍƒ^ƒCƒ‹No
-	int ballTileNo = ball->currentTileNo; // ƒ{[ƒ‹ƒ^ƒCƒ‹No
-	// “¯—ñ
+	TArray<int> duelRange; // å¯¾äººç¯„å›²ã‚¿ã‚¤ãƒ«No
+	// ** ãƒœãƒ¼ãƒ«ã®å‘¨å›²ãƒã‚¹ã‚’å…¨ã¦å–å¾— **
+	TArray<int> aroundBallTileNos; // ãƒœãƒ¼ãƒ«å‘¨å›²ã‚¿ã‚¤ãƒ«No
+	int ballTileNo = ball->currentTileNo; // ãƒœãƒ¼ãƒ«ã‚¿ã‚¤ãƒ«No
+	// åŒåˆ—
 	aroundBallTileNos.Add(ballTileNo - 1);
 	aroundBallTileNos.Add(ballTileNo + 1);
-	// ‰º(x)‚Ì—ñ
+	// ä¸‹(x)ã®åˆ—
 	aroundBallTileNos.Add((ballTileNo - C_Common::TILE_NUM_Y) - 1);
 	aroundBallTileNos.Add(ballTileNo - C_Common::TILE_NUM_Y);
 	aroundBallTileNos.Add((ballTileNo - C_Common::TILE_NUM_Y) + 1);
-	// ã(x)‚Ì—ñ
+	// ä¸Š(x)ã®åˆ—
 	aroundBallTileNos.Add((ballTileNo + C_Common::TILE_NUM_Y) - 1);
 	aroundBallTileNos.Add(ballTileNo + C_Common::TILE_NUM_Y);
 	aroundBallTileNos.Add((ballTileNo + C_Common::TILE_NUM_Y) + 1);
 	// **
 
-	// ** ƒpƒXƒŒƒ“ƒW‚Æ“¯‚¶ƒ}ƒX‚ğ‘ÎlƒŒƒ“ƒW‚Æ‚·‚é **
+	// ** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã¨åŒã˜ãƒã‚¹ã‚’å¯¾äººãƒ¬ãƒ³ã‚¸ã¨ã™ã‚‹ **
 	for (int n : aroundBallTileNos) {
 		if (passRange.Contains(n)) duelRange.Add(n);
 	}
@@ -1224,15 +1255,15 @@ TArray<int> AC_My_Player_Controller::GetTileNoInDuelRange(TArray<int> passRange)
 	return duelRange;
 }
 
-// ƒ}[ƒNƒŒƒ“ƒWæ“¾
-// | ‘Ì‚Ì³–Ê6ƒ}ƒX |
+// ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸å–å¾—
+// | ä½“ã®æ­£é¢6ãƒã‚¹ |
 TArray<int> AC_My_Player_Controller::GetMarkRange(int currentTileNo, int playerDirection)
 {
-	// 1—ñ–Ú
+	// 1åˆ—ç›®
 	int forward = currentTileNo + playerDirection;
 	int forwardMinusY = forward - 1;
 	int forwardPlusY = forward + 1;
-	// 2—ñ–Ú
+	// 2åˆ—ç›®
 	int forwardTwo = forward + playerDirection;
 	int forwardTwoMinusY = forwardTwo - 1;
 	int forwardTowPlusY = forwardTwo + 1;
@@ -1242,16 +1273,16 @@ TArray<int> AC_My_Player_Controller::GetMarkRange(int currentTileNo, int playerD
 	return _range;
 }
 
-// ƒtƒ@[ƒXƒgƒfƒBƒtƒFƒ“ƒ_[æ“¾
-// | ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÉÅ‚à‹ß‚¢ƒfƒBƒtƒFƒ“ƒ_[æ“¾ |
+// ãƒ•ã‚¡ãƒ¼ã‚¹ãƒˆãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼å–å¾—
+// | ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã«æœ€ã‚‚è¿‘ã„ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼å–å¾— |
 AC_Piece* AC_My_Player_Controller::GetFirstDefender()
 {
-	if (defencePlayers.IsEmpty()) return nullptr; // null ƒ`ƒFƒbƒN
+	if (defencePlayers.IsEmpty()) return nullptr; // null ãƒã‚§ãƒƒã‚¯
 
-	// ** ƒ{[ƒ‹ƒzƒ‹ƒ_[‚É‹ß‚¢‡‚Éƒ\[ƒg **
+	// ** ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã«è¿‘ã„é †ã«ã‚½ãƒ¼ãƒˆ **
 	TArray <AC_Piece*> players = defencePlayers;
 	players.StableSort([&](const AC_Piece& A, const AC_Piece& B) {
-		return ballHolder->GetDistanceTo(&A) < ballHolder->GetDistanceTo(&B);; // ‹——£‚ª‹ß‚¢‡
+		return ballHolder->GetDistanceTo(&A) < ballHolder->GetDistanceTo(&B);; // è·é›¢ãŒè¿‘ã„é †
 		});
 	// **
 
@@ -1259,75 +1290,75 @@ AC_Piece* AC_My_Player_Controller::GetFirstDefender()
 	return players[0];
 }
 
-// Ÿ‚É“®‚­Å’Z‹——£‚Ìƒ^ƒCƒ‹Noæ“¾
+// æ¬¡ã«å‹•ãæœ€çŸ­è·é›¢ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
 int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 {
-	// ** fromTile‚ÌüˆÍƒ}ƒXæ“¾ **
-	// \šƒ}ƒX
+	// ** fromTileã®å‘¨å›²ãƒã‚¹å–å¾— **
+	// åå­—ãƒã‚¹
 	int plusX = fromTileNo + C_Common::TILE_NUM_Y;
 	int minusX = fromTileNo - C_Common::TILE_NUM_Y;
 	int plusY = fromTileNo + 1;
 	int minusY = fromTileNo - 1;
-	// Î‚ßƒ}ƒX
+	// æ–œã‚ãƒã‚¹
 	int plusXplusY = plusX + 1;
 	int plusXminusY = plusX - 1;
 	int minusXplusY = minusX + 1;
 	int minusXminusY = minusX - 1;
 	
-	TArray <int> _fromAroundTileNos = { plusX, minusX, plusY, minusY, plusXplusY, plusXminusY, minusXplusY, minusXminusY }; // ƒ^ƒCƒ‹‚ÌüˆÍNo
+	TArray <int> _fromAroundTileNos = { plusX, minusX, plusY, minusY, plusXplusY, plusXminusY, minusXplusY, minusXminusY }; // ã‚¿ã‚¤ãƒ«ã®å‘¨å›²No
 	// **
 
-	// ** toTileNo‚Æ‚Ì‹——£‚ğæ“¾ **
-	TArray <int> _toTileDistances; // toTileNo‚Æ‚Ì‹——£‚Ì”z—ñ
+	// ** toTileNoã¨ã®è·é›¢ã‚’å–å¾— **
+	TArray <int> _toTileDistances; // toTileNoã¨ã®è·é›¢ã®é…åˆ—
 	for (int n : _fromAroundTileNos) {
-		// * §ŒÀ *
-		// _fromAroundTileNos‚Æ—v‘f‚ğ‡‚í‚¹‚é
-		if (n < 1 || n > 1000) { // *ƒ^ƒCƒ‹No‚ªƒ^ƒCƒ‹”“à‚©
-			_fromAroundTileNos.Remove(n); // íœ
+		// * åˆ¶é™ *
+		// _fromAroundTileNosã¨è¦ç´ ã‚’åˆã‚ã›ã‚‹
+		if (n < 1 || n > 1000) { // *ã‚¿ã‚¤ãƒ«NoãŒã‚¿ã‚¤ãƒ«æ•°å†…ã‹
+			_fromAroundTileNos.Remove(n); // å‰Šé™¤
 			
 			continue;
 		}
-		if (allTiles[fromTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > 150.0f) { // *üˆÍ‚Ìƒ^ƒCƒ‹‚© (fromtile‚ÆüˆÍƒ^ƒCƒ‹‚Ì‹——£‚ª150.0fˆÈ“à)
-			_fromAroundTileNos.Remove(n); // íœ
+		if (allTiles[fromTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > 150.0f) { // *å‘¨å›²ã®ã‚¿ã‚¤ãƒ«ã‹ (fromtileã¨å‘¨å›²ã‚¿ã‚¤ãƒ«ã®è·é›¢ãŒ150.0fä»¥å†…)
+			_fromAroundTileNos.Remove(n); // å‰Šé™¤
 			
 			continue;
 		}
 		// *
 
-		AC_Tile* _aroundTile = allTiles[n - 1]; // üˆÍƒ^ƒCƒ‹
-		AC_Tile* _toTile = allTiles[toTileNo - 1]; // toƒ^ƒCƒ‹
-		_toTileDistances.Add(_toTile->GetDistanceTo(_aroundTile)); // ”z—ñƒZƒbƒg
+		AC_Tile* _aroundTile = allTiles[n - 1]; // å‘¨å›²ã‚¿ã‚¤ãƒ«
+		AC_Tile* _toTile = allTiles[toTileNo - 1]; // toã‚¿ã‚¤ãƒ«
+		_toTileDistances.Add(_toTile->GetDistanceTo(_aroundTile)); // é…åˆ—ã‚»ãƒƒãƒˆ
 	}
 	// **
 
-	// ** Å‚à¬‚³‚¢‹——£æ“¾ ** 
-	TArray <int> _c_toTileDistances = _toTileDistances; // ƒRƒs[
-	// ¬‚³‚¢‡‚Éƒ\[ƒg
+	// ** æœ€ã‚‚å°ã•ã„è·é›¢å–å¾— ** 
+	TArray <int> _c_toTileDistances = _toTileDistances; // ã‚³ãƒ”ãƒ¼
+	// å°ã•ã„é †ã«ã‚½ãƒ¼ãƒˆ
 	_c_toTileDistances.StableSort([](const int& A, const int& B) {
 		return A < B;
 		});
-	int minDistance = _c_toTileDistances[0]; // Å‚à¬‚³‚¢‹——£
+	int minDistance = _c_toTileDistances[0]; // æœ€ã‚‚å°ã•ã„è·é›¢
 	// **
 
-	// ** Å‚à¬‚³‚¢‹——£‚Ìƒ^ƒCƒ‹Noæ“¾ **
+	// ** æœ€ã‚‚å°ã•ã„è·é›¢ã®ã‚¿ã‚¤ãƒ«Noå–å¾— **
 	int minDistanceIndex = _toTileDistances.IndexOfByKey(minDistance); // index
-	if (minDistanceIndex == -1) // ƒ^ƒCƒ‹Noæ“¾‚Å‚«‚È‚©‚Á‚½ê‡
+	if (minDistanceIndex == -1) // ã‚¿ã‚¤ãƒ«Noå–å¾—ã§ããªã‹ã£ãŸå ´åˆ
 	{
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NOT GET SHOTEST TILE NO");
-		return _fromAroundTileNos[0]; // Å‰‚Ìƒ^ƒCƒ‹No‚ğ•Ô‚·
+		return _fromAroundTileNos[0]; // æœ€åˆã®ã‚¿ã‚¤ãƒ«Noã‚’è¿”ã™
 	}
-	int shotestToTileNo = _fromAroundTileNos[minDistanceIndex]; // ƒ^ƒCƒ‹No
+	int shotestToTileNo = _fromAroundTileNos[minDistanceIndex]; // ã‚¿ã‚¤ãƒ«No
 	// **
 
 
 	return shotestToTileNo;
 }
 
-// ƒtƒF[ƒYŠÄ‹ƒ^ƒCƒ}[İ’è
-void AC_My_Player_Controller::SetTimerMonitorPhase()
+// â‘¢-â‘µãƒ—ãƒ¬ã‚¤ã‚¹ãƒ†ãƒƒãƒ—ãƒ•ã‚§ãƒ¼ã‚ºã‚’ç›£è¦–ã™ã‚‹ã‚¿ã‚¤ãƒãƒ¼è¨­å®š
+void AC_My_Player_Controller::SetTimerMonitorPlayStepPhase()
 {
-	// ** ƒ^ƒCƒ}[ŠJn **
+	// ** ã‚¿ã‚¤ãƒãƒ¼é–‹å§‹ **
 	FTimerHandle handle;
-	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::MonitorFinishPhase, 0.5f, true); // 0.5•b‚¨‚«
+	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::MonitorFinishPlayStepPhase, 0.5f, true); // 0.5ç§’ãŠã
 	// **
 }
