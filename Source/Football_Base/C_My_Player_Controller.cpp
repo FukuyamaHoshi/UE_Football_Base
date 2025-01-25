@@ -93,6 +93,7 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// ** ①初期配置フェーズ処理 **
+	// | 連続処理 (Tick) |
 	if (isInitialPlacePhase) {
 		// ** マウスホバー時 **
 		// Grap中か
@@ -102,7 +103,26 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 		return;
 	}
 
+	// ** ⓶2次配置フェーズ **
+	// | ゲーム開始時に一度のみ |
+	if (isSecondPlacePhase) {
+		isPlayStepPhase = true; // 対戦フェーズがよばれないように
+		isSecondPlacePhase = false; // *一度しか呼べれないようにする
+		
+		// ** ⓶2次配置フェーズ処理 **
+		SecondPlacePhase();
+		// **
+
+		// ** 監視処理 **
+		SetTimerMonitorPlayStepPhase(); // ⑶対戦フェーズを開始するか
+		// **
+		
+		return;
+	}
+	// **
+
 	// ** ⓷対戦フェーズ処理 **
+	// | ステップ処理 (Monitor関数) |
 	// ③-⑵プレイステップフェーズが終了しているか
 	if (isPlayStepPhase == false) {
 		isPlayStepPhase = true; // ③-⑵プレイステップフェーズ開始
@@ -227,12 +247,14 @@ void AC_My_Player_Controller::ReleasedLeft()
 }
 
 // (*デバッグ時のみ)スペースキー(プレス)イベント
-// | ①初期配置フェーズを終了する |
+// | 初期配置フェーズを終了 |
+// | 2次配置フェーズを開始 |
 void AC_My_Player_Controller::PressedSpaceBar()
 {
 	if (C_Common::DEBUG_MODE == false) return;
 
-	isInitialPlacePhase = false;
+	isSecondPlacePhase = true; // 2次配置フェーズ開始
+	isInitialPlacePhase = false; // 初期配置フェーズ終了
 }
 
 // 自分のチームのコマを選択 (プレイヤー以外をクリックしたときはnullptrを返す)
@@ -773,6 +795,26 @@ void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
 
 			return;
 		}
+	}
+}
+
+// ⓶2次配置フェーズ
+// | AWAYチームをゲーム開始位置(*15マス前)へ移動 (*AWAYが最初必ずディフェンスのため) |
+void AC_My_Player_Controller::SecondPlacePhase()
+{
+	for (AC_Piece* p : allAwayPieces) {
+		// *制限*
+		if (p->ActorHasTag(FName("GK"))) continue; // GK
+		// *
+
+		// ** プレイヤーの15マス前のタイル取得(AWAYのみ) **
+		int _currentTileNo = GetTileNoFromLocation(p->GetActorLocation().X, p->GetActorLocation().Y); // 現在位置のタイルNo
+		int _targetTileNo = _currentTileNo + -(C_Common::TILE_NUM_Y * 15); // 15マス前のタイル取得
+		// **
+		
+		if (_targetTileNo < 1 || _targetTileNo > 1000) continue; // タイルNoの範囲内か
+
+		p->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation()); // 移動
 	}
 }
 

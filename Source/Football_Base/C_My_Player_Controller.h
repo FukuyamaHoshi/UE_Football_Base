@@ -61,6 +61,8 @@ private:
 	void Press();
 	// マーキング
 	void Marking(AC_Piece* defencePlayer);
+	// 2次配置フェーズ
+	void SecondPlacePhase();
 	// ③-⑵プレイステップフェーズを監視するタイマー設定
 	void SetTimerMonitorPlayStepPhase();
 	// ③-⑵プレイステップフェーズを終了していいか監視
@@ -111,6 +113,7 @@ private:
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
 	bool isInitialPlacePhase = true; // 初期配置フェーズフラグ
+	bool isSecondPlacePhase = false; // 2次配置フェーズフラグ
 	bool isPlayStepPhase = false; // プレイステップフェーズ中
 	int stepCount = 0; // ステップカウント
 	TArray <int> passRangeTileNos; // パスレンジタイルNo配列
