@@ -89,6 +89,10 @@ private:
 	AC_Piece* GetFirstDefender();
 	// 次に動く最短距離のタイルNo取得
 	int GetShortestNextTileNo(int fromTileNo, int toTileNo);
+	// プレイヤー配置レンジを設定
+	void SetPlayerPlaceRange();
+	// プレイヤー配置レンジを削除
+	void RemovePlayerPlaceRange();
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー

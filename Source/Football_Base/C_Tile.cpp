@@ -4,6 +4,9 @@
 #include "C_Tile.h"
 #include <Kismet/KismetSystemLibrary.h>
 
+
+
+
 // Sets default values
 AC_Tile::AC_Tile()
 {
@@ -34,12 +37,47 @@ AC_Tile::AC_Tile()
 		markRangeMaterial = markRangeMaterialAsset.Object;
 	}
 	// ***
+
+	// *** プレイヤー配置レンジマテリアルの変数にセット(保持するだけ) ***
+	// - FW -
+	static ConstructorHelpers::FObjectFinder<UMaterial> FWplayerPlaceRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_FW_Player_Place_Range.M_Tile_FW_Player_Place_Range"));
+	if (FWplayerPlaceRangeMaterialAsset.Succeeded())
+	{
+		FWplayerPlaceMaterial = FWplayerPlaceRangeMaterialAsset.Object;
+	}
+	// - MF -
+	static ConstructorHelpers::FObjectFinder<UMaterial> MFplayerPlaceRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_MF_Player_Place_Range.M_Tile_MF_Player_Place_Range"));
+	if (MFplayerPlaceRangeMaterialAsset.Succeeded())
+	{
+		MFplayerPlaceMaterial = MFplayerPlaceRangeMaterialAsset.Object;
+	}
+	// - DF -
+	static ConstructorHelpers::FObjectFinder<UMaterial> DFplayerPlaceRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_DF_Player_Place_Range.M_Tile_DF_Player_Place_Range"));
+	if (DFplayerPlaceRangeMaterialAsset.Succeeded())
+	{
+		DFplayerPlaceMaterial = DFplayerPlaceRangeMaterialAsset.Object;
+	}
+	// ***	
 }
 
 // Called when the game starts or when spawned
 void AC_Tile::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// ** メッシュ(main, sub)を取得し、分ける **
+	TArray<UStaticMeshComponent*> Components; // component配列
+	GetComponents<UStaticMeshComponent>(Components); // stacic componentを取得
+	
+	for (UStaticMeshComponent* c : Components) { // MAINタグか
+		if (c->ComponentHasTag(FName("MAIN"))) {
+			mainMesh = c;
+		}
+		else {
+			subMesh = c;
+		}
+	}
+	// **
 }
 
 // Called every frame
@@ -52,52 +90,58 @@ void AC_Tile::Tick(float DeltaTime)
 // コマ移動マテリアルをセット
 void AC_Tile::SetMaterial()
 {
-	TArray<UStaticMeshComponent*> Components; // component配列
-
-	// stacic componentを取得
-	GetComponents<UStaticMeshComponent>(Components);
-	UStaticMeshComponent* StaticMeshComponent = Components[0];
-
 	// マテリアルをセット
-	if (pieceMoveMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(pieceMoveMaterial);
+	if (pieceMoveMaterial != nullptr) mainMesh->SetOverlayMaterial(pieceMoveMaterial);
 }
 
-// オーバーレイマテリアルを削除する
-void AC_Tile::RemoveMaterial()
+// メインのオーバーレイマテリアルを削除する
+void AC_Tile::RemoveMainMaterial()
 {
-	TArray<UStaticMeshComponent*> Components; // component配列
-
-	// stacic componentを取得
-	GetComponents<UStaticMeshComponent>(Components);
-	UStaticMeshComponent* StaticMeshComponent = Components[0];
+	if (mainMesh == nullptr) return; // main meshのnullチェック
 
 	// マテリアルを削除
-	StaticMeshComponent->SetOverlayMaterial(nullptr);
+	mainMesh->SetOverlayMaterial(nullptr);
+}
+
+// サブのオーバーレイマテリアルを削除する
+void AC_Tile::RemoveSubMaterial()
+{
+	if (subMesh == nullptr) return; // sub meshのnullチェック
+
+	// マテリアルを削除
+	subMesh->SetOverlayMaterial(nullptr);
 }
 
 // パスレンジマテリアルをセット
 void AC_Tile::SetPassRangeMaterial()
 {
-	TArray<UStaticMeshComponent*> Components; // component配列
-
-	// stacic componentを取得
-	GetComponents<UStaticMeshComponent>(Components);
-	UStaticMeshComponent* StaticMeshComponent = Components[0];
-
 	// マテリアルをセット
-	if (passRangeMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(passRangeMaterial);
+	if (passRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(passRangeMaterial);
 }
 
 // マークレンジマテリアルをセット
 void AC_Tile::SetMarkRangeMaterial()
 {
-	TArray<UStaticMeshComponent*> Components; // component配列
-
-	// stacic componentを取得
-	GetComponents<UStaticMeshComponent>(Components);
-	UStaticMeshComponent* StaticMeshComponent = Components[0];
-
 	// マテリアルをセット
-	if (markRangeMaterial != nullptr) StaticMeshComponent->SetOverlayMaterial(markRangeMaterial);
+	if (markRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(markRangeMaterial);
 }
 
+// プレイヤー配置レンジマテリアルをセット
+// - FW -
+void AC_Tile::SetFWPlayerPlaceRangeMaterial()
+{
+	// マテリアルをセット
+	if (FWplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(FWplayerPlaceMaterial);
+}
+// - MF -
+void AC_Tile::SetMFPlayerPlaceRangeMaterial()
+{
+	// マテリアルをセット
+	if (MFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(MFplayerPlaceMaterial);
+}
+// - DF -
+void AC_Tile::SetDFPlayerPlaceRangeMaterial()
+{
+	// マテリアルをセット
+	if (DFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(DFplayerPlaceMaterial);
+}

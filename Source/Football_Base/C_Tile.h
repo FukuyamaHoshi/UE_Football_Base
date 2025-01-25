@@ -23,6 +23,12 @@ private:
 	UMaterial* pieceMoveMaterial = nullptr; // コマ移動マテリアル
 	UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
 	UMaterial* markRangeMaterial = nullptr; // マークレンジマテリアル
+	UMaterial* FWplayerPlaceMaterial = nullptr; // FWプレイヤー配置レンジマテリアル
+	UMaterial* MFplayerPlaceMaterial = nullptr; // MFプレイヤー配置レンジマテリアル
+	UMaterial* DFplayerPlaceMaterial = nullptr; // DFプレイヤー配置レンジマテリアル
+	// メッシュ
+	UStaticMeshComponent* mainMesh = nullptr; // main(コマ移動、パスレンジ。マークレンジ)
+	UStaticMeshComponent* subMesh = nullptr; // sub(プレイヤー配置レンジ)
 	
 public:	
 	// Called every frame
@@ -32,10 +38,19 @@ public:
 
 	// コマ移動マテリアルをセット
 	void SetMaterial();
-	// オーバーレイマテリアルを削除する
-	void RemoveMaterial();
+	// メインのオーバーレイマテリアルを削除する
+	void RemoveMainMaterial();
+	// サブのオーバーレイマテリアルを削除する
+	void RemoveSubMaterial();
 	// パスレンジマテリアルをセット
 	void SetPassRangeMaterial();
 	// マークレンジマテリアルをセット
 	void SetMarkRangeMaterial();
+	// プレイヤー配置レンジマテリアルをセット
+	// - FW -
+	void SetFWPlayerPlaceRangeMaterial();
+	// - MF -
+	void SetMFPlayerPlaceRangeMaterial();
+	// - DF -
+	void SetDFPlayerPlaceRangeMaterial();
 };

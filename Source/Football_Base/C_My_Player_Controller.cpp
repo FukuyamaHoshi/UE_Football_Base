@@ -138,7 +138,7 @@ void AC_My_Player_Controller::PressedLeft()
 
 	AActor* p = SelectHomePiece(); // Homeのコマを選択し、取得
 
-	// ** プレイヤー以外をクリックした時 (選択解除) **
+	// ** 選択解除(プレイヤー以外をクリックした時) **
 	if (p == nullptr) {
 		selectedPlayer = nullptr; // 変数を空にする
 		selectedPlayerTileNo = 0; // タイルNoを空にする
@@ -148,6 +148,9 @@ void AC_My_Player_Controller::PressedLeft()
 		if (currentDecal != nullptr) {
 			currentDecal->DestroyComponent();
 		}
+
+		// プレイヤー配置レンジ削除
+		RemovePlayerPlaceRange();
 
 		return; // 処理終了
 	}
@@ -181,6 +184,11 @@ void AC_My_Player_Controller::PressedLeft()
 	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
 	// **
 
+	// ** プレイヤー配置レンジを表示 **
+	SetPlayerPlaceRange();
+	// **
+	
+
 	// ** プレイヤー選択中フラグ **
 	isGrap = true; // プレイヤー選択中
 	// **
@@ -211,7 +219,7 @@ void AC_My_Player_Controller::ReleasedLeft()
 	// ***
 
 	// タイルのオーバーレイ削除
-	overlayTile->RemoveMaterial();
+	overlayTile->RemoveMainMaterial();
 
 	// オーバーレイタイルの変数をリセット
 	overlayTileNo = 0; // タイルNo
@@ -827,7 +835,7 @@ void AC_My_Player_Controller::HoverMouse()
 	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverしているタイル取得
 	// タイルの1つのみ光らせるようにする ↓↓↓
 	// マテリアル削除
-	if (overlayTile != nullptr) overlayTile->RemoveMaterial();
+	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial();
 	overlayTile = hoverTile; // 光っているタイルを格納
 	// ↑↑↑
 	// マテリアルセット(タイルを光らせる)
@@ -1000,7 +1008,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 		// マテリアル削除
 		for (int i : passRangeTileNos) {
 			AC_Tile* t = allTiles[i - 1];
-			t->RemoveMaterial();
+			t->RemoveMainMaterial();
 		}
 	}
 	// **
@@ -1012,7 +1020,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 			// マテリアル削除
 			for (int i : p->markRange) {
 				AC_Tile* t = allTiles[i - 1];
-				t->RemoveMaterial();
+				t->RemoveMainMaterial();
 		}
 	}
 	// **
@@ -1352,6 +1360,55 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 
 
 	return shotestToTileNo;
+}
+
+// プレイヤー配置レンジを表示
+// | 表示するだけ(制限なし) |
+void AC_My_Player_Controller::SetPlayerPlaceRange()
+{
+	int homePlaceRange[2] = { 126, 500 }; // Homeのプレイヤー配置レンジ(全部)
+	int awayPlaceRange[2] = { 501, 875 }; // Awayのプレイヤー配置レンジ(全部)
+
+	// *** 配置可能エリア表示 ***
+	// *HOME*
+	for (int i = homePlaceRange[0]; i <= homePlaceRange[1]; i++) {
+		if (i <= 250) {
+			// -DF-
+			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+		}
+		else if (i <= 375) {
+			// -MF-
+			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+		}
+		else {
+			// -FW-
+			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+		}
+	}
+	// *AWAY*
+	for (int i = awayPlaceRange[0]; i <= awayPlaceRange[1]; i++) {
+		if (i <= 625) {
+			// -FW-
+			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+		}
+		else if (i <= 750) {
+			// -MF-
+			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+		}
+		else {
+			// -DF-
+			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+		}
+	}
+	// ***
+}
+
+// プレイヤー配置レンジを削除
+void AC_My_Player_Controller::RemovePlayerPlaceRange()
+{
+	for (AC_Tile* t : allTiles) {
+		t->RemoveSubMaterial();
+	}
 }
 
 // ③-⑵プレイステップフェーズを監視するタイマー設定
