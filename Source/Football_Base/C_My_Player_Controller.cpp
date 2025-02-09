@@ -85,6 +85,123 @@ void AC_My_Player_Controller::BeginPlay()
 		allPieces.Add(piece); // 追加
 	}
 	// ***
+
+	// ** ポジションエリア配列作成 **
+	// *HOME*
+	for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
+		if (i <= 250) {
+			// -DF-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				LSB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				LCB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				CB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				RCB_Erea.Add(i);
+			}
+			else {
+				RSB_Erea.Add(i);
+			}
+		}
+		else if (i <= 375) {
+			// -MF-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				LH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				LIH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				CH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				RIH_Erea.Add(i);
+			}
+			else {
+				RH_Erea.Add(i);
+			}
+		}
+		else {
+			// -FW-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				LWG_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				LST_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				CF_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				RST_Erea.Add(i);
+			}
+			else {
+				RWG_Erea.Add(i);
+			}
+		}
+	}
+	// *AWAY*
+	for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
+		if (i <= 625) {
+			// -FW-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				Away_RWG_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				Away_RST_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				Away_CF_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				Away_LST_Erea.Add(i);
+			}
+			else {
+				Away_LWG_Erea.Add(i);
+			}
+		}
+		else if (i <= 750) {
+			// -MF-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				Away_RH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				Away_RIH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				Away_CH_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				Away_LIH_Erea.Add(i);
+			}
+			else {
+				Away_LH_Erea.Add(i);
+			}
+		}
+		else {
+			// -DF-
+			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+				Away_RSB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+				Away_RCB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+				Away_CB_Erea.Add(i);
+			}
+			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+				Away_LCB_Erea.Add(i);
+			}
+			else {
+				Away_LSB_Erea.Add(i);
+			}
+		}
+	}
+
 }
 
 // Called every frame
@@ -1408,38 +1525,59 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 // | 表示するだけ(制限なし) |
 void AC_My_Player_Controller::SetPlayerPlaceRange()
 {
-	int homePlaceRange[2] = { 126, 500 }; // Homeのプレイヤー配置レンジ(全部)
-	int awayPlaceRange[2] = { 501, 875 }; // Awayのプレイヤー配置レンジ(全部)
-
 	// *** 配置可能エリア表示 ***
 	// *HOME*
-	for (int i = homePlaceRange[0]; i <= homePlaceRange[1]; i++) {
+	for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
 		if (i <= 250) {
 			// -DF-
 			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+
+			// ** ハーフレーンマテリアルセット **
+			if (LCB_Erea.Contains(i) || RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 		else if (i <= 375) {
 			// -MF-
 			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+
+			// ** ハーフレーンマテリアルセット **
+			if (LIH_Erea.Contains(i) || RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 		else {
 			// -FW-
 			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+			
+			// ** ハーフレーンマテリアルセット **
+			if (LST_Erea.Contains(i) || RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 	}
 	// *AWAY*
-	for (int i = awayPlaceRange[0]; i <= awayPlaceRange[1]; i++) {
+	for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
 		if (i <= 625) {
 			// -FW-
 			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+
+			// ** ハーフレーンマテリアルセット **
+			if (Away_LST_Erea.Contains(i) || Away_RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 		else if (i <= 750) {
 			// -MF-
 			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+
+			// ** ハーフレーンマテリアルセット **
+			if (Away_LIH_Erea.Contains(i) || Away_RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 		else {
 			// -DF-
 			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+
+			// ** ハーフレーンマテリアルセット **
+			if (Away_LCB_Erea.Contains(i) || Away_RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+			// **
 		}
 	}
 	// ***
@@ -1449,7 +1587,8 @@ void AC_My_Player_Controller::SetPlayerPlaceRange()
 void AC_My_Player_Controller::RemovePlayerPlaceRange()
 {
 	for (AC_Tile* t : allTiles) {
-		t->RemoveSubMaterial();
+		t->RemoveSubMaterial(); // サブ
+		t->RemoveMainMaterial(); // メイン
 	}
 }
 

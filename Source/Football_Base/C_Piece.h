@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Character.h"
 #include "C_Piece.generated.h"
 
@@ -41,4 +42,5 @@ private:
 	void MoveTo();
 
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
+	UNiagaraComponent* linePlayers = nullptr; // プレイヤー間のライン
 };

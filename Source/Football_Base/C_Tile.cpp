@@ -57,7 +57,14 @@ AC_Tile::AC_Tile()
 	{
 		DFplayerPlaceMaterial = DFplayerPlaceRangeMaterialAsset.Object;
 	}
-	// ***	
+	// ***
+	
+	// *** ハーフレーンマテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> halfLernMaterialAsset(TEXT("/Game/Materials/Tile/Position_Erea/M_Tile_Half_Lern.M_Tile_Half_Lern"));
+	if (halfLernMaterialAsset.Succeeded())
+	{
+		halfLernMaterial = halfLernMaterialAsset.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -144,4 +151,10 @@ void AC_Tile::SetDFPlayerPlaceRangeMaterial()
 {
 	// マテリアルをセット
 	if (DFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(DFplayerPlaceMaterial);
+}
+
+// ハーフレーンマテリアルをセット
+void AC_Tile::SetHalfLernMaterial()
+{
+	if (halfLernMaterial != nullptr) mainMesh->SetOverlayMaterial(halfLernMaterial);
 }

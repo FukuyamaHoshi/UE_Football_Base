@@ -21,6 +21,8 @@ public:
     static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
     static constexpr int FORWARD_DIRECTION = 25; // 前向き (*フィールド固定)
     static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)
+    static constexpr int HOME_PLACE_EREA[2] = { 126, 500 }; // Homeのプレイヤー配置エリア(全部)
+    static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
     // **
 
 

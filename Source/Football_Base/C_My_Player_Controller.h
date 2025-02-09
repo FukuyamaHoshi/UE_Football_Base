@@ -123,4 +123,46 @@ private:
 	bool isHomeBall = false; // Home側がオフェンスか
 	AC_Piece* firstDefender = nullptr; // ファーストディフェンダー
 	TArray <int> moveToTileNos = {}; // プレイヤーとボールが動く先のタイルNo (*動く先のタイルを予約し、重複を防ぐ)
+	// ポジションエリア
+	// HOME
+	// -FW-
+	TArray <int> LWG_Erea = {}; // LWG
+	TArray <int> LST_Erea = {}; // LST
+	TArray <int> CF_Erea = {}; // CF
+	TArray <int> RST_Erea = {}; // RST
+	TArray <int> RWG_Erea = {}; // RWG
+	// -MF-
+	TArray <int> LH_Erea = {}; // LH
+	TArray <int> LIH_Erea = {}; // LIH
+	TArray <int> CH_Erea = {}; // CH
+	TArray <int> RIH_Erea = {}; // RIH
+	TArray <int> RH_Erea = {}; // RH
+	// -DF-
+	TArray <int> LSB_Erea = {}; // LSB
+	TArray <int> LCB_Erea = {}; // LCB
+	TArray <int> CB_Erea = {}; // CB
+	TArray <int> RCB_Erea = {}; // RCB
+	TArray <int> RSB_Erea = {}; // RSB
+	
+	// AWAY
+	// -FW-
+	TArray <int> Away_LWG_Erea = {}; // LWG
+	TArray <int> Away_LST_Erea = {}; // LST
+	TArray <int> Away_CF_Erea = {}; // CF
+	TArray <int> Away_RST_Erea = {}; // RST
+	TArray <int> Away_RWG_Erea = {}; // RWG
+	// -MF-
+	TArray <int> Away_LH_Erea = {}; // LH
+	TArray <int> Away_LIH_Erea = {}; // LIH
+	TArray <int> Away_CH_Erea = {}; // CH
+	TArray <int> Away_RIH_Erea = {}; // RIH
+	TArray <int> Away_RH_Erea = {}; // RH
+	// -DF-
+	TArray <int> Away_LSB_Erea = {}; // LSB
+	TArray <int> Away_LCB_Erea = {}; // LCB
+	TArray <int> Away_CB_Erea = {}; // CB
+	TArray <int> Away_RCB_Erea = {}; // RCB
+	TArray <int> Away_RSB_Erea = {}; // RSB
+	
+	// ***
 };

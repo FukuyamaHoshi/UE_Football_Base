@@ -26,6 +26,7 @@ private:
 	UMaterial* FWplayerPlaceMaterial = nullptr; // FWプレイヤー配置レンジマテリアル
 	UMaterial* MFplayerPlaceMaterial = nullptr; // MFプレイヤー配置レンジマテリアル
 	UMaterial* DFplayerPlaceMaterial = nullptr; // DFプレイヤー配置レンジマテリアル
+	UMaterial* halfLernMaterial = nullptr; // ハーフレーンマテリアル
 	// メッシュ
 	UStaticMeshComponent* mainMesh = nullptr; // main(コマ移動、パスレンジ。マークレンジ)
 	UStaticMeshComponent* subMesh = nullptr; // sub(プレイヤー配置レンジ)
@@ -53,4 +54,6 @@ public:
 	void SetMFPlayerPlaceRangeMaterial();
 	// - DF -
 	void SetDFPlayerPlaceRangeMaterial();
+	// ハーフレーンマテリアルをセット
+	void SetHalfLernMaterial();
 };

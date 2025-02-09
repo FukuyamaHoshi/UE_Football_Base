@@ -4,6 +4,10 @@
 #include "C_Piece.h"
 #include <Kismet/KismetMathLibrary.h>
 #include "C_Common.h"
+#include <Kismet/KismetSystemLibrary.h>
+#include <Kismet/GameplayStatics.h>
+#include <NiagaraFunctionLibrary.h>
+#include <NiagaraDataInterfaceVectorField.h>
 
 // Sets default values
 AC_Piece::AC_Piece()
@@ -17,6 +21,12 @@ void AC_Piece::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    // ** プレイヤー間のライン(niagara component)を取得 **
+    TArray<UNiagaraComponent*> Components; // component配列
+    GetComponents<UNiagaraComponent>(Components); // componentを取得
+
+    linePlayers = Components[0]; // セット
+    // **
 }
 
 // Called every frame
