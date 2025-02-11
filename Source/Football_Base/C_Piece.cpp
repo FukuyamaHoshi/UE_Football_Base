@@ -25,7 +25,8 @@ void AC_Piece::BeginPlay()
     TArray<UNiagaraComponent*> Components; // component配列
     GetComponents<UNiagaraComponent>(Components); // componentを取得
 
-    linePlayers = Components[0]; // セット
+    mainLine = Components[0]; // セット
+    subLine = Components[1]; // セット
     // **
 }
 
@@ -73,5 +74,22 @@ void AC_Piece::SetMoveTo(FVector tLocation)
     tLocation.Z = C_Common::BASE_LOCATION_Z; // ** Zの位置を修正 **
     targetLocation = tLocation; // 目標位置セット
     isMoving = true; // 移動開始
+}
+
+// 線を表示する
+void AC_Piece::SetDrawLineTo(FVector mainTargetLocation, FLinearColor lineColor, FVector subTargetLocation)
+{
+    // main
+    if (mainLine != nullptr) {
+        mainLine->SetVariablePosition(FName("End_Pos"), mainTargetLocation);
+        mainLine->SetVariableLinearColor(FName("Color"), lineColor);
+        mainLine->SetVisibility(true);
+    }
+    // sub
+    if (subLine != nullptr && subTargetLocation != FVector(0, 0, 0)) {
+        subLine->SetVariablePosition(FName("End_Pos"), subTargetLocation);
+        subLine->SetVariableLinearColor(FName("Color"), lineColor);
+        subLine->SetVisibility(true);
+    }
 }
 

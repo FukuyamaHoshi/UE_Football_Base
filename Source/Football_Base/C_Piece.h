@@ -30,17 +30,21 @@ public:
 	// 指定された位置へ動く処理の設定
 	// < 引数：tLocation(目標位置) >
 	void SetMoveTo(FVector tLocation);
+	// 線を表示する
+	void SetDrawLineTo(FVector mainTargetLocation, FLinearColor lineColor, FVector subTargetLocation = FVector(0, 0, 0));
 
 	int currentTileNo = 0; // 現在のタイルNo
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 	TArray <int> markRange; // マーク範囲 (プレイヤー各々で保持)
 	int direction = 0; // 体の向き (前向き: 25, 後ろ向き: -25)
 	bool isMarked = false; // マークされているか
+	int position = 0; // ポジション (内訳はCommon参照)
 
 private:
 	// 指定された位置へ動く処理
 	void MoveTo();
 
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
-	UNiagaraComponent* linePlayers = nullptr; // プレイヤー間のライン
+	UNiagaraComponent* mainLine = nullptr; // プレイヤー間のライン(Main)
+	UNiagaraComponent* subLine = nullptr; // プレイヤー間のライン(Sub)
 };

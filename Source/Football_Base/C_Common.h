@@ -23,6 +23,27 @@ public:
     static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)
     static constexpr int HOME_PLACE_EREA[2] = { 126, 500 }; // Homeのプレイヤー配置エリア(全部)
     static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
+    // -ポジション---
+    // DF
+    static constexpr int GK_POSITION = 0; // GK
+    static constexpr int LSB_POSITION = 1; // LSB
+    static constexpr int LCB_POSITION = 2; // LCB
+    static constexpr int CB_POSITION = 3; // CB
+    static constexpr int RCB_POSITION = 4; // RCB
+    static constexpr int RSB_POSITION = 5; // RSB
+    // MF
+    static constexpr int LH_POSITION = 6; // LH
+    static constexpr int LIH_POSITION = 7; // LIH
+    static constexpr int CH_POSITION = 8; // CH
+    static constexpr int RIH_POSITION = 9; // RIH
+    static constexpr int RH_POSITION = 10; // RH
+    // FW
+    static constexpr int LWG_POSITION = 11; // LWG
+    static constexpr int LST_POSITION = 12; // LST
+    static constexpr int CF_POSITION = 13; // CF
+    static constexpr int RST_POSITION = 14; // RST
+    static constexpr int RWG_POSITION = 15; // RWG
+    // ----
     // **
 
 

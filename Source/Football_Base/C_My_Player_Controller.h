@@ -95,6 +95,12 @@ private:
 	void SetPlayerPlaceRange();
 	// プレイヤー配置レンジを削除
 	void RemovePlayerPlaceRange();
+	// 全てのプレイヤーにポジションを設定
+	void SetPositionToAllPlayer();
+	// 全てのプレイヤーにタイル位置を設定
+	void SetTileNoToAllPlayers();
+	// プレイヤー間のラインを表示
+	void DisplayLineBetweenPlayers();
 
 	
 	AActor* selectedPlayer; // 選択されたプレイヤー

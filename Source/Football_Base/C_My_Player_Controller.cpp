@@ -202,6 +202,17 @@ void AC_My_Player_Controller::BeginPlay()
 		}
 	}
 
+	// ** 全てのプレイヤーにタイルNoを設定 **
+	SetTileNoToAllPlayers();
+	// **
+	
+	// ** プレイヤーにポジションをセット **
+	SetPositionToAllPlayer();
+	// **
+
+	// ** プレイヤー間のライン表示 **
+	DisplayLineBetweenPlayers();
+	// **
 }
 
 // Called every frame
@@ -348,6 +359,17 @@ void AC_My_Player_Controller::ReleasedLeft()
 	selectedPlayer->SetActorLocation(overlayTileLocation); // 移動
 	selectedPlayerTileNo = overlayTileNo; // タイル情報更新 (プレイヤーの)
 	// ***
+
+	// ** 移動するプレイヤーのタイルNoとポジションを更新 **
+	AC_Piece* _player = Cast<AC_Piece>(selectedPlayer); // キャスト
+	if (_player == nullptr) {
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "ERROR DONT CASTS SELECTED PLAYER", true, true, FColor::Cyan, 5.f, TEXT("None"));
+	}
+	else {
+		_player->currentTileNo = selectedPlayerTileNo; // タイルNo更新
+		SetPositionToAllPlayer(); // ポジション更新(全てのプレイヤー)
+	}
+	// **
 
 	// *** デカールの位置変更 ***
 	currentDecal->DestroyComponent(); // 現在のデカール削除
@@ -1014,12 +1036,8 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "STEP: " + FString::FromInt(stepCount));
 	// **
 
-	// ** コマごとに現在のタイルNoを取得 **
-	for (AC_Piece* p : allPieces) {
-		FVector l = p->GetActorLocation(); // コマの位置
-		int n = GetTileNoFromLocation(l.X, l.Y); // タイルNo
-		p->currentTileNo = n; // タイルNoセット
-	}
+	// ** 全てのプレイヤーのタイルNoを取得 **
+	SetTileNoToAllPlayers();
 	// **
 
 	// ** ボールの現在のタイルNoを取得 **
@@ -1590,6 +1608,180 @@ void AC_My_Player_Controller::RemovePlayerPlaceRange()
 		t->RemoveSubMaterial(); // サブ
 		t->RemoveMainMaterial(); // メイン
 	}
+}
+
+// 全てのプレイヤーにポジションを設定
+void AC_My_Player_Controller::SetPositionToAllPlayer()
+{
+	for (AC_Piece* p : allPieces) {
+		int _tileNo = p->currentTileNo; // タイルNo
+		// タイル番号チェック
+		if (_tileNo == 0) {
+			UKismetSystemLibrary::PrintString(this, "ERROR PLAYERS NOT HOVE TILE NO", true, true, FColor::Cyan, 5.f, TEXT("None"));
+
+			return;
+		}
+		
+		// ポジションセット
+		if (LSB_Erea.Contains(_tileNo) || Away_LSB_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LSB_POSITION;
+
+			continue;
+		}
+		else if (LCB_Erea.Contains(_tileNo) || Away_LCB_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LCB_POSITION;
+
+			continue;
+		}
+		else if (CB_Erea.Contains(_tileNo) || Away_CB_Erea.Contains(_tileNo)) {
+			p->position = C_Common::CB_POSITION;
+
+			continue;
+		}
+		else if (RCB_Erea.Contains(_tileNo) || Away_RCB_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RCB_POSITION;
+
+			continue;
+		}
+		else if (RSB_Erea.Contains(_tileNo) || Away_RSB_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RSB_POSITION;
+
+			continue;
+		}
+		else if (LH_Erea.Contains(_tileNo) || Away_LH_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LH_POSITION;
+
+			continue;
+		}
+		else if (LIH_Erea.Contains(_tileNo) || Away_LIH_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LIH_POSITION;
+
+			continue;
+		}
+		else if (CH_Erea.Contains(_tileNo) || Away_CH_Erea.Contains(_tileNo)) {
+			p->position = C_Common::CH_POSITION;
+
+			continue;
+		}
+		else if (RIH_Erea.Contains(_tileNo) || Away_RIH_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RIH_POSITION;
+
+			continue;
+		}
+		else if (RH_Erea.Contains(_tileNo) || Away_RH_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RH_POSITION;
+
+			continue;
+		}
+		else if (LWG_Erea.Contains(_tileNo) || Away_LWG_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LWG_POSITION;
+
+			continue;
+		}
+		else if (LST_Erea.Contains(_tileNo) || Away_LST_Erea.Contains(_tileNo)) {
+			p->position = C_Common::LST_POSITION;
+
+			continue;
+		}
+		else if (CF_Erea.Contains(_tileNo) || Away_CF_Erea.Contains(_tileNo)) {
+			p->position = C_Common::CF_POSITION;
+
+			continue;
+		}
+		else if (RST_Erea.Contains(_tileNo) || Away_RST_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RST_POSITION;
+
+			continue;
+		}
+		else if (RWG_Erea.Contains(_tileNo) || Away_RWG_Erea.Contains(_tileNo)) {
+			p->position = C_Common::RWG_POSITION;
+
+			continue;
+		}
+		else {
+			p->position = C_Common::GK_POSITION;
+
+			continue;
+		}
+
+	}
+}
+
+// 全てのプレイヤーにタイル位置を設定
+void AC_My_Player_Controller::SetTileNoToAllPlayers()
+{
+	for (AC_Piece* p : allPieces) {
+		FVector l = p->GetActorLocation(); // コマの位置
+		int n = GetTileNoFromLocation(l.X, l.Y); // タイルNo
+		p->currentTileNo = n; // タイルNoセット
+	}
+}
+
+// プレイヤー間のラインを表示
+// | positionのnullチェック未 |
+void AC_My_Player_Controller::DisplayLineBetweenPlayers()
+{
+	// ** プレイヤー **
+	// FW
+	AC_Piece* _LST_Player[2] = {};
+	AC_Piece* _RST_Player[2] = {};
+	// MF
+	AC_Piece* _LH_Player[2] = {};
+	AC_Piece* _LIH_Player[2] = {};
+	AC_Piece* _RIH_Player[2] = {};
+	AC_Piece* _RH_Player[2] = {};
+	// DF
+	AC_Piece* _LSB_Player[2] = {};
+	AC_Piece* _LCB_Player[2] = {};
+	AC_Piece* _RCB_Player[2] = {};
+	AC_Piece* _RSB_Player[2] = {};
+	// **
+
+	// ** プレイヤーを取得 **
+	for (AC_Piece* p : allPieces) {
+		int i = 0; // Home = 0,  Away = 1
+		if (p->ActorHasTag(FName("HOME")) == false) { // Awayプレイヤーか
+			i = 1;
+		}
+		// FW
+		if (p->position == C_Common::LST_POSITION) _LST_Player[i] = p;
+		if (p->position == C_Common::RST_POSITION) _RST_Player[i] = p;
+		// MF
+		if (p->position == C_Common::LH_POSITION) _LH_Player[i] = p;
+		if (p->position == C_Common::LIH_POSITION) _LIH_Player[i] = p;
+		if (p->position == C_Common::RIH_POSITION) _RIH_Player[i] = p;
+		if (p->position == C_Common::RH_POSITION) _RH_Player[i] = p;
+		// DF
+		if (p->position == C_Common::LSB_POSITION) _LSB_Player[i] = p;
+		if (p->position == C_Common::LCB_POSITION) _LCB_Player[i] = p;
+		if (p->position == C_Common::RCB_POSITION) _RCB_Player[i] = p;
+		if (p->position == C_Common::RSB_POSITION) _RSB_Player[i] = p;
+	}
+	// **
+
+	// ** ライン表示 **
+	for (int i = 0; i < 2; i++) { // 2回繰り返す
+		// ** ラインの色を変更 **
+		FLinearColor lineColor = FLinearColor::Blue; // ラインの色
+		if (i == 1) { // Awayの場合
+			lineColor = FLinearColor::Red;
+		}
+		// **
+
+		// FW
+		_LST_Player[i]->SetDrawLineTo(_RST_Player[i]->GetActorLocation(), lineColor);
+		// MF
+		_LH_Player[i]->SetDrawLineTo(_LIH_Player[i]->GetActorLocation(), lineColor);
+		_LIH_Player[i]->SetDrawLineTo(_RIH_Player[i]->GetActorLocation(), lineColor, _LST_Player[i]->GetActorLocation());
+		_RIH_Player[i]->SetDrawLineTo(_RH_Player[i]->GetActorLocation(), lineColor, _RST_Player[i]->GetActorLocation());
+		// DF
+		_LSB_Player[i]->SetDrawLineTo(_LCB_Player[i]->GetActorLocation(), lineColor, _LH_Player[i]->GetActorLocation());
+		_LCB_Player[i]->SetDrawLineTo(_RCB_Player[i]->GetActorLocation(), lineColor);
+		_RCB_Player[i]->SetDrawLineTo(_RSB_Player[i]->GetActorLocation(), lineColor);
+		_RSB_Player[i]->SetDrawLineTo(_RH_Player[i]->GetActorLocation(), lineColor);
+	}
+	// **
+	// ---
 }
 
 // ③-⑵プレイステップフェーズを監視するタイマー設定
