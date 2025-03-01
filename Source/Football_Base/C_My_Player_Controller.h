@@ -45,6 +45,10 @@ private:
 	void SelectPlayForBallHolder();
 	// ディフェンダーのプレイ選択
 	void SelectPlayForDefender();
+	// セカンドボール時の動き
+	// | 全プレイヤー対象となる |
+	// | ボール周囲のプレイヤーがボールに対して移動する |
+	void MovementForSecondBall();
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
@@ -57,10 +61,17 @@ private:
 	// 対人
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
 	void Duel(AC_Piece* dueledPlayer);
+	// 背面対人 (背負った時のプレー)
+	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false)
+	bool BackDuel(AC_Piece* dueledPlayer);
 	// プレス
 	void Press();
 	// マーキング
 	void Marking(AC_Piece* defencePlayer);
+	// クリアリング
+	// | defencePlayer: 対人をされるプレイヤー |
+	void Clearing(AC_Piece* defencePlayer);
 	// 2次配置フェーズ
 	void SecondPlacePhase();
 	// ③-⑵プレイステップフェーズを監視するタイマー設定
@@ -98,7 +109,7 @@ private:
 	// 全てのプレイヤーにポジションを設定
 	void SetPositionToAllPlayer();
 	// 全てのプレイヤーにタイル位置を設定
-	void SetTileNoToAllPlayers();
+	TArray<int> SetTileNoToAllPlayers();
 	// プレイヤー間のラインを表示
 	void DisplayLineBetweenPlayers();
 
@@ -118,6 +129,7 @@ private:
 	TArray <AC_Piece*> allAwayPieces; // すべてのAwayコマ配列
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
+	AC_Piece* passTarget = nullptr; // パスターゲット
 	bool isInitialPlacePhase = true; // 初期配置フェーズフラグ
 	bool isSecondPlacePhase = false; // 2次配置フェーズフラグ
 	bool isPlayStepPhase = false; // プレイステップフェーズ中
@@ -128,7 +140,9 @@ private:
 	TArray< AC_Piece*> defencePlayers; // ディフェンス側のプレイヤー配列
 	bool isHomeBall = false; // Home側がオフェンスか
 	AC_Piece* firstDefender = nullptr; // ファーストディフェンダー
+	TArray <int> currentTileNos = {}; // 現在のプレイヤーのタイルNo
 	TArray <int> moveToTileNos = {}; // プレイヤーとボールが動く先のタイルNo (*動く先のタイルを予約し、重複を防ぐ)
+	TArray <int> ballCrossTileNos = {}; // ボール周囲の十字のタイルNo
 	// ポジションエリア
 	// HOME
 	// -FW-

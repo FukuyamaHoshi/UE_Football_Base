@@ -39,6 +39,10 @@ public:
 	int direction = 0; // 体の向き (前向き: 25, 後ろ向き: -25)
 	bool isMarked = false; // マークされているか
 	int position = 0; // ポジション (内訳はCommon参照)
+	// ** 能力 **
+	int tackle = 1; // タックル: ディフェンス時の対人能力
+	int keep = 1; // キープ: オフェンス時の背面対人能力
+	// *********
 
 private:
 	// 指定された位置へ動く処理
