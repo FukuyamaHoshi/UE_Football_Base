@@ -60,11 +60,16 @@ private:
 	void Shoot();
 	// 対人
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
-	void Duel(AC_Piece* dueledPlayer);
+	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
+	bool Duel(AC_Piece* dueledPlayer);
 	// 背面対人 (背負った時のプレー)
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
-	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false)
+	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
 	bool BackDuel(AC_Piece* dueledPlayer);
+	// サイド対人
+	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
+	bool SideDuel(AC_Piece* dueledPlayer);
 	// プレス
 	void Press();
 	// マーキング
