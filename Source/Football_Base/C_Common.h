@@ -15,6 +15,8 @@ public:
 
     // ** Global変数 **
     static constexpr int TILE_NUM_Y = 25; // 横(y)のタイル個数
+    static constexpr float NEXT_TO_TILE_DISTANCE = 100.0f; // 前後左右のタイル距離
+    static constexpr float AROUNT_TILE_RANGE = 150.0f; // 周囲タイルの距離範囲 (前後左右: 100.0f,  斜め: 140.0 ~ 150.0f)
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
     static constexpr bool DEBUG_MODE = true; // デバッグモード

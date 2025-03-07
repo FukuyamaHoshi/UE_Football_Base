@@ -98,8 +98,7 @@ private:
 	// ボールホルダーの向きを取得
 	int GetDirectionOfBallHolder();
 	// 対人範囲のタイルNo取得
-	// | passRange: パス範囲から取得 |
-	TArray <int> GetTileNoInDuelRange(TArray<int> passRange);
+	TArray <int> GetTileNoInDuelRange();
 	// マークレンジ取得
 	// | currentTileNo: マークレンジ元のタイルＮｏ, playerDirection: 体の向き |
 	TArray <int> GetMarkRange(int currentTileNo, int playerDirection);
@@ -148,8 +147,14 @@ private:
 	TArray <int> currentTileNos = {}; // 現在のプレイヤーのタイルNo
 	TArray <int> moveToTileNos = {}; // プレイヤーとボールが動く先のタイルNo (*動く先のタイルを予約し、重複を防ぐ)
 	TArray <int> ballCrossTileNos = {}; // ボール周囲の十字のタイルNo
-	// ポジションエリア
-	// HOME
+	bool isGoal = false; // ゴール判定
+	bool isClering = false; // クリアリング判定
+	int ballHolderRightTileNo = 0; // ボールホルダーの右タイルNo
+	int ballHolderLeftTileNo = 0; // ボールホルダーの左タイルNo
+	int secondBallRangeTileNum = 0; // セカンドボール反応範囲のタイル個数 (step毎に拡大)
+	
+	// ** ポジションエリア **
+	// < HOME >
 	// -FW-
 	TArray <int> LWG_Erea = {}; // LWG
 	TArray <int> LST_Erea = {}; // LST
@@ -169,7 +174,7 @@ private:
 	TArray <int> RCB_Erea = {}; // RCB
 	TArray <int> RSB_Erea = {}; // RSB
 	
-	// AWAY
+	// < AWAY >
 	// -FW-
 	TArray <int> Away_LWG_Erea = {}; // LWG
 	TArray <int> Away_LST_Erea = {}; // LST
