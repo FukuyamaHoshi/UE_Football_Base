@@ -1635,8 +1635,8 @@ bool AC_My_Player_Controller::ResetStepPhase()
 // パスレンジのタイルＮｏ取得
 TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 {
-	TArray<int> passRangeNos; // パスレンジ (*最終)
-	if (ballHolder == nullptr) return passRangeNos; // ボールホルダーnullチェック
+	TArray<int> _passRangeNos; // パスレンジ (*最終)
+	if (ballHolder == nullptr) return _passRangeNos; // ボールホルダーnullチェック
 
 	int startPassRangeRowTileNo = 0; // パスレンジ行の最初のタイル (*yが小さい)
 	int endPassRangeRowTileNo = 0; // パスレンジ行の最後のタイル (*yが大きい)
@@ -1780,12 +1780,145 @@ TArray<int> AC_My_Player_Controller::GetTileNoInPassRange()
 	for (int n : passRangeOutOfFieldNos) {
 		if (n > allTiles.Num() || n < 0) continue; // 0 < tileNos < 1000 の範囲
 
-		passRangeNos.Add(n);
+		_passRangeNos.Add(n);
+	}
+	// **
+
+	// ***** パスレンジ制限 *****
+	// | ディフェンダーの配置によって制限する |
+	// Row: 横(行), Column: 縦(列)
+	TArray<int> _limitPassRangeNos = {}; // 制限パスレンジ
+
+	if (FMath::Abs(ballHolder->direction) == 25) { // 体の向きが
+		// <前後>
+		for (AC_Piece* df : defencePlayers) {
+			// *制限
+			// | パスレンジ外のディフェンダー |
+			if (_passRangeNos.Contains(df->currentTileNo) == false) continue; // *パスレンジ外のディフェンダー
+
+			// ** ディフェンダーがパスレンジの真ん中 **
+			if (df->currentTileNo % C_Common::TILE_NUM_Y == ballHolder->currentTileNo % C_Common::TILE_NUM_Y) { // ディフェンダーがパスレンジ真ん中にいる (同じColumn)
+				for (int i : _passRangeNos) { // パスレンジが
+					int _passRangeRow = i / C_Common::TILE_NUM_Y; // パスレンジRow
+					int _defenderRow = df->currentTileNo / C_Common::TILE_NUM_Y; // ディフェンダーRow
+					bool _isPassRangeBackRow = ballHolder->direction > 0 ? _defenderRow <= _passRangeRow : _defenderRow >= _passRangeRow; // パスレンジがディフェンダーの背面のRow = ture
+					
+					// *パスレンジ制限条件
+					// | ⓵ディフェンダーの背面(ディフェンダーRow含む) |
+					if (_isPassRangeBackRow) _limitPassRangeNos.Add(i); // ⓵
+				}
+			}
+			// **
+			else {
+				// ** ディフェンダーがパスレンジの左右どちらか **
+				int _defenderColumn = df->currentTileNo % C_Common::TILE_NUM_Y; // ディフェンダーColumn
+				int _middleNo = 0; // 中心のタイルNo
+				bool _isRightDefender = false; // ディフェンダーが右側か
+				
+				// ディフェンダーが右左どちらか		
+				if (_defenderColumn == 0 || ballHolder->currentTileNo % C_Common::TILE_NUM_Y < _defenderColumn) { // ディフェンダーColumnが大きいか (0は右端)
+					// <右>
+					_middleNo = df->currentTileNo - 1; // 中心のタイルNo
+					_isRightDefender = true; // 右側フラグ
+				}
+				else {
+					// <左>
+					_middleNo = df->currentTileNo + 1; // 中心のタイルNo
+					_isRightDefender = false; // 右側フラグ
+				}
+				int _middleNoRow = _middleNo / C_Common::TILE_NUM_Y; // 中心タイルRow
+				int _middleNoColumn = _middleNo % C_Common::TILE_NUM_Y; // 中心タイルColumn
+				
+				for (int i : _passRangeNos) { // パスレンジが
+					int _passRangeRow = i / C_Common::TILE_NUM_Y; // パスレンジRow
+					int _passRangeColumn = i % C_Common::TILE_NUM_Y; // パスレンジColumn
+					bool _isOutsideColumn = _isRightDefender ? _middleNoColumn <= _passRangeColumn : _middleNoColumn >= _passRangeColumn; // パスレンジが中心タイルの外側 = ture
+					bool _isPaaRangeBackRow = ballHolder->direction > 0 ? _middleNoRow <= _passRangeRow : _middleNoRow >= _passRangeRow; // パスレンジがディフェンダーの背面のRow = ture
+
+					// *パスレンジ制限条件
+					// | ⓵ディフェンダーの背面(ディフェンダーRow含む) |
+					// | ⓶ディフェンダーサイド |
+					// | ③右端 |
+					if (_isPaaRangeBackRow && _isOutsideColumn) _limitPassRangeNos.Add(i); // ⓵⓶
+					
+					if (_passRangeColumn == 0) { // ③
+						if (ballHolder->direction > 0 && _middleNoRow < _passRangeRow) _limitPassRangeNos.Add(i); // 前向き
+						if (ballHolder->direction < 0 && _middleNoRow > _passRangeRow) _limitPassRangeNos.Add(i); // 後ろ向き
+					}
+				}
+			}
+		}
+	}
+	else {
+		// <左右>
+		for (AC_Piece* df : defencePlayers) {
+			// *制限
+			// | パスレンジ外のディフェンダー |
+			if (_passRangeNos.Contains(df->currentTileNo) == false) continue; // *パスレンジ外のディフェンダー
+			
+			// ** ディフェンダーがパスレンジの真ん中 **
+			if ((int)df->currentTileNo / C_Common::TILE_NUM_Y == (int)ballHolder->currentTileNo / C_Common::TILE_NUM_Y) { // ディフェンダーがパスレンジ真ん中にいる (同じRow)
+				for (int i : _passRangeNos) { // パスレンジが
+					int _passRangeColumn = i % C_Common::TILE_NUM_Y; // パスレンジColumn
+					int _defenderColumn = df->currentTileNo % C_Common::TILE_NUM_Y; // ディフェンダーColumn
+					bool _isPassRangeBackColumn = ballHolder->direction > 0 ? _defenderColumn <= _passRangeColumn : _defenderColumn >= _passRangeColumn; // パスレンジがディフェンダーの背面のColumn = ture (右 : 左)
+
+					// *パスレンジ制限条件
+					// | ⓵ディフェンダーの背面(ディフェンダーColumn含む) |
+					// | ⓶右端 |
+					if (_isPassRangeBackColumn) _limitPassRangeNos.Add(i); // ⓵
+					if (_passRangeColumn == 0) _limitPassRangeNos.Add(i); // ⓶
+				}
+			}
+			// **
+			else {
+				// ** ディフェンダーがパスレンジの左右どちらかにいる **
+				int _defenderRow = df->currentTileNo / C_Common::TILE_NUM_Y; // ディフェンダーRow
+				int _middleNo = 0; // 中心のタイルNo
+				bool _isTopDefender = false; // ディフェンダーが中心より上側か
+
+				// ディフェンダーが上下どちらか				
+				if ((int)ballHolder->currentTileNo / C_Common::TILE_NUM_Y < _defenderRow) { // ディフェンダーRowが大きいか
+					// <上>
+					_middleNo = df->currentTileNo - C_Common::TILE_NUM_Y; // 中心のタイルNo
+					_isTopDefender = true; // 上側フラグ
+				}
+				else {
+					// <下>
+					_middleNo = df->currentTileNo + C_Common::TILE_NUM_Y; // 中心のタイルNo
+					_isTopDefender = false; // 上側フラグ
+				}
+				int _middleNoRow = _middleNo / C_Common::TILE_NUM_Y; // 中心タイルRow
+				int _middleNoColumn = _middleNo % C_Common::TILE_NUM_Y; // 中心タイルColumn
+
+				for (int i : _passRangeNos) { // パスレンジが
+					int _passRangeRow = i / C_Common::TILE_NUM_Y; // パスレンジRow
+					int _passRangeColumn = i % C_Common::TILE_NUM_Y; // パスレンジClumn
+					bool _isOutsideRow = _isTopDefender ? _middleNoRow <= _passRangeRow : _middleNoRow >= _passRangeRow; // パスレンジが中心タイルの外側 = ture (上 : 下)
+					bool _isPassRangeBackColumn = ballHolder->direction > 0 ? _middleNoColumn <= _passRangeColumn : _middleNoColumn >= _passRangeColumn; // パスレンジがディフェンダーの背面のColumn = ture (右 : 左)
+
+					// *パスレンジ制限条件
+					// | ⓵ディフェンダーの背面(ディフェンダーColumn含む) |
+					// | ⓶ディフェンダーサイド |
+					// | ③右端 |
+					if (_isPassRangeBackColumn && _isOutsideRow) _limitPassRangeNos.Add(i); // ⓵⓶
+					if (_passRangeColumn == 0 && _middleNoRow < _passRangeRow) _limitPassRangeNos.Add(i); // ③
+				}
+			}
+		}
+	}
+	// *************************
+
+	// ** 制限タイルを削除する **
+	if (_limitPassRangeNos.IsEmpty()) return _passRangeNos;
+
+	for (int i : _limitPassRangeNos) {
+		_passRangeNos.Remove(i);
 	}
 	// **
 
 
-	return passRangeNos;
+	return _passRangeNos;
 }
 
 // ボールホルダーの向きを取得 ( 前: 25, 後ろ: -25, 右: 1, 左: -1 )
