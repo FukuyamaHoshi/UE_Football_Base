@@ -25,6 +25,7 @@ public:
     static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)
     static constexpr int HOME_PLACE_EREA[2] = { 126, 500 }; // Homeのプレイヤー配置エリア(全部)
     static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
+    static constexpr int PASS_RANGE_TILE_NUM[2] = { 9, 6 }; // パスレンジタイル個数 (横 * 縦) *プレイヤーの向きに対して
     // -ポジション---
     // DF
     static constexpr int GK_POSITION = 0; // GK
