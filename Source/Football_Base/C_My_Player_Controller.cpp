@@ -87,60 +87,76 @@ void AC_My_Player_Controller::BeginPlay()
 	// ***
 
 	// ** ポジションエリア配列作成 **
+	// | プレイヤー配置可能エリアも追加 |
 	// *HOME*
 	for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
 		if (i <= 250) {
 			// -DF-
 			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
 				LSB_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
 				LCB_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
 				CB_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
 				RCB_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else {
 				RSB_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 		}
 		else if (i <= 375) {
 			// -MF-
 			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
 				LH_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
 				LIH_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
 				CH_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
 				RIH_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else {
 				RH_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 		}
 		else {
 			// -FW-
 			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
 				LWG_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
 				LST_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
 				CF_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
 				RST_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 			else {
 				RWG_Erea.Add(i);
+				placeableRrea.Add(i); // プレイヤー配置可能エリア
 			}
 		}
 	}
@@ -210,6 +226,10 @@ void AC_My_Player_Controller::BeginPlay()
 	SetPositionToAllPlayer();
 	// **
 
+	// ** プレイヤー位置をタイル位置へ設定 **
+	SetPlayerToTilePosition();
+	// **
+
 	// ** プレイヤー間のライン表示 **
 	//DisplayLineBetweenPlayers();
 	// **
@@ -232,12 +252,33 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 		// *************************
 		// フェーズ処理
 		// *************************
+		
 		// ** ①初期配置フェーズ処理 **
 		// | 連続処理 (Tick) |
 		if (isInitialPlacePhase) {
-			// ** マウスホバー時 **
-			// Grap中か
-			if (isGrap) HoverMouse();
+			if (isGrap) {
+				// < グラップ中 >
+
+				// ** ホバー処理(タイルをハイライトする) **
+				HoverMouse();
+				// **
+
+				// ** 選択したプレイヤーにマウスを追従させる **
+				// マウス位置取得
+				TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+				_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // Blocking Volume
+				FHitResult hitResult; // オブジェクト情報
+
+				bool _isVolumeExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
+
+				// * 制限 *
+				if (_isVolumeExist == false) return; // Volumeか
+				// *
+
+				// マウスを追従
+				selectedPlayer->SetActorLocation(hitResult.Location);
+				// **
+			}
 			// **
 
 			return;
@@ -290,112 +331,74 @@ void AC_My_Player_Controller::SetupInput()
 }
 
 // 左クリック(プレス)イベント
-// | プレイヤーを選択　or 解除する |
+// | プレイヤーを選択 |
 void AC_My_Player_Controller::PressedLeft()
 {
 	// * 制限 *
 	if (isInitialPlacePhase == false) return; // 初期配置フェーズのみ
 	// *
+	
+	// ** マウス位置(クリック時)の情報を取得 **
+	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody)); // プレイヤー: PhysicsBody
+	FHitResult hitResult; // オブジェクト情報
 
-	AActor* p = SelectHomePiece(); // Homeのコマを選択し、取得
-
-	// ** 選択解除(プレイヤー以外をクリックした時) **
-	if (p == nullptr) {
-		selectedPlayer = nullptr; // 変数を空にする
-		selectedPlayerTileNo = 0; // タイルNoを空にする
-		isGrap = false; // Grap解除
-
-		// デカール削除
-		if (currentDecal != nullptr) {
-			currentDecal->DestroyComponent();
-		}
-
-		// プレイヤー配置レンジ削除
-		RemovePlayerPlaceRange();
-
-		return; // 処理終了
-	}
-	// **
-
-	// ** プレイヤー選択を一度のみにする **
-	// (取得したプレイヤーと前にクリックされたプレイヤーが異なれば変数に保持する)
-	if (p == selectedPlayer)
-	{
-		// * 前回と選択したプレイヤーが同じ
-		return; // なにもしない
-	}
-	else{
-		// * 前回と選択したプレイヤーが異なる
-		if (currentDecal != nullptr) {
-			currentDecal->DestroyComponent(); // デカール削除
-		}
-		
-		selectedPlayer = p; // プレイヤーを変更
-	}
-	// **
-
-	// ** 選択されたプレイヤーのタイルNo取得 **
-	FVector playerLocation = selectedPlayer -> GetActorLocation(); // 選択されたプレイヤーの位置
-	selectedPlayerTileNo = GetTileNoFromLocation(playerLocation.X, playerLocation.Y); // タイルＮｏセット
-	// **
-
-	// ** 選択されたプレイヤーのタイル位置にデカール表示 **
-	FVector tileLocation = allTiles[selectedPlayerTileNo - 1]->GetActorLocation(); // タイル位置取得
-	tileLocation = FVector(tileLocation.X, tileLocation.Y, 40); // 位置調整
-	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), tileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
-	// **
-
-	// ** プレイヤー配置レンジを表示 **
-	SetPlayerPlaceRange();
+	bool _isPlayerExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
 	// **
 	
+	// * 制限 *
+	if (_isPlayerExist == false) return; // プレイヤー(PhisicsBody)か
+	if (hitResult.GetActor()->ActorHasTag(FName(TEXT("HOME"))) == false) return; // HOMEプレイヤーか
+	// *
 
-	// ** プレイヤー選択中フラグ **
-	isGrap = true; // プレイヤー選択中
+	// ** プレイヤー配置可能エリアを表示 **
+	DisplayPlayerPlaceableErea();
+	// **
+
+
+	// ** マウス位置情報からプレイヤーを取得 **
+	selectedPlayer = Cast<AC_Piece>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
+	isGrap = true; // フラグON
 	// **
 }
 
 // 左クリック(リリース)イベント
-// | 選択したプレイヤー移動 }
+// | 選択したプレイヤーをタイルへ移動 |
+// | 移動先がタイルでない場合,元の位置へ移動 |
 void AC_My_Player_Controller::ReleasedLeft()
 {
-	// Grap時のみ処理
-	if (isGrap == false) return;
-	isGrap = false; // フラグ切り替え
+	// * 制限 *
+	if (isInitialPlacePhase == false) return; // 初期配置フェーズのみ
+	// *
 
-	// 光っているタイルがあるか
-	if (overlayTileNo == 0) return;
+	// ** プレイヤー配置可能タイルを削除 **
+	RemovePlayerPlaceRange();
+	// **
 
-	// *** プレイヤー(コマ)移動 ***
-	FVector overlayTileLocation = overlayTile->GetActorLocation(); // 光っているタイルの位置
-	overlayTileLocation.Z = 10; // zは固定
-	selectedPlayer->SetActorLocation(overlayTileLocation); // 移動
-	selectedPlayerTileNo = overlayTileNo; // タイル情報更新 (プレイヤーの)
-	// ***
-
-	// ** 移動するプレイヤーのタイルNoとポジションを更新 **
-	AC_Piece* _player = Cast<AC_Piece>(selectedPlayer); // キャスト
-	if (_player == nullptr) {
-		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "ERROR DONT CASTS SELECTED PLAYER", true, true, FColor::Cyan, 5.f, TEXT("None"));
+	// ** 移動するプレイヤー情報変更 **
+	if (overlayTile != nullptr && selectedPlayer != nullptr) {
+		// <プレイヤーとタイルが存在>
+		// | 移動先がタイルの場合 |
+		
+		if (placeableRrea.Contains(overlayTile->tileNo)) { // *プレイヤー配置制限対応
+			// *タイルNo更新
+			selectedPlayer->currentTileNo = overlayTile->tileNo; // *移動先タイルへ移動するため
+		}
 	}
-	else {
-		_player->currentTileNo = selectedPlayerTileNo; // タイルNo更新
-		SetPositionToAllPlayer(); // ポジション更新(全てのプレイヤー)
+
+	if (selectedPlayer != nullptr) {
+		// <プレイヤーが存在>
+		
+		// *位置更新
+		// | プレイヤーにセットされているタイルNoへ移動 |
+		FVector _currentTileLocation = allTiles[selectedPlayer->currentTileNo - 1]->GetActorLocation();
+		_currentTileLocation.Z = C_Common::BASE_LOCATION_Z;
+		selectedPlayer->SetActorLocation(_currentTileLocation);
 	}
 	// **
 
-	// *** デカールの位置変更 ***
-	currentDecal->DestroyComponent(); // 現在のデカール削除
-	overlayTileLocation.Z = 40; // zだけ変更
-	currentDecal = UGameplayStatics::SpawnDecalAtLocation(this, playerSelectedDecal, FVector(60, 60, 60), overlayTileLocation, FRotator(-90, 0, 0)); // デカール表示, 格納
-	// ***
 
-	// タイルのオーバーレイ削除
-	overlayTile->RemoveMainMaterial();
-
-	// オーバーレイタイルの変数をリセット
-	overlayTileNo = 0; // タイルNo
-	overlayTile = nullptr; // タイルの実態
+	isGrap = false; // フラグ切り替え
 }
 
 // (*デバッグ時のみ)スペースキー(プレス)イベント
@@ -409,27 +412,28 @@ void AC_My_Player_Controller::PressedSpaceBar()
 	isInitialPlacePhase = false; // 初期配置フェーズ終了
 }
 
-// 自分のチームのコマを選択 (プレイヤー以外をクリックしたときはnullptrを返す)
-AActor* AC_My_Player_Controller::SelectHomePiece() {
-	// *** クリックしたPhisicsBodyの位置を取得 ***
-	// 取得するオブジェクトタイプを設定(PhisicsBodyを設定)
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
-	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
-	FHitResult outHit; // 結果を格納
+// マウス位置に目的のオブジェクトがあるか判定して情報取得
+// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
+bool AC_My_Player_Controller::GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes)
+{
+	// マウスの位置を取得
+	FVector _mouseLocation; // *マウス位置
+	FVector _mouseDirection; // マウス方向
+	APlayerController::DeprojectMousePositionToWorld(_mouseLocation, _mouseDirection); // マウス位置を３D座標で取得
 
-	// アクター取得
-	bool b_Phisics = GetObjectFromMouseLocation(objectTypes, outHit);
+	// マウス方向を変換
+	const int _distance = 10000;
+	_mouseDirection = (_mouseDirection * _distance) + _mouseLocation;
 
-	// PhisicsBodyか
-	if (b_Phisics == false) return nullptr;
-	AActor* selectedActor = outHit.GetActor(); // 選択されたActor取得
+	// マウス位置に目的のオブジェクトタイプがあるか判定
+	TArray<AActor*> _ignoreActors = {}; // 無視するアクター
+	EDrawDebugTrace::Type _drawDebugType = EDrawDebugTrace::Type::None; // デバッグモード
 
-	//// HOMEタグか
-	bool t = selectedActor -> ActorHasTag(FName(TEXT("HOME")));
-	if (t == false) return nullptr;
-
+	// オブジェクト有無の判定
+	bool _isExist = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), _mouseLocation, _mouseDirection, objectTypes, false, _ignoreActors, _drawDebugType, hitResult, true);
 	
-	return selectedActor;
+	
+	return _isExist;
 }
 
 // 位置からタイルＮｏ取得
@@ -544,30 +548,6 @@ int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
 
 
 	return tileNo;
-}
-
-// マウス位置のオブジェクトを取得
-	// ( return: bool(取得できたか), FHitResult&(取得したオブジェクト情報)<参照渡し> )
-bool AC_My_Player_Controller::GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit)
-{
-	// マウスの位置を取得
-	FVector worldLocation;
-	FVector worldDirection;
-	APlayerController::DeprojectMousePositionToWorld(worldLocation, worldDirection); // マウス位置を３D座標で取得
-	bool isGetObject = false; // objectを所得できたか
-
-	// 方向を変換
-	const int distance = 10000;
-	worldDirection = (worldDirection * distance) + worldLocation;
-
-	TArray<AActor*> ignoreActors; // 無視するアクター
-	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::Type::None; // デバッグモード
-
-	// 位置取得
-	isGetObject = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), worldLocation, worldDirection, objectTypes, false, ignoreActors, drawDebugType, outHit, true);
-	
-	
-	return isGetObject;
 }
 
 // ボールホルダーのプレイ選択
@@ -1204,13 +1184,13 @@ void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
 			// * //
 
 			// ** 移動先のタイルを予約する **
-			if (moveToTileNos.Contains(markLocationTileNo)) { // タイルが予約されているか
-				// 予約あり
+			if (currentTileNos.Contains(markLocationTileNo) || moveToTileNos.Contains(markLocationTileNo)) {
+				// <すでにプレイヤーがいる or 予約されている>
 
 				return; // 移動しない
 			}
 			else {
-				// 予約なし
+				// <プレイヤーがいない or 予約なし>
 
 				moveToTileNos.Add(markLocationTileNo); // 予約する
 			}
@@ -1310,44 +1290,44 @@ void AC_My_Player_Controller::FinishTimerAndStep()
 }
 
 // マウスホバー時処理
-// | 選択中のプレイヤー移動時にタイルを光らせる |
+// | 選択中のプレイヤーの移動先がタイルだった場合, タイルをハイライトする |
+// | 移動先がタイルで無い場合, ハイライトを削除する |
 void AC_My_Player_Controller::HoverMouse()
 {
-	// *** ホバー中のタイル(WorldStatic)の位置を取得 ***
-	// 取得するオブジェクトタイプを設定(WorldStaticを設定)
-	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
-	objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-	FHitResult outHit; // 結果を格納
+	// ** マウス位置(クリック時)の情報を取得 **
+	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // タイル: WorldStatic
+	FHitResult _hitResult; // オブジェクト情報
 
-	bool isTile = GetObjectFromMouseLocation(objectTypes, outHit); // アクター情報取得
-	// ***
+	bool _isWorldStatic = GetResultFromMouseLocation(_hitResult, _objectTypes); // マウス位置情報取得処理
+	// **
 
-	// タイルでなければ処理しない
-	if (isTile == false) return;
+	// * 制限 *
+	if (_isWorldStatic == false || _hitResult.GetActor()->ActorHasTag((FName("TILE"))) == false) { // WorldStatic かつ タイルか
+		// <タイルでない>
+		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
+		overlayTile = nullptr; // *リリース時対応
+		
+		return;
+	}
+	// *
 
-	// *** 現在ホバー中のタイルNo ***
-	currentHoverTileNo = GetTileNoFromLocation(outHit.GetActor()->GetActorLocation().X, outHit.GetActor()->GetActorLocation().Y); // 現在ホバーしているタイルNo
-	// ***
+	AC_Tile* _currentnHoverTile = Cast<AC_Tile>(_hitResult.GetActor()); // 現在のホバータイル(キャスト)
 
-	// *** 選択されたプレイヤーがいるタイルと、現在光っているタイルには移動できないようにする ***
-	// ホバー中のタイルと選択中のプレイヤーがいるタイルが同じなら処理しない
-	if (currentHoverTileNo == selectedPlayerTileNo) return;
-	// ホバー中のタイルと現在光っているタイルが同じなら処理しない
-	if (currentHoverTileNo == overlayTileNo) return;
-	// ***
+	// * 制限 *
+	if (_currentnHoverTile->tileNo == selectedPlayer->currentTileNo) return; // 移動前のタイルと同じか
+	if (overlayTile != nullptr) { // *初回のみnull入るため
+		if (_currentnHoverTile->tileNo == overlayTile->tileNo) return; // 現在ハイライトしているタイルと同じか
+	}
+	// *
 
 
-	// *** タイルを光らせる処理 ***
-	AC_Tile* hoverTile = allTiles[currentHoverTileNo - 1]; // Hoverしているタイル取得
-	// タイルの1つのみ光らせるようにする ↓↓↓
-	// マテリアル削除
-	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial();
-	overlayTile = hoverTile; // 光っているタイルを格納
-	// ↑↑↑
-	// マテリアルセット(タイルを光らせる)
-	overlayTile->SetMaterial();
-	overlayTileNo = currentHoverTileNo; // ホバー中のタイルと現在光っているタイルが同じにする(複数回マテリアルをセットしないようにする)
-	// ***
+	// ** タイルをハイライトする **
+	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // マテリアル削除 (*ハイライトを1つにするため)
+
+	overlayTile = _currentnHoverTile; // ハイライトタイルを格納
+	overlayTile->SetMaterial(); // マテリアルセット (ハイライト処理)
+	// **
 }
 
 // ③-⑴ 準備ステップフェーズ
@@ -1984,9 +1964,8 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 	return shotestToTileNo;
 }
 
-// プレイヤー配置レンジを表示
-// | 表示するだけ(制限なし) |
-void AC_My_Player_Controller::SetPlayerPlaceRange()
+// プレイヤー配置可能エリアを表示
+void AC_My_Player_Controller::DisplayPlayerPlaceableErea()
 {
 	// *** 配置可能エリア表示 ***
 	// *HOME*
@@ -2017,30 +1996,32 @@ void AC_My_Player_Controller::SetPlayerPlaceRange()
 		}
 	}
 	// *AWAY*
-	for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
-		if (i <= 625) {
-			// -FW-
-			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+	if (C_Common::POSITION_EREA_DISPLAY) { // 表示モードの場合のみ
+		for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
+			if (i <= 625) {
+				// -FW-
+				allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
 
-			// ** ハーフレーンマテリアルセット **
-			if (Away_LST_Erea.Contains(i) || Away_RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
-		}
-		else if (i <= 750) {
-			// -MF-
-			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+				// ** ハーフレーンマテリアルセット **
+				if (Away_LST_Erea.Contains(i) || Away_RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
+			else if (i <= 750) {
+				// -MF-
+				allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
 
-			// ** ハーフレーンマテリアルセット **
-			if (Away_LIH_Erea.Contains(i) || Away_RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
-		}
-		else {
-			// -DF-
-			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+				// ** ハーフレーンマテリアルセット **
+				if (Away_LIH_Erea.Contains(i) || Away_RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
+			else {
+				// -DF-
+				allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
 
-			// ** ハーフレーンマテリアルセット **
-			if (Away_LCB_Erea.Contains(i) || Away_RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
+				// ** ハーフレーンマテリアルセット **
+				if (Away_LCB_Erea.Contains(i) || Away_RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
 		}
 	}
 	// ***
@@ -2164,6 +2145,17 @@ TArray<int> AC_My_Player_Controller::SetTileNoToAllPlayers()
 	}
 
 	return _currentTileNos;
+}
+
+// プレイヤー位置をタイル位置へ設定
+void AC_My_Player_Controller::SetPlayerToTilePosition()
+{
+	for (AC_Piece* p : allPieces) {
+		FVector _currentTileLocation = allTiles[p->currentTileNo - 1]->GetActorLocation();
+		_currentTileLocation.Z = C_Common::BASE_LOCATION_Z;
+		
+		p->SetActorLocation(_currentTileLocation);
+	}
 }
 
 // プレイヤー間のラインを表示

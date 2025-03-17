@@ -20,6 +20,7 @@ public:
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
     static constexpr bool DEBUG_MODE = true; // デバッグモード
+    static constexpr bool POSITION_EREA_DISPLAY = false; // ポジションエリア表示モード
     static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
     static constexpr int FORWARD_DIRECTION = 25; // 前向き (*フィールド固定)
     static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)

@@ -34,13 +34,11 @@ private:
 	void ReleasedLeft();
 	// (*デバッグ時のみ)スペースキー(プレス)イベント
 	void PressedSpaceBar();
-	// 自分のチームのコマを選択
-	AActor* SelectHomePiece();
+	// マウス位置に目的のオブジェクトがあるか判定して情報取得
+	// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
+	bool GetResultFromMouseLocation(FHitResult &hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation(float x, float y);
-	// マウス位置のオブジェクトを取得
-	// ( return: bool(取得できたか), FHitResult&(取得したオブジェクト情報)<参照渡し> )
-	bool GetObjectFromMouseLocation(TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes, FHitResult& outHit);
 	// ボールホルダーのプレイ選択
 	void SelectPlayForBallHolder();
 	// ディフェンダーのプレイ選択
@@ -106,23 +104,22 @@ private:
 	AC_Piece* GetFirstDefender();
 	// 次に動く最短距離のタイルNo取得
 	int GetShortestNextTileNo(int fromTileNo, int toTileNo);
-	// プレイヤー配置レンジを設定
-	void SetPlayerPlaceRange();
+	// プレイヤー配置可能エリアを表示
+	void DisplayPlayerPlaceableErea();
 	// プレイヤー配置レンジを削除
 	void RemovePlayerPlaceRange();
 	// 全てのプレイヤーにポジションを設定
 	void SetPositionToAllPlayer();
 	// 全てのプレイヤーにタイル位置を設定
 	TArray<int> SetTileNoToAllPlayers();
+	// プレイヤー位置をタイル位置へ設定
+	void SetPlayerToTilePosition();
 	// プレイヤー間のラインを表示
 	void DisplayLineBetweenPlayers();
 
 	
-	AActor* selectedPlayer; // 選択されたプレイヤー
+	AC_Piece* selectedPlayer; // 選択されたプレイヤー
 	bool isGrap = false; // Grap(プレイヤー選択中)フラグ
-	int currentHoverTileNo = 0; // 現在ホバーしているタイルNo
-	int selectedPlayerTileNo = 0; // 選択しているプレイヤーのタイルNo
-	int overlayTileNo = 0; // 現在光っているタイルNo
 	TArray <AC_Tile*> allTiles; // すべてのタイル配列
 	AC_Tile* overlayTile; // 光っているタイル
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -152,6 +149,7 @@ private:
 	int ballHolderRightTileNo = 0; // ボールホルダーの右タイルNo
 	int ballHolderLeftTileNo = 0; // ボールホルダーの左タイルNo
 	int secondBallRangeTileNum = 0; // セカンドボール反応範囲のタイル個数 (step毎に拡大)
+	TArray <int> placeableRrea = {}; // プレイヤー配置可能エリア
 	
 	// ** ポジションエリア **
 	// < HOME >
