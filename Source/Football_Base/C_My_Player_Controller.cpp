@@ -218,16 +218,16 @@ void AC_My_Player_Controller::BeginPlay()
 		}
 	}
 
-	// ** 全てのプレイヤーにタイルNoを設定 **
-	SetTileNoToAllPlayers();
+	// ** 全てのプレイヤーとボールにタイルNoを設定 **
+	SetTileNoToAllPlayersAndBall();
 	// **
 	
 	// ** プレイヤーにポジションをセット **
 	SetPositionToAllPlayer();
 	// **
 
-	// ** プレイヤー位置をタイル位置へ設定 **
-	SetPlayerToTilePosition();
+	// ** プレイヤーとボール位置をタイル位置へ設定 **
+	SetPlayerAndBallToTilePosition();
 	// **
 
 	// ** プレイヤー間のライン表示 **
@@ -260,7 +260,7 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 				// < グラップ中 >
 
 				// ** ホバー処理(タイルをハイライトする) **
-				HoverMouse();
+				TileHighlightWhenMouseHover();
 				// **
 
 				// ** 選択したプレイヤーにマウスを追従させる **
@@ -316,6 +316,9 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 	}
 }
 
+
+
+// ********* input *********
 // 入力設定
 void AC_My_Player_Controller::SetupInput()
 {
@@ -331,7 +334,7 @@ void AC_My_Player_Controller::SetupInput()
 }
 
 // 左クリック(プレス)イベント
-// | プレイヤーを選択 |
+// | プレイヤー選択 |
 void AC_My_Player_Controller::PressedLeft()
 {
 	// * 制限 *
@@ -368,7 +371,7 @@ void AC_My_Player_Controller::PressedLeft()
 void AC_My_Player_Controller::ReleasedLeft()
 {
 	// * 制限 *
-	if (isInitialPlacePhase == false) return; // 初期配置フェーズのみ
+	if (isInitialPlacePhase == false) return; // 初期配置フェーズでない
 	// *
 
 	// ** プレイヤー配置可能タイルを削除 **
@@ -381,8 +384,13 @@ void AC_My_Player_Controller::ReleasedLeft()
 		// | 移動先がタイルの場合 |
 		
 		if (placeableRrea.Contains(overlayTile->tileNo)) { // *プレイヤー配置制限対応
-			// *タイルNo更新
-			selectedPlayer->currentTileNo = overlayTile->tileNo; // *移動先タイルへ移動するため
+			// <プレイヤー配置可能エリア内>
+			if (selectedPlayer->position != C_Common::GK_POSITION) {
+				// <GK以外のプレイヤー>
+				
+				// *タイルNo更新
+				selectedPlayer->currentTileNo = overlayTile->tileNo; // *移動先タイルへ移動するため
+			}
 		}
 	}
 
@@ -397,6 +405,10 @@ void AC_My_Player_Controller::ReleasedLeft()
 	}
 	// **
 
+	// ** 変数リセット **
+	overlayTile = nullptr;
+	selectedPlayer = nullptr;
+	// **
 
 	isGrap = false; // フラグ切り替え
 }
@@ -412,144 +424,62 @@ void AC_My_Player_Controller::PressedSpaceBar()
 	isInitialPlacePhase = false; // 初期配置フェーズ終了
 }
 
-// マウス位置に目的のオブジェクトがあるか判定して情報取得
-// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
-bool AC_My_Player_Controller::GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes)
+// マウスホバー時,タイルをハイライトする
+void AC_My_Player_Controller::TileHighlightWhenMouseHover()
 {
-	// マウスの位置を取得
-	FVector _mouseLocation; // *マウス位置
-	FVector _mouseDirection; // マウス方向
-	APlayerController::DeprojectMousePositionToWorld(_mouseLocation, _mouseDirection); // マウス位置を３D座標で取得
+	// * 制限 (ポジション) *
+	if (selectedPlayer != nullptr) {
+		if (selectedPlayer->position == C_Common::GK_POSITION) return; // GK
+	}
+	// *
 
-	// マウス方向を変換
-	const int _distance = 10000;
-	_mouseDirection = (_mouseDirection * _distance) + _mouseLocation;
+	// ** マウス位置(クリック時)の情報を取得 **
+	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // タイル: WorldStatic
+	FHitResult _hitResult; // オブジェクト情報
 
-	// マウス位置に目的のオブジェクトタイプがあるか判定
-	TArray<AActor*> _ignoreActors = {}; // 無視するアクター
-	EDrawDebugTrace::Type _drawDebugType = EDrawDebugTrace::Type::None; // デバッグモード
+	bool _isWorldStatic = GetResultFromMouseLocation(_hitResult, _objectTypes); // マウス位置情報取得処理
+	// **
 
-	// オブジェクト有無の判定
-	bool _isExist = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), _mouseLocation, _mouseDirection, objectTypes, false, _ignoreActors, _drawDebugType, hitResult, true);
-	
-	
-	return _isExist;
+	// * 制限 (タイル以外Hover時) *
+	if (_isWorldStatic == false || _hitResult.GetActor()->ActorHasTag((FName("TILE"))) == false) { // WorldStaticでない or タイルでない
+		// <タイルでない>
+		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
+		overlayTile = nullptr; // *リリース時対応
+
+		return;
+	}
+	// *
+
+	AC_Tile* _currentnHoverTile = Cast<AC_Tile>(_hitResult.GetActor()); // 現在のホバータイル(キャスト)
+
+	// * 制限 (タイルHover時) *
+	if (overlayTile != nullptr) { // *初回のみnull入るため
+		if (_currentnHoverTile->tileNo == overlayTile->tileNo) return; // 現在ハイライトしているタイルと同じ
+	}
+
+	if (placeableRrea.Contains(_currentnHoverTile->tileNo) == false) { // プレイヤー配置可能エリア外
+		// <プレイヤー配置可能エリア外>
+		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
+		overlayTile = nullptr; // *リリース時対応
+
+		return;
+	}
+	// *
+
+
+	// ** タイルをハイライトする **
+	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // マテリアル削除 (*ハイライトを1つにするため)
+
+	overlayTile = _currentnHoverTile; // ハイライトタイルを格納
+	overlayTile->SetMaterial(); // マテリアルセット (ハイライト処理)
+	// **
 }
-
-// 位置からタイルＮｏ取得
-// ( unreal座標  x: 縦, y: 横 )
-int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
-{
-	// タイルNo
-	int tileNoY = 0; // タイルNo y (横)
-	int tileNoX = 0; // タイルNo x (縦)
-	int tileNo = 0; // タイルNo
-
-	bool isPositiveY = true; // xが正の整数か
-	const int tileSize = 100; // タイルの大きさ (100cm)
-	const int tilesNumY = 25; // タイルの横(y)の個数
-
-	// *** タイルNo y(横)を求める ***
-	// -の時の処理
-	if (y < 0) {
-		y = abs(y); // 絶対値に変換
-		isPositiveY = false; // フラグ変更
-	}
-	
-	if (y < 50)	tileNoY = 13;
-	else if (y < 150) tileNoY = (isPositiveY) ? 14 : 12;
-	else if (y < 250) tileNoY = (isPositiveY) ? 15 : 11;
-	else if (y < 350) tileNoY = (isPositiveY) ? 16 : 10;
-	else if (y < 450) tileNoY = (isPositiveY) ? 17 : 9;
-	else if (y < 550) tileNoY = (isPositiveY) ? 18 : 8;
-	else if (y < 650) tileNoY = (isPositiveY) ? 19 : 7;
-	else if (y < 750) tileNoY = (isPositiveY) ? 20 : 6;
-	else if (y < 850) tileNoY = (isPositiveY) ? 21 : 5;
-	else if (y < 950) tileNoY = (isPositiveY) ? 22 : 4;
-	else if (y < 1050) tileNoY = (isPositiveY) ? 23 : 3;
-	else if (y < 1150) tileNoY = (isPositiveY) ? 24 : 2;
-	else if (y < 1250) tileNoY = (isPositiveY) ? 25 : 1;
-	// ***
-
-	// *** タイルNo x(縦)を求める ***
-	int tX = x / tileSize; // 中央から何列面のタイルか
-	// 負の整数の時
-	if (x < 0) {
-		tX = abs(tX); // 絶対値へ
-	}
-
-	switch (tX) {
-	case 0:
-		tileNoX = (x > 0) ? 21 : 20;
-		break;
-	case 1:
-		tileNoX = (x > 0) ? 22 : 19;
-		break;
-	case 2:
-		tileNoX = (x > 0) ? 23 : 18;
-		break;
-	case 3:
-		tileNoX = (x > 0) ? 24 : 17;
-		break;
-	case 4:
-		tileNoX = (x > 0) ? 25 : 16;
-		break;
-	case 5:
-		tileNoX = (x > 0) ? 26 : 15;
-		break;
-	case 6:
-		tileNoX = (x > 0) ? 27 : 14;
-		break;
-	case 7:
-		tileNoX = (x > 0) ? 28 : 13;
-		break;
-	case 8:
-		tileNoX = (x > 0) ? 29 : 12;
-		break;
-	case 9:
-		tileNoX = (x > 0) ? 30 : 11;
-		break;
-	case 10:
-		tileNoX = (x > 0) ? 31 : 10;
-		break;
-	case 11:
-		tileNoX = (x > 0) ? 32 : 9;
-		break;
-	case 12:
-		tileNoX = (x > 0) ? 33 : 8;
-		break;
-	case 13:
-		tileNoX = (x > 0) ? 34 : 7;
-		break;
-	case 14:
-		tileNoX = (x > 0) ? 35 : 6;
-		break;
-	case 15:
-		tileNoX = (x > 0) ? 36 : 5;
-		break;
-	case 16:
-		tileNoX = (x > 0) ? 37 : 4;
-		break;
-	case 17:
-		tileNoX = (x > 0) ? 38 : 3;
-		break;
-	case 18:
-		tileNoX = (x > 0) ? 39 : 2;
-		break;
-	case 19:
-		tileNoX = (x > 0) ? 40 : 1;
-		break;
-	}
-	// ***
-
-	// *** タイルNo取得 ***
-	// ( (タイル縦(x) - 1個) * フィールドの横のタイル個数 ) + タイル横(y)
-	tileNo = ((tileNoX - 1) * tilesNumY) + tileNoY;
+// *************************
 
 
-	return tileNo;
-}
 
+// ********* プレイ判断 *********
 // ボールホルダーのプレイ選択
 // | デフォルトはロングパス |
 // | (*暫定) ショートパス(パスレンジ内)は現在削除 |
@@ -564,11 +494,11 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// |  ボールホルダー: 前進 |
 	// |  ディフェンダー: 前進 |
 	if (duelRangeTileNos.IsEmpty() == false) { // 対人レンジが取得できているか
-			
+
 		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
 			if (duelRangeTileNos.Contains(p->currentTileNo)) { // 対人レンジ内にいれば
 				bool _isBallHolderWin = Duel(p);
-				
+
 				if (_isBallHolderWin) { // どちかが対人に処理したか
 					// <ボールホルダーが勝利>
 
@@ -587,7 +517,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 					// ** 前進する **
 					// | ディフェンダーがボールホルダーとなる |
 					// | ボールホルダー3マス前進 |
-						
+
 					// *ボールホルダーの変更
 					preBallHolder = ballHolder; // 前回のボールホルダーを取得
 					ballHolder = p; // ボールホルダーをディフェンダーへ変更
@@ -614,52 +544,52 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// |  ディフェンダー: クリアリング         |
 	if (ballHolder->direction == -_ballSideForward) { // ボールホルダーが後ろ向きの場合
 		int _ballHolderBackTileNo = ballHolder->currentTileNo + _ballSideForward; // ボールホルダーの背後のタイルNo (後ろを向いているから前のタイル)
-		
+
 		for (AC_Piece* dp : defencePlayers) { // ディフェンダーの中で
 			if (_ballHolderBackTileNo == dp->currentTileNo) { // ボールホルダーの後ろにいる場合
 				bool _isBallHolderWin = BackDuel(dp); // 背面対人 (どちらが勝利したか取得)
-				
+
 				if (_isBallHolderWin) { // どちかが対人に処理したか
 					// <ボールホルダーが勝利>
-				
+
 						// ** ポストプレー (ショートパス or キープ) **
 						// | パスレンジ内でターゲットを探す |
 						// | パスレンジはBoforeフェーズで取得済み |
-						for (AC_Piece* op : offencePlayers) { // オフェンスプレイヤーの中で
-							if (passRangeTileNos.Contains(op->currentTileNo) && op != preBallHolder) { // パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
-								_passTarget = op;
+					for (AC_Piece* op : offencePlayers) { // オフェンスプレイヤーの中で
+						if (passRangeTileNos.Contains(op->currentTileNo) && op != preBallHolder) { // パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
+							_passTarget = op;
 
-								break;
-							}
+							break;
 						}
-						
-						if (_passTarget != nullptr) { // パスターゲットがいるか
-							// 〇パスターゲット存在
-							
-							// ** ショートパス (落としのプレー) **
-							if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "POST PLAY", true, true, FColor::Cyan, 2.f, TEXT("None"));
-							Pass(_passTarget);
-							// **
+					}
 
-						}
-						else {
-							// ●パスターゲット不在
-							
-							// ** キープ **
-							if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "KEEP", true, true, FColor::Cyan, 2.f, TEXT("None"));
-							
-							// *********************
-							// ここにキープアニメーション追加!!!!
-							// *********************
-							
-							// **
-						}
+					if (_passTarget != nullptr) { // パスターゲットがいるか
+						// 〇パスターゲット存在
+
+						// ** ショートパス (落としのプレー) **
+						if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "POST PLAY", true, true, FColor::Cyan, 2.f, TEXT("None"));
+						Pass(_passTarget);
+						// **
+
+					}
+					else {
+						// ●パスターゲット不在
+
+						// ** キープ **
+						if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "KEEP", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+						// *********************
+						// ここにキープアニメーション追加!!!!
+						// *********************
 
 						// **
+					}
+
+					// **
 				}
 				else {
 					// <ディフェンダーが勝利>
-					
+
 					// ** クリアリング **
 					if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "CLEARING", true, true, FColor::Cyan, 2.f, TEXT("None"));
 					Clearing(dp);
@@ -691,12 +621,12 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 
 			if (_passTarget == nullptr) { // パスターゲットが取得できなかった場合
 				bool _isBallHolderWin = SideDuel(dp); // サイド対人 (どちらが勝利したか取得)
-				
+
 				if (_isBallHolderWin) { // どちかが対人に処理したか
 					// <ボールホルダーが勝利>
 					// ** 前進する **
 					// | ボールホルダー3マス前進 |
-					
+
 					// 動くタイルNo (差分)
 					int _ballHolderMoveToTileNo = isHomeBall ? (C_Common::TILE_NUM_Y * 2) : -(C_Common::TILE_NUM_Y * 2); // ボールホルダー(2マス)
 					int _ballMoveToTileNo = isHomeBall ? (C_Common::TILE_NUM_Y * 3) : -(C_Common::TILE_NUM_Y * 3); // ボール(3マス)
@@ -732,7 +662,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		}
 	}
 	//}
-	
+
 	// ** シュート **
 	if (isHomeBall) { // Homeボールか
 		// Home
@@ -751,7 +681,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		}
 	}
 	// **
-	
+
 	// ** パスターゲット取得 (ロングパス) **
 	// *条件*
 	// | ⓵パスターゲットが取得できていない     |
@@ -775,7 +705,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		}
 	}
 	// **
-	
+
 	// ** ボール移動判定 (パス時) **
 	// | *パス処理の前に必ず実行 |
 	// *制限
@@ -783,7 +713,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// ⓶移動先タイルに動く予定のプレイヤーがいる
 	if (_passTarget != nullptr) {
 		int _ballMoveToTileNo = _passTarget->currentTileNo + _passTarget->direction; // ボールを動かすタイルNo
-		
+
 		if (currentTileNos.Contains(_ballMoveToTileNo) || moveToTileNos.Contains(_ballMoveToTileNo)) _passTarget = nullptr; // パスターゲット削除
 	}
 	// **
@@ -794,16 +724,16 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	//if (_passTarget != nullptr && _passTarget->isMarked == false) { // ターゲットがマークされていない
 	if (_passTarget != nullptr) {
 		// <パスターゲットが存在>
-		
+
 		// ** パス **
 		Pass(_passTarget);
 		// **
 	}
-	else{
+	else {
 		// <パスターゲットが不在>
 		if (ballHolder->direction == _ballSideForward) { // 前向きか
 			// <前向き>
-			
+
 			// ** ドリブル **
 			Drrible(); // *** 前進のみ
 			// **
@@ -811,7 +741,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		}
 		else {
 			// <前向きでない>
-			
+
 			// ** 方向転換 **
 			ChangeOfDirection();
 			// **
@@ -866,24 +796,24 @@ void AC_My_Player_Controller::MovementForSecondBall()
 	float _aroundRange = C_Common::NEXT_TO_TILE_DISTANCE * _outSideTileNum; // 周囲タイル範囲 (*この値以下だと周囲タイルとみなす)
 	// *制限
 	// | ⓵周囲タイル範囲以上 |
-	for (AC_Tile* t: allTiles) {
+	for (AC_Tile* t : allTiles) {
 		float _distanceFromBallTile = _ballTile->GetDistanceTo(t); // ボールタイルからの距離
 		if (_aroundRange < _distanceFromBallTile) continue; // ⓵周囲タイル範囲以上
 
 		_ballAroundTileNos.Add(t->tileNo);
 	}
 	// **
-	
+
 	// ** タイル上のプレイヤー取得 **
 	TArray< AC_Piece*> _ballAroundPlayers = {}; // ボール周囲のプレイヤー
 	for (AC_Piece* p : allPieces) {
 		if (_ballAroundTileNos.Contains(p->currentTileNo)) _ballAroundPlayers.Add(p);
 	}
 	// **
-	
+
 	// ** プレイヤーを移動させる **
 	if (_ballAroundPlayers.IsEmpty()) return; // 周囲のプレイヤーが取得できていない場合
-	
+
 	for (AC_Piece* p : _ballAroundPlayers) {
 		// ** 十字マスの中で最も距離が近いタイル取得 **
 		TArray <int> _crossTiles = { _plusX, _minusX, _plusY, _minusY }; // 十字タイルNo配列
@@ -906,11 +836,11 @@ void AC_My_Player_Controller::MovementForSecondBall()
 		if (_i < 0) return; // 取得できなかった場合
 		int _shotestTileNo = _crossTiles[_i]; // 最も近いタイル
 		// **
-		
+
 		// ** 移動するタイルNo取得 **
 		int _moveToTileNo = GetShortestNextTileNo(p->currentTileNo, _shotestTileNo); // 最も近いタイルへの最短距離
 		// **
-		
+
 		if (p->currentTileNo == _moveToTileNo) return; // すでに目的地にいる場合は移動しない
 
 		// ** 移動 **
@@ -918,7 +848,11 @@ void AC_My_Player_Controller::MovementForSecondBall()
 		// **
 	}
 }
+// *****************************
 
+
+
+// ********* プレイ *********
 // パス
 // | 体の方向へパスを出す |
 void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
@@ -1241,7 +1175,11 @@ void AC_My_Player_Controller::Clearing(AC_Piece* defencePlayer)
 
 	isClering = true; // クリアリング判定
 }
+// **************************
 
+
+
+// ********* フェーズ *********
 // ⓶2次配置フェーズ
 // | AWAYチームをゲーム開始位置(*15マス前)へ移動 (*AWAYが最初必ずディフェンスのため) |
 void AC_My_Player_Controller::SecondPlacePhase()
@@ -1289,47 +1227,6 @@ void AC_My_Player_Controller::FinishTimerAndStep()
 	isPlayStepPhase = _isFinish;
 }
 
-// マウスホバー時処理
-// | 選択中のプレイヤーの移動先がタイルだった場合, タイルをハイライトする |
-// | 移動先がタイルで無い場合, ハイライトを削除する |
-void AC_My_Player_Controller::HoverMouse()
-{
-	// ** マウス位置(クリック時)の情報を取得 **
-	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
-	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // タイル: WorldStatic
-	FHitResult _hitResult; // オブジェクト情報
-
-	bool _isWorldStatic = GetResultFromMouseLocation(_hitResult, _objectTypes); // マウス位置情報取得処理
-	// **
-
-	// * 制限 *
-	if (_isWorldStatic == false || _hitResult.GetActor()->ActorHasTag((FName("TILE"))) == false) { // WorldStatic かつ タイルか
-		// <タイルでない>
-		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
-		overlayTile = nullptr; // *リリース時対応
-		
-		return;
-	}
-	// *
-
-	AC_Tile* _currentnHoverTile = Cast<AC_Tile>(_hitResult.GetActor()); // 現在のホバータイル(キャスト)
-
-	// * 制限 *
-	if (_currentnHoverTile->tileNo == selectedPlayer->currentTileNo) return; // 移動前のタイルと同じか
-	if (overlayTile != nullptr) { // *初回のみnull入るため
-		if (_currentnHoverTile->tileNo == overlayTile->tileNo) return; // 現在ハイライトしているタイルと同じか
-	}
-	// *
-
-
-	// ** タイルをハイライトする **
-	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // マテリアル削除 (*ハイライトを1つにするため)
-
-	overlayTile = _currentnHoverTile; // ハイライトタイルを格納
-	overlayTile->SetMaterial(); // マテリアルセット (ハイライト処理)
-	// **
-}
-
 // ③-⑴ 準備ステップフェーズ
 // | フェーズカウント |
 // | プレイヤー・ボールの初期値セット |
@@ -1342,14 +1239,8 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "STEP: " + FString::FromInt(stepCount));
 	// **
 
-	// ** 全てのプレイヤーのタイルNoを取得 **
-	currentTileNos = SetTileNoToAllPlayers();
-	// **
-
-	// ** ボールの現在のタイルNoを取得 **
-	FVector bL = ball->GetActorLocation(); // ボールの位置
-	int bN = GetTileNoFromLocation(bL.X, bL.Y); // タイルNo
-	ball->currentTileNo = bN; // タイルNoセット
+	// ** 全てのプレイヤーとボールのタイルNoを取得 **
+	currentTileNos = SetTileNoToAllPlayersAndBall();
 	// **
 
 	// ** パス時 (前回のSTEPにて) **
@@ -1610,6 +1501,147 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	// **
 
 	return false;
+}
+// **************************
+
+
+
+// マウス位置に目的のオブジェクトがあるか判定して情報取得
+// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
+bool AC_My_Player_Controller::GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes)
+{
+	// マウスの位置を取得
+	FVector _mouseLocation; // *マウス位置
+	FVector _mouseDirection; // マウス方向
+	APlayerController::DeprojectMousePositionToWorld(_mouseLocation, _mouseDirection); // マウス位置を３D座標で取得
+
+	// マウス方向を変換
+	const int _distance = 10000;
+	_mouseDirection = (_mouseDirection * _distance) + _mouseLocation;
+
+	// マウス位置に目的のオブジェクトタイプがあるか判定
+	TArray<AActor*> _ignoreActors = {}; // 無視するアクター
+	EDrawDebugTrace::Type _drawDebugType = EDrawDebugTrace::Type::None; // デバッグモード
+
+	// オブジェクト有無の判定
+	bool _isExist = UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), _mouseLocation, _mouseDirection, objectTypes, false, _ignoreActors, _drawDebugType, hitResult, true);
+
+
+	return _isExist;
+}
+
+// 位置からタイルＮｏ取得
+// ( unreal座標  x: 縦, y: 横 )
+int AC_My_Player_Controller::GetTileNoFromLocation(float x, float y)
+{
+	// タイルNo
+	int tileNoY = 0; // タイルNo y (横)
+	int tileNoX = 0; // タイルNo x (縦)
+	int tileNo = 0; // タイルNo
+
+	bool isPositiveY = true; // xが正の整数か
+	const int tileSize = 100; // タイルの大きさ (100cm)
+	const int tilesNumY = 25; // タイルの横(y)の個数
+
+	// *** タイルNo y(横)を求める ***
+	// -の時の処理
+	if (y < 0) {
+		y = abs(y); // 絶対値に変換
+		isPositiveY = false; // フラグ変更
+	}
+
+	if (y < 50)	tileNoY = 13;
+	else if (y < 150) tileNoY = (isPositiveY) ? 14 : 12;
+	else if (y < 250) tileNoY = (isPositiveY) ? 15 : 11;
+	else if (y < 350) tileNoY = (isPositiveY) ? 16 : 10;
+	else if (y < 450) tileNoY = (isPositiveY) ? 17 : 9;
+	else if (y < 550) tileNoY = (isPositiveY) ? 18 : 8;
+	else if (y < 650) tileNoY = (isPositiveY) ? 19 : 7;
+	else if (y < 750) tileNoY = (isPositiveY) ? 20 : 6;
+	else if (y < 850) tileNoY = (isPositiveY) ? 21 : 5;
+	else if (y < 950) tileNoY = (isPositiveY) ? 22 : 4;
+	else if (y < 1050) tileNoY = (isPositiveY) ? 23 : 3;
+	else if (y < 1150) tileNoY = (isPositiveY) ? 24 : 2;
+	else if (y < 1250) tileNoY = (isPositiveY) ? 25 : 1;
+	// ***
+
+	// *** タイルNo x(縦)を求める ***
+	int tX = x / tileSize; // 中央から何列面のタイルか
+	// 負の整数の時
+	if (x < 0) {
+		tX = abs(tX); // 絶対値へ
+	}
+
+	switch (tX) {
+	case 0:
+		tileNoX = (x > 0) ? 21 : 20;
+		break;
+	case 1:
+		tileNoX = (x > 0) ? 22 : 19;
+		break;
+	case 2:
+		tileNoX = (x > 0) ? 23 : 18;
+		break;
+	case 3:
+		tileNoX = (x > 0) ? 24 : 17;
+		break;
+	case 4:
+		tileNoX = (x > 0) ? 25 : 16;
+		break;
+	case 5:
+		tileNoX = (x > 0) ? 26 : 15;
+		break;
+	case 6:
+		tileNoX = (x > 0) ? 27 : 14;
+		break;
+	case 7:
+		tileNoX = (x > 0) ? 28 : 13;
+		break;
+	case 8:
+		tileNoX = (x > 0) ? 29 : 12;
+		break;
+	case 9:
+		tileNoX = (x > 0) ? 30 : 11;
+		break;
+	case 10:
+		tileNoX = (x > 0) ? 31 : 10;
+		break;
+	case 11:
+		tileNoX = (x > 0) ? 32 : 9;
+		break;
+	case 12:
+		tileNoX = (x > 0) ? 33 : 8;
+		break;
+	case 13:
+		tileNoX = (x > 0) ? 34 : 7;
+		break;
+	case 14:
+		tileNoX = (x > 0) ? 35 : 6;
+		break;
+	case 15:
+		tileNoX = (x > 0) ? 36 : 5;
+		break;
+	case 16:
+		tileNoX = (x > 0) ? 37 : 4;
+		break;
+	case 17:
+		tileNoX = (x > 0) ? 38 : 3;
+		break;
+	case 18:
+		tileNoX = (x > 0) ? 39 : 2;
+		break;
+	case 19:
+		tileNoX = (x > 0) ? 40 : 1;
+		break;
+	}
+	// ***
+
+	// *** タイルNo取得 ***
+	// ( (タイル縦(x) - 1個) * フィールドの横のタイル個数 ) + タイル横(y)
+	tileNo = ((tileNoX - 1) * tilesNumY) + tileNoY;
+
+
+	return tileNo;
 }
 
 // パスレンジのタイルＮｏ取得
@@ -2133,8 +2165,8 @@ void AC_My_Player_Controller::SetPositionToAllPlayer()
 	}
 }
 
-// 全てのプレイヤーにタイル位置を設定
-TArray<int> AC_My_Player_Controller::SetTileNoToAllPlayers()
+// 全てのプレイヤーとボールにタイル位置を設定
+TArray<int> AC_My_Player_Controller::SetTileNoToAllPlayersAndBall()
 {
 	TArray<int> _currentTileNos = {}; // プレイヤーのタイルNo
 	for (AC_Piece* p : allPieces) {
@@ -2144,11 +2176,16 @@ TArray<int> AC_My_Player_Controller::SetTileNoToAllPlayers()
 		_currentTileNos.Add(n); // 配列作成
 	}
 
+	FVector bl = ball->GetActorLocation(); // コマの位置
+	int bn = GetTileNoFromLocation(bl.X, bl.Y); // タイルNo
+	ball->currentTileNo = bn; // タイルNoセット
+	_currentTileNos.Add(bn); // 配列作成
+
 	return _currentTileNos;
 }
 
-// プレイヤー位置をタイル位置へ設定
-void AC_My_Player_Controller::SetPlayerToTilePosition()
+// プレイヤーとボール位置をタイル位置へ設定
+void AC_My_Player_Controller::SetPlayerAndBallToTilePosition()
 {
 	for (AC_Piece* p : allPieces) {
 		FVector _currentTileLocation = allTiles[p->currentTileNo - 1]->GetActorLocation();
@@ -2156,6 +2193,10 @@ void AC_My_Player_Controller::SetPlayerToTilePosition()
 		
 		p->SetActorLocation(_currentTileLocation);
 	}
+
+	FVector _ballCurrentTileLocation = allTiles[ball->currentTileNo - 1]->GetActorLocation();
+	_ballCurrentTileLocation.Z = C_Common::BASE_LOCATION_Z;
+	ball->SetActorLocation(_ballCurrentTileLocation);
 }
 
 // プレイヤー間のラインを表示

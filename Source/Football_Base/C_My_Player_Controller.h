@@ -26,19 +26,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// ********* input *********
 	// 入力設定
 	void SetupInput();
 	// 左クリック(プレス)イベント
+	// | プレイヤー選択 |
 	void PressedLeft();
 	// 左クリック(リリース)イベント
 	void ReleasedLeft();
 	// (*デバッグ時のみ)スペースキー(プレス)イベント
 	void PressedSpaceBar();
-	// マウス位置に目的のオブジェクトがあるか判定して情報取得
-	// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
-	bool GetResultFromMouseLocation(FHitResult &hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
-	// 位置からタイルＮｏ取得
-	int GetTileNoFromLocation(float x, float y);
+	// マウスホバー時,タイルをハイライトする
+	void TileHighlightWhenMouseHover();
+	// **********************
+	
+
+
+	// ********* プレイ判断 *********
 	// ボールホルダーのプレイ選択
 	void SelectPlayForBallHolder();
 	// ディフェンダーのプレイ選択
@@ -47,6 +51,11 @@ private:
 	// | 全プレイヤー対象となる |
 	// | ボール周囲のプレイヤーがボールに対して移動する |
 	void MovementForSecondBall();
+	// *****************************
+	
+	
+	
+	// ********* プレイ *********
 	// パス
 	// ( 引数: targetPiece(コマ) )
 	void Pass(AC_Piece* targetPiece);
@@ -75,6 +84,11 @@ private:
 	// クリアリング
 	// | defencePlayer: 対人をされるプレイヤー |
 	void Clearing(AC_Piece* defencePlayer);
+	// **************************
+	
+
+
+	// ********* フェーズ *********
 	// 2次配置フェーズ
 	void SecondPlacePhase();
 	// ③-⑵プレイステップフェーズを監視するタイマー設定
@@ -83,14 +97,21 @@ private:
 	void MonitorFinishPlayStepPhase();
 	// (フェーズ)タイマーとステップを終了
 	void FinishTimerAndStep();
-	// マウスホバー時処理
-	void HoverMouse();
 	// ③-⑴ 準備ステップフェーズ
 	void PrepareStepPhase();
 	// ③-⑵ プレイステップフェーズ
 	void PlayStepPhase();
 	// ③-⑶ リセットステップフェーズ (bool: falseでフェーズ終了)
 	bool ResetStepPhase();
+	// **************************
+	
+
+
+	// マウス位置に目的のオブジェクトがあるか判定して情報取得
+	// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
+	bool GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
+	// 位置からタイルＮｏ取得
+	int GetTileNoFromLocation(float x, float y);
 	// パスレンジのタイルＮｏ取得
 	TArray <int> GetTileNoInPassRange();
 	// ボールホルダーの向きを取得
@@ -110,10 +131,10 @@ private:
 	void RemovePlayerPlaceRange();
 	// 全てのプレイヤーにポジションを設定
 	void SetPositionToAllPlayer();
-	// 全てのプレイヤーにタイル位置を設定
-	TArray<int> SetTileNoToAllPlayers();
-	// プレイヤー位置をタイル位置へ設定
-	void SetPlayerToTilePosition();
+	// 全てのプレイヤーとボールにタイル位置を設定
+	TArray<int> SetTileNoToAllPlayersAndBall();
+	// プレイヤーとボール位置をタイル位置へ設定
+	void SetPlayerAndBallToTilePosition();
 	// プレイヤー間のラインを表示
 	void DisplayLineBetweenPlayers();
 
