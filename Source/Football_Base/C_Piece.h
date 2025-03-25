@@ -44,6 +44,7 @@ public:
 	int tackle = 1; // タックル: ディフェンス時の対人能力
 	int keep = 1; // キープ: オフェンス時の背面対人能力
 	int drrible = 1; // ドリブル: オフェンス時の対人能力
+	int heading = 1; // ヘディング: エアバトル時の勝率
 	// *********
 
 private:

@@ -77,6 +77,10 @@ private:
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
 	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
 	bool SideDuel(AC_Piece* dueledPlayer);
+	// エアバトル
+	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
+	bool AirBattle(AC_Piece* dueledPlayer);
 	// プレス
 	void Press();
 	// マーキング
@@ -171,6 +175,9 @@ private:
 	int ballHolderLeftTileNo = 0; // ボールホルダーの左タイルNo
 	int secondBallRangeTileNum = 0; // セカンドボール反応範囲のタイル個数 (step毎に拡大)
 	TArray <int> placeableRrea = {}; // プレイヤー配置可能エリア
+	bool longPassed = false; // ロングパスフラグ(*前回のステップにて)
+	TArray <int> ballHolderAroundTileNos = {}; // ボールホルダー周囲タイルNo (エアバトル発火タイル)
+	bool isAirBattle = false; // エアバトル判定
 	
 	// ** ポジションエリア **
 	// < HOME >

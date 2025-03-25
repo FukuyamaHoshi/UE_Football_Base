@@ -489,6 +489,66 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	int _ballSideForward = isHomeBall ? C_Common::FORWARD_DIRECTION : C_Common::BACKWARD_DIRECTION; // ボールホルダー側の前向き
 	AC_Piece* _passTarget = nullptr; // パスターゲットのコマ
 
+	// ** エアバトル **
+	// | 勝者:               |
+	// |  ボールホルダー: ボールのみ4マス前進 |
+	// |  ディフェンダー: クリアリング |
+	if (longPassed) { // 前回のステップでロングパス使用時
+		longPassed = false; // ロングパスOFF
+		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
+			if (ballHolderAroundTileNos.Contains(p->currentTileNo)) { // ボールホルダー周囲にいれば
+				bool _isBallHolderWin = AirBattle(p);
+				if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "AIRBATTLE", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+				if (_isBallHolderWin) { // どちかが対人に処理したか
+					// <ボールホルダーが勝利>
+
+					// ** ボールのみ5マス前進する(*ボールを基準として) **
+					// | 距離の調整はクリアリングと同じ |
+
+					const int _moveTileNum = 5; // 移動するタイル数
+					int _moveToTileNo = 0; // 移動先のタイルNo
+					int _num = _moveTileNum; // 可変するタイル数(デクリメント用)
+					// 移動先のタイルを決定する
+					for (int i = 0; i < _moveTileNum; i++) { // *ボール移動の距離を調整
+						if (isHomeBall) { // 移動の方向を決める
+							// <ホーム>
+							_moveToTileNo = ball->currentTileNo + (C_Common::FORWARD_DIRECTION * _num);
+						}
+						else {
+							// <アウェイ>
+							_moveToTileNo = ball->currentTileNo - (C_Common::FORWARD_DIRECTION * _num);
+						}
+						// ボール移動の距離を調整
+						if (currentTileNos.Contains(_moveToTileNo) || moveToTileNos.Contains(_moveToTileNo)) { // ボールの移動先にプレイヤーがいれば
+							_num--; // ボール移動の距離を短縮
+
+							continue;
+						}
+
+						break;
+					}
+					
+					// ボール移動
+					ball->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
+
+					isAirBattle = true; // フラグON
+					if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "MOVE 5 TILES", true, true, FColor::Cyan, 2.f, TEXT("None"));
+				}
+				else {
+					// <ディフェンダーが勝利>
+
+					// ** クリアリング **
+					if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "CLEARING", true, true, FColor::Cyan, 2.f, TEXT("None"));
+					Clearing(p);
+					// **
+				}
+
+				return;
+			}
+		}
+	}
+	
 	// ** 対人 **
 	// | 勝者:               |
 	// |  ボールホルダー: 前進 |
@@ -724,7 +784,12 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 				if (p->position == C_Common::LWG_POSITION) _passTarget = p;
 				if (p->position == C_Common::RWG_POSITION) _passTarget = p;
 
-				if (_passTarget != nullptr) break;
+				if (_passTarget != nullptr) {
+					// <パスターゲット取得済み>
+					longPassed = true; // ロングパスON
+
+					break;
+				}
 			}
 		}
 	}
@@ -1085,6 +1150,29 @@ bool AC_My_Player_Controller::SideDuel(AC_Piece* dueledPlayer)
 	return false;
 }
 
+// エアバトル
+// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
+// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
+bool AC_My_Player_Controller::AirBattle(AC_Piece* dueledPlayer)
+{
+	// 能力値が同じだった場合
+	if (ballHolder->heading == dueledPlayer->heading) {
+		// ランダムに勝者がきまる
+		bool r = FMath::RandBool(); // ランダムBool
+
+		return r;
+	}
+
+	// ヘディングの能力値を比較
+	if (ballHolder->heading > dueledPlayer->heading) {
+		// <オフェンス勝利>
+		return true;
+	}
+
+	// <ディフェンス勝利>
+	return false;
+}
+
 // プレス
 // | ファーストディフェンダーがボールホルダーへ移動する |
 void AC_My_Player_Controller::Press()
@@ -1293,11 +1381,24 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	}
 	// **
 
+	// ** エアバトル時 (前回のSTEPにて) **
+	if (isAirBattle) { // 前回のSTEPにてエアバトルが実行されているか
+		// ** 前回のボールホルダーを取得 **
+		preBallHolder = ballHolder;
+		// **
+
+		// ** ボールホルダーを空へ **
+		ballHolder = nullptr;
+		// **
+
+		isAirBattle = false; // エアバトルOFF
+	}
+	// **
+
 	// ** ボールホルダー取得 (*ホールホルダーがいない場合のみ) **
 	// | ボール周囲(十字)にプレイヤーがいるか |
 	if (ballHolder == nullptr) { // ボールホルダーがいない場合
 	   // ●ボールの十字タイルNoを作成
-		ballCrossTileNos.Empty(); // 空にする
 		int _ballTileNo = ball->currentTileNo; // ボールタイルNo
 		// 十字マス
 		int _plusX = _ballTileNo + (C_Common::TILE_NUM_Y * 1);
@@ -1320,6 +1421,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		}
 	}
 	// **
+
 
 	if (ballHolder != nullptr) { // ボールホルダーがいるか
 		// <ボールホルダーあり>
@@ -1403,9 +1505,11 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		else {
 			// パスレンジあり
 			// マテリアル表示
-			for (int i : passRangeTileNos) {
-				AC_Tile* t = allTiles[i - 1];
-				t->SetPassRangeMaterial();
+			if (C_Common::TILE_RANGE_DISPLAY) { // タイル範囲表示モードON
+				for (int i : passRangeTileNos) {
+					AC_Tile* t = allTiles[i - 1];
+					t->SetPassRangeMaterial();
+				}
 			}
 		}
 		// **
@@ -1426,9 +1530,11 @@ void AC_My_Player_Controller::PrepareStepPhase()
 				p->markRange = _range; // セット
 				
 				// マテリアル表示
-				for (int i : _range) {
-					AC_Tile* t = allTiles[i - 1];
-					t->SetMarkRangeMaterial();
+				if (C_Common::TILE_RANGE_DISPLAY) { // タイル範囲表示モードON
+					for (int i : _range) {
+						AC_Tile* t = allTiles[i - 1];
+						t->SetMarkRangeMaterial();
+					}
 				}
 			}
 		}
@@ -1444,6 +1550,35 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			// < 左右 >
 			ballHolderRightTileNo = ballHolder->currentTileNo + C_Common::TILE_NUM_Y; // 右
 			ballHolderLeftTileNo = ballHolder->currentTileNo - C_Common::TILE_NUM_Y; // 左
+		}
+		// **
+
+		// ** ボールホルダーの周囲マス取得 **
+		// 十字マス
+		int _plusX = ballHolder->currentTileNo + C_Common::TILE_NUM_Y;
+		int _minusX = ballHolder->currentTileNo - C_Common::TILE_NUM_Y;
+		int _plusY = ballHolder->currentTileNo + 1;
+		int _minusY = ballHolder->currentTileNo - 1;
+		// 斜めマス
+		int _plusXplusY = _plusX + 1;
+		int _plusXminusY = _plusX - 1;
+		int _minusXplusY = _minusX + 1;
+		int _minusXminusY = _minusX - 1;
+		
+		TArray <int> _aroundTileNos = { _plusX, _minusX, _plusY, _minusY, _plusXplusY, _plusXminusY, _minusXplusY, _minusXminusY }; // タイルの周囲No
+		
+		for (int n : _aroundTileNos) {
+			// * 制限 *
+			if (n < 1 || n > 1000) { // *タイルNoがタイル数内か
+
+				continue;
+			}
+			if (allTiles[ballHolder->currentTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > C_Common::AROUNT_TILE_RANGE) { // *周囲のタイルか (周囲タイルの距離が150.0f以上)
+
+				continue;
+			}
+
+			ballHolderAroundTileNos.Add(n);
 		}
 		// **
 
@@ -1540,6 +1675,12 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	currentTileNos.Empty();
 	moveToTileNos.Empty();
 	// **
+
+	// ** ボールホルダー周囲タイル削除 **
+	ballHolderAroundTileNos.Empty(); // ボールホルダー周囲タイル
+	ballCrossTileNos.Empty(); // 空にする
+	// **
+
 
 	return false;
 }
