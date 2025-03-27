@@ -88,6 +88,9 @@ private:
 	// クリアリング
 	// | defencePlayer: 対人をされるプレイヤー |
 	void Clearing(AC_Piece* defencePlayer);
+	// キープ中、ボールホルダーへ味方が近づく
+	// | ボールホルダーより後ろの味方で最も近い一人のみ |
+	void ApproachBallHolderWhenBallKeeping();
 	// **************************
 	
 
@@ -178,6 +181,12 @@ private:
 	bool longPassed = false; // ロングパスフラグ(*前回のステップにて)
 	TArray <int> ballHolderAroundTileNos = {}; // ボールホルダー周囲タイルNo (エアバトル発火タイル)
 	bool isAirBattle = false; // エアバトル判定
+	bool isBallKeeping = false; // ボールキープ中か
+	struct FDistanceToBallHolder // ボールホルダーとプレイヤーの距離(*比較のため)
+	{
+		AC_Piece* player;
+		float distance;
+	};
 	
 	// ** ポジションエリア **
 	// < HOME >

@@ -490,16 +490,16 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	AC_Piece* _passTarget = nullptr; // パスターゲットのコマ
 
 	// ** エアバトル **
-	// | 勝者:               |
+	// | 勝者:                            |
 	// |  ボールホルダー: ボールのみ4マス前進 |
-	// |  ディフェンダー: クリアリング |
+	// |  ディフェンダー: クリアリング       |
 	if (longPassed) { // 前回のステップでロングパス使用時
 		longPassed = false; // ロングパスOFF
 		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
 			if (ballHolderAroundTileNos.Contains(p->currentTileNo)) { // ボールホルダー周囲にいれば
 				bool _isBallHolderWin = AirBattle(p);
 				if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "AIRBATTLE", true, true, FColor::Cyan, 2.f, TEXT("None"));
-
+				
 				if (_isBallHolderWin) { // どちかが対人に処理したか
 					// <ボールホルダーが勝利>
 
@@ -621,7 +621,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 		for (AC_Piece* dp : defencePlayers) { // ディフェンダーの中で
 			if (_ballHolderBackTileNo == dp->currentTileNo) { // ボールホルダーの後ろにいる場合
 				bool _isBallHolderWin = BackDuel(dp); // 背面対人 (どちらが勝利したか取得)
-
+				
 				if (_isBallHolderWin) { // どちかが対人に処理したか
 					// <ボールホルダーが勝利>
 
@@ -655,6 +655,7 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 						// ここにキープアニメーション追加!!!!
 						// *********************
 
+						isBallKeeping = true; // フラグON
 						// **
 					}
 
@@ -1178,16 +1179,18 @@ bool AC_My_Player_Controller::AirBattle(AC_Piece* dueledPlayer)
 void AC_My_Player_Controller::Press()
 {
 	// * 制限 *
-	// | ファーストディフェンダーが対人レンジ内にいる |
-	// | 移動先にプレイヤーがいる |
-	if (duelRangeTileNos.IsEmpty() == false) { // 対人レンジが取得できているか
-		if (duelRangeTileNos.Contains(firstDefender->currentTileNo)) return; // ファーストディフェンダーが対人レンジ内にいるか
-	}
+	// | 既に対人レンジ内にいる |
+	// | 既にボールホルダー周囲にいる |
+	// | 既にプレイヤーがいるタイル or 移動予約済みタイル (*移動するタイルが) |
+	if (duelRangeTileNos.Contains(firstDefender->currentTileNo)) return; // *既に対人レンジ内にいる
+	if (ballHolderAroundTileNos.Contains(firstDefender->currentTileNo)) return; // *既にボールホルダー周囲にいる
 	// *
 
 	int nextTileNo = GetShortestNextTileNo(firstDefender->currentTileNo, ballHolder->currentTileNo); // 移動先のタイルNo
 
-	if (currentTileNos.Contains(nextTileNo)) return; // 移動先にプレイヤーがいる
+	// * 制限 *
+	if (currentTileNos.Contains(nextTileNo) || moveToTileNos.Contains(nextTileNo)) return; // *既にプレイヤーがいるタイル or 移動予約済みタイル
+	// *
 
 	// ** 移動先のタイルを予約する **
 	if (moveToTileNos.Contains(nextTileNo)) { // タイルが予約されているか
@@ -1283,6 +1286,89 @@ void AC_My_Player_Controller::Clearing(AC_Piece* defencePlayer)
 	ball->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation()); // ボール移動
 
 	isClering = true; // クリアリング判定
+}
+
+// キープ中、ボールホルダーへ味方が近づく
+// | ボールホルダーより後ろの味方で最も近い一人のみ |
+void AC_My_Player_Controller::ApproachBallHolderWhenBallKeeping()
+{
+	int _ballHolderRow = ballHolder->currentTileNo / C_Common::TILE_NUM_Y; // ボールホルダーRow
+	TArray<int> _tileNosLessThanBallHolder = {}; // ボールホルダー以下のタイルNo (現在プレイヤーが存在する中で)
+	
+	// ** ⓵ボールホルダー以下のタイルNo取得 (現在プレイヤーが存在する中で) **
+	for (int _tileNo : currentTileNos) {
+		int _tileNoRow = _tileNo / C_Common::TILE_NUM_Y; // タイルRow
+		bool _isLessThanBallHolder = isHomeBall ? _tileNoRow < _ballHolderRow : _tileNoRow > _ballHolderRow; // ボールホルダー以下のタイルか
+		
+		if (_isLessThanBallHolder) {
+			_tileNosLessThanBallHolder.Add(_tileNo);
+		}
+	}
+	// **
+
+	// ** ⓶味方プレイヤーとボールホルダーとの距離取得 **
+	TArray<FDistanceToBallHolder> _playerAndDistances = {}; // 構造体(味方プレイヤーとボールホルダーとの距離)配列
+	TArray<AC_Piece*> _allyPlayers = isHomeBall ? allHomePieces : allAwayPieces; // 味方プレイヤー
+	AC_Tile* _ballTile = allTiles[ball->currentTileNo - 1]; // ボールタイル
+	// 構造体配列作成
+	for (AC_Piece* _p : _allyPlayers) {
+		AC_Tile* _pTile = (allTiles[_p->currentTileNo - 1]); // プレイヤータイル
+		FDistanceToBallHolder _distanceAndPlayer = { _p, _ballTile->GetDistanceTo(_pTile)}; // 構造体
+		
+		_playerAndDistances.Add(_distanceAndPlayer); // 追加
+	}
+	// **
+
+	// ** ⓶ボールホルダーと最も近く、⓵ボールホルダー以下のタイルに存在するプレイヤーを取得 **
+	AC_Piece* _nearestPlayer = nullptr; // プレイヤー取得
+	
+	// ボールホルダーの距離でソート
+	_playerAndDistances.Sort([](const FDistanceToBallHolder& A, const FDistanceToBallHolder& B) {
+		return A.distance < B.distance; // 距離が小さい順に
+		});
+
+	// ボールホルダー以下のタイルに存在するプレイヤー取得
+	for (FDistanceToBallHolder _pAndD : _playerAndDistances) {
+		AC_Piece* _player = _pAndD.player; // プレイヤー
+
+		if (_tileNosLessThanBallHolder.Contains(_player->currentTileNo)) {
+			
+			_nearestPlayer = _player; // 取得
+			break;
+		}
+	}
+	// **
+	
+	// ** 移動 **
+	if (_nearestPlayer != nullptr) {
+		// < プレイヤー取得済み >
+		
+		int _moveToTileNo = GetShortestNextTileNo(_nearestPlayer->currentTileNo, ballHolder->currentTileNo); // 移動するタイルNo
+
+		// 移動先のタイルを予約
+		if (moveToTileNos.Contains(_moveToTileNo)) { // タイルが予約されているか
+			// <予約あり>
+			if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NOT GET NEAREST PLAYER DURING BALL KEEPING", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+			return; // 移動しない
+		}
+		else {
+			// <予約なし>
+
+			moveToTileNos.Add(_moveToTileNo); // 予約する
+		}
+
+		_nearestPlayer->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
+	}
+	else {
+		// < プレイヤー取得未 >
+
+		if(C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NOT GET NEAREST PLAYER DURING BALL KEEPING", true, true, FColor::Cyan, 2.f, TEXT("None"));
+	}
+	// **
+
+
+	isBallKeeping = false; // フラグOFF
 }
 // **************************
 
@@ -1394,6 +1480,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		isAirBattle = false; // エアバトルOFF
 	}
 	// **
+
 
 	// ** ボールホルダー取得 (*ホールホルダーがいない場合のみ) **
 	// | ボール周囲(十字)にプレイヤーがいるか |
@@ -1632,16 +1719,29 @@ void AC_My_Player_Controller::PlayStepPhase()
 	// *** プレイ選択処理 ***
 	if (ballHolder != nullptr) { // ボールホルダーがいるか
 		// <存在>
-		// ** ボールホルダーのプレイ選択 **
-		SelectPlayForBallHolder();
-		// **
+		
+		if (isBallKeeping) { // ボールキープ中か (*前回のSTEP時)
+			// < ボールキープ中 >
 
-		// ** ディフェンダーのプレイ選択 **
-		SelectPlayForDefender();
-		// **
+			// ** ボールホルダーへ味方が近づく **
+			ApproachBallHolderWhenBallKeeping();
+			// **
+		}
+		else {
+			// < ボールキープ中でない >
+			
+			// ** ボールホルダーのプレイ選択 **
+			SelectPlayForBallHolder();
+			// **
+
+			// ** ディフェンダーのプレイ選択 **
+			SelectPlayForDefender();
+			// **
+		}
 	}
 	else {
 		// <不在>
+		
 		// ** セカンドボール処理 **
 		MovementForSecondBall();
 		// **
@@ -2132,23 +2232,22 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 	TArray <int> _fromAroundTileNos = { plusX, minusX, plusY, minusY, plusXplusY, plusXminusY, minusXplusY, minusXminusY }; // タイルの周囲No
 	// **
 
-	// ** toTileNoとの距離を取得 **
-	TArray <int> _toTileDistances; // toTileNoとの距離の配列
+	// ** ⓵制限配列と⓶目的地タイルとの距離を作成 **
+	TArray <int> _limitFromAroundTileNos = {}; // ⓵タイル周囲No (*制限あり)
+	TArray <int> _toTileDistances = {}; // ⓶目的地タイルとの距離の配列
 	for (int n : _fromAroundTileNos) {
+		// _toTileDistancesと_limitFromAroundTileNosの要素を合わせる
+		
 		// * 制限 *
-		// _fromAroundTileNosと要素を合わせる
-		if (n < 1 || n > 1000) { // *タイルNoがタイル数内か
-			_fromAroundTileNos.Remove(n); // 削除
-			
-			continue;
-		}
-		if (allTiles[fromTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > C_Common::AROUNT_TILE_RANGE) { // *周囲のタイルか (fromtileと周囲タイルの距離が150.0f以上)
-			_fromAroundTileNos.Remove(n); // 削除
-			
-			continue;
-		}
+		if (n < 1 && n > 1000) continue; // *タイル数外か
+		if (allTiles[fromTileNo - 1]->GetDistanceTo(allTiles[n - 1]) > C_Common::AROUNT_TILE_RANGE) continue; // *周囲タイルの距離が150.0f以上か
+		if (currentTileNos.Contains(n) || moveToTileNos.Contains(n)) continue; // *現在プレイヤーがいる or 移動予約されているか
 		// *
 
+		// タイル周囲No取得
+		_limitFromAroundTileNos.Add(n);
+
+		// 目的タイルとの距離取得
 		AC_Tile* _aroundTile = allTiles[n - 1]; // 周囲タイル
 		AC_Tile* _toTile = allTiles[toTileNo - 1]; // toタイル
 		_toTileDistances.Add(_toTile->GetDistanceTo(_aroundTile)); // 配列セット
@@ -2169,9 +2268,9 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 	if (minDistanceIndex == -1) // タイルNo取得できなかった場合
 	{
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NOT GET SHOTEST TILE NO");
-		return _fromAroundTileNos[0]; // 最初のタイルNoを返す
+		return _limitFromAroundTileNos[0]; // 最初のタイルNoを返す
 	}
-	int shotestToTileNo = _fromAroundTileNos[minDistanceIndex]; // タイルNo
+	int shotestToTileNo = _limitFromAroundTileNos[minDistanceIndex]; // タイルNo
 	// **
 
 
