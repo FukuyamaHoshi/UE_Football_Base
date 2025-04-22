@@ -49,9 +49,17 @@ public:
     static constexpr int RST_POSITION = 14; // RST
     static constexpr int RWG_POSITION = 15; // RWG
     // ----
+
+    // -レーン--
+    // | Homeの左から1-5レーン |
+    static constexpr int LANE_FIRST = 1; 
+    static constexpr int LANE_SECOND = 2;
+    static constexpr int LANE_THIRD = 3;
+    static constexpr int LANE_FOURTH = 4;
+    static constexpr int LANE_FIFTH = 5;
+    // ---
+
     // **
-
-
     
     
     // ***** ゲーム内時間ごとの名称 *****************

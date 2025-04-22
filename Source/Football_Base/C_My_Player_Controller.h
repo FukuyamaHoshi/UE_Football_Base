@@ -56,9 +56,16 @@ private:
 	
 	
 	// ********* プレイ *********
-	// パス
+	// ショートパス
 	// ( 引数: targetPiece(コマ) )
-	void Pass(AC_Piece* targetPiece);
+	void ShortPass(AC_Piece* targetPiece);
+	// ロングパス
+	// ( 引数: targetPiece(コマ) )
+	void LongPass(AC_Piece* targetPiece);
+	// ロングアタック
+	void LongAttack();
+	// ロングボールの事前動作
+	void PreActionForLongBall();
 	// ドリブル (前進のみ)
 	void Drrible();
 	// 方向転換 
@@ -104,6 +111,8 @@ private:
 	void MonitorFinishPlayStepPhase();
 	// (フェーズ)タイマーとステップを終了
 	void FinishTimerAndStep();
+	// 試合開始時処理
+	void StartOfMatch();
 	// ③-⑴ 準備ステップフェーズ
 	void PrepareStepPhase();
 	// ③-⑵ プレイステップフェーズ
@@ -144,6 +153,8 @@ private:
 	void SetPlayerAndBallToTilePosition();
 	// プレイヤー間のラインを表示
 	void DisplayLineBetweenPlayers();
+	// プレイヤーのレーンを設定
+	void SetLaneForPlayers();
 
 	
 	AC_Piece* selectedPlayer; // 選択されたプレイヤー
@@ -159,6 +170,7 @@ private:
 	AC_Piece* ballHolder = nullptr; // ボールホルダー
 	AC_Piece* preBallHolder = nullptr; // 前回のボールホルダー
 	AC_Piece* passTarget = nullptr; // パスターゲット
+	AC_Piece* longPassTarget = nullptr; // ロングパスターゲット
 	bool isInitialPlacePhase = true; // 初期配置フェーズフラグ
 	bool isSecondPlacePhase = false; // 2次配置フェーズフラグ
 	bool isPlayStepPhase = false; // プレイステップフェーズ中
@@ -178,17 +190,19 @@ private:
 	int ballHolderLeftTileNo = 0; // ボールホルダーの左タイルNo
 	int secondBallRangeTileNum = 0; // セカンドボール反応範囲のタイル個数 (step毎に拡大)
 	TArray <int> placeableRrea = {}; // プレイヤー配置可能エリア
-	bool longPassed = false; // ロングパスフラグ(*前回のステップにて)
 	TArray <int> ballHolderAroundTileNos = {}; // ボールホルダー周囲タイルNo (エアバトル発火タイル)
 	bool isAirBattle = false; // エアバトル判定
 	bool isBallKeeping = false; // ボールキープ中か
+	bool isPreActionedLongBall = false; // ロングボール事前動作後か
+	bool isLongBalled = false; // ロングボール後か
+	bool isFloatingBall = false; // 現在ボールが浮いているか (*ロングボール時ON)
 	struct FDistanceToBallHolder // ボールホルダーとプレイヤーの距離(*比較のため)
 	{
 		AC_Piece* player;
 		float distance;
 	};
 	
-	// ** ポジションエリア **
+	// ** ポジションエリア (タイルNo) **
 	// < HOME >
 	// -FW-
 	TArray <int> LWG_Erea = {}; // LWG
@@ -228,6 +242,10 @@ private:
 	TArray <int> Away_CB_Erea = {}; // CB
 	TArray <int> Away_RCB_Erea = {}; // RCB
 	TArray <int> Away_RSB_Erea = {}; // RSB
-	
 	// ***
+
+	// ポジション範囲
+	const TArray <int> DFPositionRange = { 1, 2, 3, 4, 5 }; // DF (*GKは含まない)
+	const TArray <int> MFPositionRange = { 6, 7, 8, 9, 10 }; // MF
+	const TArray <int> FWPositionRange = { 11, 12, 13, 14, 15 }; // FW
 };

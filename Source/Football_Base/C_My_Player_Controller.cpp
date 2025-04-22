@@ -67,7 +67,7 @@ void AC_My_Player_Controller::BeginPlay()
 	ball = Cast<AC_Ball>(aBall); // キャスト
 	// ***
 
-	// *** コマ取得 ***
+	// *** プレイヤー取得 ***
 	TArray<AActor*> a_allPieces; // コマアクター配列
 	UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // クラスで探す
 	// 型変換
@@ -223,7 +223,7 @@ void AC_My_Player_Controller::BeginPlay()
 	// **
 	
 	// ** プレイヤーにポジションをセット **
-	SetPositionToAllPlayer();
+	SetPositionToAllPlayer(); // ←ゲーム起動時に呼ばないとコマが移動できなくなる
 	// **
 
 	// ** プレイヤーとボール位置をタイル位置へ設定 **
@@ -290,6 +290,10 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 			isPlayStepPhase = true; // 対戦フェーズがよばれないように
 			isSecondPlacePhase = false; // *一度しか呼べれないようにする
 
+			// ** ポジションを設定する **
+			SetPositionToAllPlayer(); // ←*対戦フェーズで呼ぶと2次配置後の配置でポジションが決まってしまうため
+			//**
+			
 			// ** ⓶2次配置フェーズ処理 **
 			SecondPlacePhase();
 			// **
@@ -487,14 +491,35 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 {
 	float f_ballHolderRow = float(ballHolder->currentTileNo) / float(C_Common::TILE_NUM_Y); // ボールホルダーが何列目にいるか (小数点含む) **右端タイル処理
 	int _ballSideForward = isHomeBall ? C_Common::FORWARD_DIRECTION : C_Common::BACKWARD_DIRECTION; // ボールホルダー側の前向き
-	AC_Piece* _passTarget = nullptr; // パスターゲットのコマ
+	AC_Piece* _shortPassTarget = nullptr; // ショートパスターゲット
+	AC_Piece* _longPassTarget = nullptr; // ロングパスターゲット
+
+	// ** ロングボール動作 **
+	if (isPreActionedLongBall) {
+		if (longPassTarget != nullptr) {
+			// <ターゲットがいる>
+
+			// --ロングパス
+			LongPass(longPassTarget);
+		}
+		else {
+			// <ターゲットがいない>
+
+			// --ロングアタック
+			LongAttack();
+		}
+
+		isLongBalled = true; // ロングボール終了ON
+
+		return;
+	}
+	// ** 
 
 	// ** エアバトル **
 	// | 勝者:                            |
 	// |  ボールホルダー: ボールのみ4マス前進 |
 	// |  ディフェンダー: クリアリング       |
-	if (longPassed) { // 前回のステップでロングパス使用時
-		longPassed = false; // ロングパスOFF
+	if (isFloatingBall) { // ボールが浮いている
 		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
 			if (ballHolderAroundTileNos.Contains(p->currentTileNo)) { // ボールホルダー周囲にいれば
 				bool _isBallHolderWin = AirBattle(p);
@@ -630,18 +655,18 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 						// | パスレンジはBoforeフェーズで取得済み |
 					for (AC_Piece* op : offencePlayers) { // オフェンスプレイヤーの中で
 						if (passRangeTileNos.Contains(op->currentTileNo) && op != preBallHolder) { // パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
-							_passTarget = op;
+							_shortPassTarget = op;
 
 							break;
 						}
 					}
 
-					if (_passTarget != nullptr) { // パスターゲットがいるか
+					if (_shortPassTarget != nullptr) { // ショートパスターゲットがいるか
 						// 〇パスターゲット存在
 
 						// ** ショートパス (落としのプレー) **
 						if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "POST PLAY", true, true, FColor::Cyan, 2.f, TEXT("None"));
-						Pass(_passTarget);
+						ShortPass(_shortPassTarget);
 						// **
 
 					}
@@ -684,16 +709,16 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// |  ディフェンダー: 前進                           |
 	for (AC_Piece* dp : defencePlayers) { // ディフェンダーの中で
 		if (ballHolderRightTileNo == dp->currentTileNo || ballHolderLeftTileNo == dp->currentTileNo) { // ボールホルダーのサイドにいる場合
-			// パスターゲット取得 (**対人前に取得)
+			// ショートパスターゲット取得 (**対人前に取得)
 			for (AC_Piece* op : offencePlayers) { // オフェンスプレイヤーの中で
 				if (passRangeTileNos.Contains(op->currentTileNo) && op != preBallHolder) { // パスレンジ内のHomeコマ && 前回のボールホルダーでない ( *リターンパス禁止処理 )
-					_passTarget = op;
+					_shortPassTarget = op;
 
 					break;
 				}
 			}
 
-			if (_passTarget == nullptr) { // パスターゲットが取得できなかった場合
+			if (_shortPassTarget == nullptr) { // パスターゲットが取得できなかった場合
 				bool _isBallHolderWin = SideDuel(dp); // サイド対人 (どちらが勝利したか取得)
 				
 				if (_isBallHolderWin) { // どちかが対人に処理したか
@@ -767,57 +792,96 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	}
 	// **
 
-	// ** パスターゲット取得 (ロングパス) **
+	// ** ロングアタック **
+	//    →DFラインの裏へボールを配給する
 	// *条件*
-	// | ⓵パスターゲットが取得できていない     |
-	// | ⓶ボールホルダーが前向き             |
-	// | ③ボールホルダーがFWでない           |
-	// | ⓸パスターゲットがパスレンジ内にいない |
-	if (_passTarget == nullptr) {
-		if (ballHolder->direction == _ballSideForward && ballHolder->position < C_Common::LWG_POSITION) {
+	// | ⓵ボールホルダーが前向き          |
+	// | ⓶パスターゲットが同じレーンにいる  |
+	// | ③ターゲットがラインブレイク前動作をしているか |
+	if (ballHolder->direction == _ballSideForward) { // 1
+		for (AC_Piece* p : offencePlayers) {
+			if (ballHolder->currentLane != p->currentLane) continue; // 2
+			
+			if (p->isLineBreakPreAction) { // 3
+				// ** ロングアタック (*予約) **
+				PreActionForLongBall(); // ロングボール事前動作
+
+				isPreActionedLongBall = true; // フラグON
+				// **
+
+
+				return;
+			}
+		}
+	}
+
+	// ** ロングパスターゲット取得 **
+	//    →DFからFWへボールを配給する
+	// *条件*
+	// | ⓵ボールホルダーがGK or DF                 |
+	// | ⓶ボールホルダーが前向き                    |
+	// | ③パスターゲットがショートパスレンジ内にいない |
+	// | ⓸パスターゲットがFW                       |
+	// | ⓹パスターゲットが同じレーンにいる           |
+	if (ballHolder->position == C_Common::GK_POSITION || DFPositionRange.Contains(ballHolder->position)) { // 1
+		if (ballHolder->direction == _ballSideForward) { // 2
 			// FWエリアのプレイヤーをターゲットに設定
 			for (AC_Piece* p : offencePlayers) {
-				if (passRangeTileNos.Contains(p->currentTileNo)) continue; // パスターゲットがパスレンジ内にいる場合
+				if (passRangeTileNos.Contains(p->currentTileNo)) continue; // 3
 
-				if (p->position == C_Common::CF_POSITION) _passTarget = p;
-				if (p->position == C_Common::LST_POSITION) _passTarget = p;
-				if (p->position == C_Common::RST_POSITION) _passTarget = p;
-				if (p->position == C_Common::LWG_POSITION) _passTarget = p;
-				if (p->position == C_Common::RWG_POSITION) _passTarget = p;
+				if (FWPositionRange.Contains(p->position)) { // 4
+					if (ballHolder->currentLane == p->currentLane) { // 5
+						_longPassTarget = p;
 
-				if (_passTarget != nullptr) {
-					// <パスターゲット取得済み>
-					longPassed = true; // ロングパスON
-
-					break;
+						break;
+					}
 				}
 			}
 		}
 	}
 	// **
 
-	// ** ボール移動判定 (パス時) **
+	// ** ボール移動判定 **
 	// | *パス処理の前に必ず実行 |
 	// *制限
 	// ⓵移動先タイルにプレイヤーがいる
 	// ⓶移動先タイルに動く予定のプレイヤーがいる
-	if (_passTarget != nullptr) {
-		int _ballMoveToTileNo = _passTarget->currentTileNo + _passTarget->direction; // ボールを動かすタイルNo
+	if (_shortPassTarget != nullptr) { // ショートパス時
+		int _ballMoveToTileNo = _shortPassTarget->currentTileNo + _shortPassTarget->direction; // ボールを動かすタイルNo
 
-		if (currentTileNos.Contains(_ballMoveToTileNo) || moveToTileNos.Contains(_ballMoveToTileNo)) _passTarget = nullptr; // パスターゲット削除
+		if (currentTileNos.Contains(_ballMoveToTileNo) || moveToTileNos.Contains(_ballMoveToTileNo)) _shortPassTarget = nullptr; // パスターゲット削除
+	}
+
+	if (_longPassTarget != nullptr) { // ロングパス時
+		int _ballMoveToTileNo = isHomeBall ? _longPassTarget->currentTileNo - C_Common::TILE_NUM_Y : _longPassTarget->currentTileNo + C_Common::TILE_NUM_Y; // ボールを動かすタイルNo
+
+		if (currentTileNos.Contains(_ballMoveToTileNo) || moveToTileNos.Contains(_ballMoveToTileNo)) _longPassTarget = nullptr; // パスターゲット削除
 	}
 	// **
 
-	// ** パス or ドリブル or 方向転換 **
+	// ** ショートパス or ロングボール事前動作(ロングパスの) or ドリブル or 方向転換 **
 	// * 制限 *
 	// |  ①パスターゲット取得可能 |
 	//if (_passTarget != nullptr && _passTarget->isMarked == false) { // ターゲットがマークされていない
-	if (_passTarget != nullptr) {
-		// <パスターゲットが存在>
+	if (_shortPassTarget != nullptr) {
+		// <ショートパスターゲットが存在>
 
-		// ** パス **
-		Pass(_passTarget);
+		// ** ショートパス **
+		ShortPass(_shortPassTarget);
 		// **
+	}
+	else if (_longPassTarget != nullptr) {
+		// <ロングパスターゲットが存在>
+
+		// ** ロングパス (*予約) **
+		PreActionForLongBall(); // ロングボール事前動作
+
+		longPassTarget = _longPassTarget; // ロングパスターゲット保持
+		isPreActionedLongBall = true; // フラグON
+		// **
+
+
+		return;
 	}
 	else {
 		// <パスターゲットが不在>
@@ -828,6 +892,8 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 			Drrible(); // *** 前進のみ
 			// **
 
+
+			return;
 		}
 		else {
 			// <前向きでない>
@@ -943,9 +1009,9 @@ void AC_My_Player_Controller::MovementForSecondBall()
 
 
 // ********* プレイ *********
-// パス
+// ショートパス
 // | 体の方向へパスを出す |
-void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
+void AC_My_Player_Controller::ShortPass(AC_Piece* targetPiece)
 {	
 	// ** ターゲットの体の向きのタイル取得 **
 	int _targetDirectionTileNo = targetPiece->currentTileNo + targetPiece->direction; // 動かすタイルNo
@@ -972,6 +1038,148 @@ void AC_My_Player_Controller::Pass(AC_Piece* targetPiece)
 	
 	// ** ボールを移動させる **
 	ball->SetMoveTo(moveToLocation);
+	// **
+}
+
+// ロングパス
+// | ターゲットの1個下タイルにボールを移動させる |
+void AC_My_Player_Controller::LongPass(AC_Piece* targetPiece)
+{
+	// ** ターゲットの背後のタイル取得 **
+	int _targetBackTileNo = isHomeBall ? targetPiece->currentTileNo - C_Common::TILE_NUM_Y: targetPiece->currentTileNo + C_Common::TILE_NUM_Y;
+	FVector _moveToLocation = allTiles[_targetBackTileNo - 1]->GetActorLocation(); // ボールを動かす位置
+	// **
+
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(_targetBackTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		moveToTileNos.Add(_targetBackTileNo); // 予約する
+	}
+	// **
+
+	// ** パスターゲットを設定 **
+	// | 次の3-⓵準備ステップ時にボールホルダーを変更 |
+	passTarget = targetPiece;
+	// **
+
+	// ** ボールを移動させる **
+	ball->SetMoveTo(_moveToLocation);
+	// **
+}
+
+// ロングアタック
+// →DFラインの背後にボールを配給
+// | ターゲットのレーンに対してボールを配給する |
+void AC_My_Player_Controller::LongAttack()
+{
+	const int _attackTileNum = 3; // *ディフェンスラインから何タイル目
+
+	// ** 最後尾の相手プレイヤー取得 **
+	AC_Piece* _defenseLinePlayer = nullptr; // *最後尾のディフェンダー
+	TArray<AC_Piece*> _fieldPlayeres = {}; // フィールドプレイヤー
+	
+	// *制限*
+	// ⓵GK
+	for (AC_Piece* _p : defencePlayers) {
+		if (_p->position == C_Common::GK_POSITION) continue; // 1
+
+		_fieldPlayeres.Add(_p);
+	}
+	// 距離が遠い順にソート
+	_fieldPlayeres.StableSort([&](const AC_Piece& A, const AC_Piece& B) {
+		return ballHolder->GetDistanceTo(&A) > ballHolder->GetDistanceTo(&B);; // 距離が遠い順
+		});
+
+	_defenseLinePlayer = _fieldPlayeres[0];
+	// **
+
+	// ** 最終ラインのレーンのタイルNosを取得 **
+	TArray<int> _targetTileNos = {}; // *
+	
+	int _defenseLineFrontRow = _defenseLinePlayer->currentTileNo / C_Common::TILE_NUM_Y; // ディフェンスライン前(*1行)の行数 (横)
+	int _leftMostLaneTile = 0; // レーンの左端タイルNo
+	// 左端タイル取得
+	switch (ballHolder->currentLane)
+	{
+	case (1):
+		_leftMostLaneTile = 1;
+		break;
+	case (2):
+		_leftMostLaneTile = 6;
+		break;
+	case (3):
+		_leftMostLaneTile = 11;
+		break;
+	case (4):
+		_leftMostLaneTile = 16;
+		break;
+	default:
+		_leftMostLaneTile = 21;
+	}
+	// レーンのタイルを追加していく(5タイル)
+	for (int i = 0; i < 5; i++) {
+		int n = (_defenseLineFrontRow * C_Common::TILE_NUM_Y) + (_leftMostLaneTile + i);
+
+		_targetTileNos.Add(n);
+	}
+	// **
+	
+	// ** タイルをランダムに選択 **
+	// | (未実装)キック精度に合わせて |
+	int _randomTileNo = FMath::RandRange(_targetTileNos[0], _targetTileNos[_targetTileNos.Num() - 1]); // ランダムタイルNo
+	// **
+	
+	// ** ディフェンスラインの背後にターゲットタイルを設定 **
+	int _targetTileNo = 0; // *最終ターゲットタイル
+	// *制限*
+	// | ⓵タイル数 |
+	int _tileNum = _attackTileNum; // タイル数
+	for (int i = 0;i <= _attackTileNum; i++) {
+		_targetTileNo = _randomTileNo + (C_Common::TILE_NUM_Y * _tileNum);
+
+		if (_targetTileNo <= 1000) break; // 1
+		_tileNum--;
+	}
+	// **
+
+	// ** 移動先のタイルを予約する **
+	if (moveToTileNos.Contains(_targetTileNo)) { // タイルが予約されているか
+		// 予約あり
+
+		return; // 移動しない
+	}
+	else {
+		// 予約なし
+
+		moveToTileNos.Add(_targetTileNo); // 予約する
+	}
+	// **
+
+	// ** 移動 **
+	ball->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation());
+	// **
+}
+
+// ロングボールの事前動作
+// (暫定)後でアニメーションで実装するか？
+void AC_My_Player_Controller::PreActionForLongBall()
+{
+	// ** 背後タイル位置との中間位置を取得 **
+	FVector _ballHolderLocation = allTiles[ballHolder->currentTileNo - 1]->GetActorLocation(); // ボールホルダータイル
+	FVector _backLocation = _ballHolderLocation; // 背後タイル位置 (*位置情報のみ)
+	_backLocation.X = isHomeBall ? _backLocation.X - 100: _backLocation.X + 100;
+
+	FVector _betweenLocation = FMath::Lerp(_ballHolderLocation, _backLocation, 0.3); // 中間位置
+	// **
+
+	// ** 移動 **
+	ballHolder->SetMoveTo(_betweenLocation);
 	// **
 }
 
@@ -1395,6 +1603,15 @@ void AC_My_Player_Controller::SecondPlacePhase()
 	}
 }
 
+// ③-⑵プレイステップフェーズを監視するタイマー設定
+void AC_My_Player_Controller::SetTimerMonitorPlayStepPhase()
+{
+	// ** タイマー開始 **
+	FTimerHandle handle;
+	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::MonitorFinishPlayStepPhase, 0.5f, true); // 0.5秒おき
+	// **
+}
+
 // ③-⑵プレイステップフェーズを終了していいか監視
 void AC_My_Player_Controller::MonitorFinishPlayStepPhase()
 {
@@ -1422,6 +1639,14 @@ void AC_My_Player_Controller::FinishTimerAndStep()
 	isPlayStepPhase = _isFinish;
 }
 
+// 試合開始時処理
+void AC_My_Player_Controller::StartOfMatch()
+{
+	// ** 全てのプレイヤーとボールのタイルNoを設定、配列を作成する **
+	currentTileNos = SetTileNoToAllPlayersAndBall();
+	// **
+}
+
 // ③-⑴ 準備ステップフェーズ
 // | フェーズカウント |
 // | プレイヤー・ボールの初期値セット |
@@ -1434,22 +1659,61 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "STEP: " + FString::FromInt(stepCount));
 	// **
 
-	// ** 全てのプレイヤーとボールのタイルNoを設定、配列を作成する **
-	currentTileNos = SetTileNoToAllPlayersAndBall();
+	// ** ゲーム開始時処理 **
+	if (stepCount == 1) { // Stepの初回か
+		// <初回時>
+
+		// ** 試合開始時処理 **
+		StartOfMatch();
+		// **
+	}
+	else {
+		// <初回時以外>
+
+		// ** 全てのプレイヤーとボールのタイルNoを設定、配列を作成する **
+		currentTileNos = SetTileNoToAllPlayersAndBall();
+		// **
+	}
 	// **
 
-	// ** パス時 (前回のSTEPにて) **
+	// ** プレイヤーにレーンを設定 **
+	SetLaneForPlayers();
+	// **
+	
+	// ** ショートパス時 (前回のSTEPにて) **
 	if (passTarget != nullptr) { // パスターゲットが設定されているか (前回のStepでパスが実行されているか)
-		//// ** 前回のボールホルダーを取得 **
-	   // | リターンパスを禁止にする |
-		preBallHolder = ballHolder;
-		// **
-
-		// ** ボールホルダーをパスターゲットへ切り替える **
-		ballHolder = passTarget;
-		// **
+		preBallHolder = ballHolder; // ←リターンパスを禁止にする
+		ballHolder = passTarget; // ボールホルダー切り替え
 
 		passTarget = nullptr; // 空にする
+	}
+	// **
+
+	// ** ロングボール時 **
+	if (isLongBalled) {
+		if (longPassTarget != nullptr) {
+			// <ターゲットがいる>
+			
+			// -- ロングパス
+			preBallHolder = ballHolder; // ←リターンパスを禁止にする
+			ballHolder = longPassTarget; // ボールホルダー切り替え
+			
+			longPassTarget = nullptr; // ターゲットを空へ
+		}
+		else {
+			// <ターゲットがいない>
+			
+			// -- ロングアタック
+			preBallHolder = ballHolder; // 前回のボールホルダーを取得
+			ballHolder = nullptr; // ボールホルダーを空へ
+		}
+
+		isPreActionedLongBall = false; // ロングボール事前動作終了
+		isLongBalled = false; // ロングボール終了
+		isFloatingBall = true; // ボールが浮いている
+	}
+	else {
+		isFloatingBall = false; // ボールが浮いていない
 	}
 	// **
 
@@ -1515,7 +1779,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		// ** どちらがオフェンスか **
 		isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
 		// **
-
+		
 		// ** オフェンスとディフェンスのプレイヤーをセット **
 		// Homeボールか
 		if (isHomeBall) {
@@ -2547,11 +2811,38 @@ void AC_My_Player_Controller::DisplayLineBetweenPlayers()
 	// ---
 }
 
-// ③-⑵プレイステップフェーズを監視するタイマー設定
-void AC_My_Player_Controller::SetTimerMonitorPlayStepPhase()
+// プレイヤーのレーンを設定
+void AC_My_Player_Controller::SetLaneForPlayers()
 {
-	// ** タイマー開始 **
-	FTimerHandle handle;
-	GetWorldTimerManager().SetTimer(handle, this, &AC_My_Player_Controller::MonitorFinishPlayStepPhase, 0.5f, true); // 0.5秒おき
-	// **
+	for (AC_Piece* _p : allPieces) {
+		int _column = ( (_p->currentTileNo + C_Common::TILE_NUM_Y) % C_Common::TILE_NUM_Y ); // 縦
+
+
+		if (1 <= _column && _column <= 5) {
+			_p->currentLane = C_Common::LANE_FIRST;
+			continue;
+		}
+		else if (_column <= 10) {
+			_p->currentLane = C_Common::LANE_SECOND;
+			continue;
+		}
+		else if (_column <= 15) {
+			_p->currentLane = C_Common::LANE_THIRD;
+			continue;
+		}
+		else if (_column <= 20) {
+			_p->currentLane = C_Common::LANE_FOURTH;
+			continue;
+		}
+		else if (_column <= 24 || _column == 0) { // ←右端対応
+			_p->currentLane = C_Common::LANE_FIFTH;
+			continue;
+		}
+		else {
+			_p->currentLane = 0;
+
+			if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "ERROR SET LANE FOR PLAYERS", true, true, FColor::Cyan, 2.f, TEXT("None"));
+			continue;
+		}
+	}
 }
