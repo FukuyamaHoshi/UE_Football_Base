@@ -46,11 +46,7 @@ private:
 	// ボールホルダーのプレイ選択
 	void SelectPlayForBallHolder();
 	// ディフェンダーのプレイ選択
-	void SelectPlayForDefender();
-	// セカンドボール時の動き
-	// | 全プレイヤー対象となる |
-	// | ボール周囲のプレイヤーがボールに対して移動する |
-	void MovementForSecondBall();
+	void SelectPlayForDefender(AC_Piece* defensePlayer);
 	// *****************************
 	
 	
@@ -91,13 +87,18 @@ private:
 	// プレス
 	void Press();
 	// マーキング
-	void Marking(AC_Piece* defencePlayer);
+	void Marking(AC_Piece* defencePlayer, AC_Piece* offensePlayer);
 	// クリアリング
 	// | defencePlayer: 対人をされるプレイヤー |
 	void Clearing(AC_Piece* defencePlayer);
 	// キープ中、ボールホルダーへ味方が近づく
 	// | ボールホルダーより後ろの味方で最も近い一人のみ |
 	void ApproachBallHolderWhenBallKeeping();
+	// ディフェンスラインコントロール
+	// →目標ディフェンスラインへ移動
+	void DefenseLineControl(AC_Piece* defensePlayer, int targetRow);
+	// セカンドボールに近づく
+	void AproachToSecondBall(AC_Piece* secondBallPlayer);
 	// **************************
 	
 
@@ -189,6 +190,7 @@ private:
 	int ballHolderRightTileNo = 0; // ボールホルダーの右タイルNo
 	int ballHolderLeftTileNo = 0; // ボールホルダーの左タイルNo
 	int secondBallRangeTileNum = 0; // セカンドボール反応範囲のタイル個数 (step毎に拡大)
+	TArray <int> secondBallRangeTileNos = {}; // セカンドボールレンジNo
 	TArray <int> placeableRrea = {}; // プレイヤー配置可能エリア
 	TArray <int> ballHolderAroundTileNos = {}; // ボールホルダー周囲タイルNo (エアバトル発火タイル)
 	bool isAirBattle = false; // エアバトル判定
@@ -248,4 +250,11 @@ private:
 	const TArray <int> DFPositionRange = { 1, 2, 3, 4, 5 }; // DF (*GKは含まない)
 	const TArray <int> MFPositionRange = { 6, 7, 8, 9, 10 }; // MF
 	const TArray <int> FWPositionRange = { 11, 12, 13, 14, 15 }; // FW
+	// 現在のディフェンスラインRow
+	// | 0 - 39まで |
+	int home_currentDefenseLineRow = 0;
+	int away_currentDefenseLineRow = 0;
+	// 目標のディフェンスラインRow
+	int home_targetDefenseLineRow = 0;
+	int away_targetDefenseLineRow = 0;
 };

@@ -908,101 +908,33 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 }
 
 // ディフェンダーのプレイ選択
-// | *制限条件は暫定 |
-void AC_My_Player_Controller::SelectPlayForDefender()
+void AC_My_Player_Controller::SelectPlayForDefender(AC_Piece* defensePlayer)
 {
-	// * 制限 *
-	if (firstDefender == nullptr) return; // ファーストディフェンダー
-	// *
-
 	// ** プレス **
-	// | ファーストディフェンダーのみ |
-	Press();
-	// **
+	//  →ファーストディフェンダーがボールホルダーにプレス
+	if (firstDefender == defensePlayer) { // ファーストディフェンダーの場合
+		Press();
 
+		return;
+	}
+	// **
+	
 	// ** マーキング **
-	// | ファーストディフェンダー除く |
-	for (AC_Piece* p : defencePlayers) {
-		// * 制限 *
-		if (p == firstDefender) continue; // ファーストディフェンダー
-		// *
+	//  →マークレンジ内の非オフェンスプレイヤーの前タイルへ移動
+	for (AC_Piece* _offencePlayer : offencePlayers) {
+		// * 条件 *
+		// | 1.マークレンジ内 |
+		// | 2.ボールホルダーでない |
+		if (defensePlayer->markRange.Contains(_offencePlayer->currentTileNo)) { // 1
+			if (_offencePlayer != ballHolder) { // 2
 
-		Marking(p);
+				Marking(defensePlayer, _offencePlayer);
+
+				return;
+			}
+		}
 	}
 	// **
-}
-
-// セカンドボール時の動き
-// | 全プレイヤー対象 |
-// | ボール周囲のプレイヤーがボールに対して移動する |
-void AC_My_Player_Controller::MovementForSecondBall()
-{
-	int _ballTileNo = ball->currentTileNo; // ボールタイルNo
-	AC_Tile* _ballTile = allTiles[_ballTileNo - 1]; // ボールタイル
-	// 十字タイル
-	int _plusX = _ballTileNo + (C_Common::TILE_NUM_Y * 1);
-	int _minusX = _ballTileNo - (C_Common::TILE_NUM_Y * 1);
-	int _plusY = _ballTileNo + 1;
-	int _minusY = _ballTileNo - 1;
-
-	// ** ボール周囲のタイルNoを取得 **
-	TArray <int> _ballAroundTileNos = {}; // ボールの周囲タイル
-	// セカンドボール範囲拡大対応
-	int _outSideTileNum = secondBallRangeTileNum + 1; // セカンドボールに反応するタイル個数 + 1 (これより内側のタイルを周囲タイルとみなすため)
-	float _aroundRange = C_Common::NEXT_TO_TILE_DISTANCE * _outSideTileNum; // 周囲タイル範囲 (*この値以下だと周囲タイルとみなす)
-	// *制限
-	// | ⓵周囲タイル範囲以上 |
-	for (AC_Tile* t : allTiles) {
-		float _distanceFromBallTile = _ballTile->GetDistanceTo(t); // ボールタイルからの距離
-		if (_aroundRange < _distanceFromBallTile) continue; // ⓵周囲タイル範囲以上
-
-		_ballAroundTileNos.Add(t->tileNo);
-	}
-	// **
-
-	// ** タイル上のプレイヤー取得 **
-	TArray< AC_Piece*> _ballAroundPlayers = {}; // ボール周囲のプレイヤー
-	for (AC_Piece* p : allPieces) {
-		if (_ballAroundTileNos.Contains(p->currentTileNo)) _ballAroundPlayers.Add(p);
-	}
-	// **
-
-	// ** プレイヤーを移動させる **
-	if (_ballAroundPlayers.IsEmpty()) return; // 周囲のプレイヤーが取得できていない場合
-
-	for (AC_Piece* p : _ballAroundPlayers) {
-		// ** 十字マスの中で最も距離が近いタイル取得 **
-		TArray <int> _crossTiles = { _plusX, _minusX, _plusY, _minusY }; // 十字タイルNo配列
-		TArray <int> _tileDistances = { // 十字タイルとプレイヤーの距離配列
-			(int)allTiles[_plusX - 1]->GetDistanceTo(p),
-			(int)allTiles[_minusX - 1]->GetDistanceTo(p),
-			(int)allTiles[_plusY - 1]->GetDistanceTo(p),
-			(int)allTiles[_minusY - 1]->GetDistanceTo(p)
-		};
-
-		// 小さい距離順にソート
-		TArray <int> _c_tileDistances = _tileDistances; // コピー
-		_c_tileDistances.StableSort([](const int& A, const int& B) {
-			return A < B;
-			});
-
-		int _minDistance = _c_tileDistances[0]; // 最も小さい距離
-		int _i = _tileDistances.IndexOfByKey(_minDistance); // 最も近い距離のインデックス
-
-		if (_i < 0) return; // 取得できなかった場合
-		int _shotestTileNo = _crossTiles[_i]; // 最も近いタイル
-		// **
-
-		// ** 移動するタイルNo取得 **
-		int _moveToTileNo = GetShortestNextTileNo(p->currentTileNo, _shotestTileNo); // 最も近いタイルへの最短距離
-		// **
-
-		if (p->currentTileNo == _moveToTileNo) return; // すでに目的地にいる場合は移動しない
-
-		// ** 移動 **
-		p->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
-		// **
-	}
 }
 // *****************************
 
@@ -1091,10 +1023,19 @@ void AC_My_Player_Controller::LongAttack()
 
 		_fieldPlayeres.Add(_p);
 	}
-	// 距離が遠い順にソート
-	_fieldPlayeres.StableSort([&](const AC_Piece& A, const AC_Piece& B) {
-		return ballHolder->GetDistanceTo(&A) > ballHolder->GetDistanceTo(&B);; // 距離が遠い順
-		});
+	// タイルNoが大きい順にソート
+	if (isHomeBall) {
+		// <Home>
+		_fieldPlayeres.StableSort([](const AC_Piece& A, const AC_Piece& B) {
+				return A.currentTileNo > B.currentTileNo; // 大きい
+			});
+	}
+	else {
+		// <Away>
+		_fieldPlayeres.StableSort([](const AC_Piece& A, const AC_Piece& B) {
+			return A.currentTileNo < B.currentTileNo; // 小さい
+			});
+	}
 
 	_defenseLinePlayer = _fieldPlayeres[0];
 	// **
@@ -1420,47 +1361,33 @@ void AC_My_Player_Controller::Press()
 }
 
 // マーキング
-// | マークレンジに相手がいるかチェックし、相手の前のマスに向かって移動する |
-void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer)
+// | マークレンジ内の相手の前のマスに向かって移動する |
+void AC_My_Player_Controller::Marking(AC_Piece* defencePlayer, AC_Piece* offensePlayer)
 {
-	for (AC_Piece* p : offencePlayers) { // オフェンスプレイヤーごとに
-		// * 制限 *
-		if (p == ballHolder) continue; // ボールホルダー
-		// *
+	// 動くタイルとマーク位置を取得
+	int _markedPlayersFront = offensePlayer->ActorHasTag(FName("HOME")) ? C_Common::FORWARD_DIRECTION : C_Common::BACKWARD_DIRECTION; // マークされるプレイヤーの前方
+	int _markingLocationTileNo = offensePlayer->currentTileNo + _markedPlayersFront; // マーク位置のタイルNo (マークしていると判断する最終的な位置)
+	int _moveToTileNo = GetShortestNextTileNo(defencePlayer->currentTileNo, _markingLocationTileNo); // 動くタイルNo (マーク位置へ動く過程の位置)
 
-		// * マークレンジに相手がいるかチェック *
-		if (defencePlayer->markRange.Contains(p->currentTileNo)) {
-			// < マークレンジ内に相手がいる >
-			
-			// 動くタイルとマーク位置を取得
-			int _markedPlayersFront = p->ActorHasTag(FName("HOME")) ? C_Common::FORWARD_DIRECTION : C_Common::BACKWARD_DIRECTION; // マークされるプレイヤーの前方
-			int _markingLocationTileNo = p->currentTileNo + _markedPlayersFront; // マーク位置のタイルNo (マークしていると判断する最終的な位置)
-			int _moveToTileNo = GetShortestNextTileNo(defencePlayer->currentTileNo, _markingLocationTileNo); // 動くタイルNo (マーク位置へ動く過程の位置)
+	// * 制限 *
+	if (defencePlayer->currentTileNo == _markingLocationTileNo) return; // マーク位置のタイルNo既ににいる
+	if (defencePlayer->currentTileNo == _moveToTileNo) return; // 動くタイルNo既ににいる
+	// *
 
-			// * 制限 *
-			if (defencePlayer->currentTileNo == _markingLocationTileNo) return; // マーク位置のタイルNo既ににいる
-			if (defencePlayer->currentTileNo == _moveToTileNo) return; // 動くタイルNo既ににいる
-			// *
+	// 移動先のタイルを予約する
+	if (currentTileNos.Contains(_moveToTileNo) || moveToTileNos.Contains(_moveToTileNo)) {
+		// <すでにプレイヤーがいる or 予約されている>
 
-			// 移動先のタイルを予約する
-			if (currentTileNos.Contains(_moveToTileNo) || moveToTileNos.Contains(_moveToTileNo)) {
-				// <すでにプレイヤーがいる or 予約されている>
-
-				return; // 移動しない
-			}
-			else {
-				// <プレイヤーがいない or 予約なし>
-
-				moveToTileNos.Add(_moveToTileNo); // 予約する
-			}
-			
-			// 移動
-			defencePlayer->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
-
-
-			return;
-		}
+		return; // 移動しない
 	}
+	else {
+		// <プレイヤーがいない or 予約なし>
+
+		moveToTileNos.Add(_moveToTileNo); // 予約する
+	}
+			
+	// 移動
+	defencePlayer->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
 }
 
 // クリアリング
@@ -1578,6 +1505,61 @@ void AC_My_Player_Controller::ApproachBallHolderWhenBallKeeping()
 
 	isBallKeeping = false; // フラグOFF
 }
+
+// ディフェンスラインコントロール
+//  →目標ディフェンスラインへ移動
+void AC_My_Player_Controller::DefenseLineControl(AC_Piece* defensePlayer, int targetRow)
+{
+	// 最終目標タイル取得 (目標Rowとディフェンダー位置の交点)
+	int _defensePlayerColumn = defensePlayer->currentTileNo % C_Common::TILE_NUM_Y; // ディフェンダーColumn
+	int _finalTargetTileNo = (C_Common::TILE_NUM_Y * targetRow) + _defensePlayerColumn; // 最終目標タイル
+
+	// 次に動くタイルNo取得
+	int _moveToTileNo = GetShortestNextTileNo(defensePlayer->currentTileNo, _finalTargetTileNo);
+
+	// 移動
+	defensePlayer->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
+}
+
+// セカンドボールに反応する
+//  →セカンドボール位置へ移動する
+// | *プレイステップフェーズ処理 |
+void AC_My_Player_Controller::AproachToSecondBall(AC_Piece* secondBallPlayer)
+{
+	// ボール十字タイル
+	int _plusX = ball->currentTileNo + (C_Common::TILE_NUM_Y * 1);
+	int _minusX = ball->currentTileNo - (C_Common::TILE_NUM_Y * 1);
+	int _plusY = ball->currentTileNo + 1;
+	int _minusY = ball->currentTileNo - 1;
+
+	// 十字タイルの中で最も距離が近いタイル取得
+	TArray <int> _crossTiles = { _plusX, _minusX, _plusY, _minusY }; // 十字タイルNo配列
+	TArray <int> _tileDistances = { // 十字タイルとプレイヤーの距離配列
+		(int)allTiles[_plusX - 1]->GetDistanceTo(secondBallPlayer),
+		(int)allTiles[_minusX - 1]->GetDistanceTo(secondBallPlayer),
+		(int)allTiles[_plusY - 1]->GetDistanceTo(secondBallPlayer),
+		(int)allTiles[_minusY - 1]->GetDistanceTo(secondBallPlayer)
+	};
+
+	// 小さい距離順にソート
+	TArray <int> _c_tileDistances = _tileDistances; // コピー
+	_c_tileDistances.StableSort([](const int& A, const int& B) {
+		return A < B;
+		});
+
+	int _minDistance = _c_tileDistances[0]; // 最も小さい距離
+	int _i = _tileDistances.IndexOfByKey(_minDistance); // 最も近い距離のインデックス
+
+	if (_i < 0) return; // 取得できなかった場合
+	int _shotestTileNo = _crossTiles[_i]; // 最も近いタイル
+
+	// 移動するタイルNo取得
+	int _moveToTileNo = GetShortestNextTileNo(secondBallPlayer->currentTileNo, _shotestTileNo); // 最も近いタイルへの最短距離
+	if (secondBallPlayer->currentTileNo == _moveToTileNo) return; // すでに目的地にいる場合は移動しない
+
+	// 移動
+	secondBallPlayer->SetMoveTo(allTiles[_moveToTileNo - 1]->GetActorLocation());
+}
 // **************************
 
 
@@ -1679,6 +1661,22 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	// ** プレイヤーにレーンを設定 **
 	SetLaneForPlayers();
 	// **
+
+	// ** 現在のディフェンスラインRowを設定 **
+	// --Home-
+	allHomePieces.StableSort([](const AC_Piece& A, const AC_Piece& B) { // タイル順にソート
+		return A.currentTileNo < B.currentTileNo; // 小さい
+		});
+	AC_Piece* _home_defenseLinePlayer = allHomePieces[1]; // ディフェンスラインのプレイヤー
+	home_currentDefenseLineRow = (_home_defenseLinePlayer->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ディフェンスラインRow
+
+	// --Away-
+	allAwayPieces.StableSort([](const AC_Piece& A, const AC_Piece& B) { // タイル順にソート
+		return A.currentTileNo > B.currentTileNo; // 大きい
+		});
+	AC_Piece* _away_defenseLinePlayer = allAwayPieces[1]; // ディフェンスラインのプレイヤー
+	away_currentDefenseLineRow = (_away_defenseLinePlayer->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ディフェンスラインRow
+	// **
 	
 	// ** ショートパス時 (前回のSTEPにて) **
 	if (passTarget != nullptr) { // パスターゲットが設定されているか (前回のStepでパスが実行されているか)
@@ -1686,6 +1684,29 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		ballHolder = passTarget; // ボールホルダー切り替え
 
 		passTarget = nullptr; // 空にする
+	}
+	// **
+
+	// ** 目標ディフェンスラインを設定 **
+	int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ボールRow
+	// ボールがディフェンスラインの背後にあれば目標ラインを合わせる
+	// --HOME--
+	if (home_currentDefenseLineRow > _ballRow) {
+		// <ボールがディフェンスラインの背後にある (HOME)>
+		home_targetDefenseLineRow = _ballRow; // 目標をボール位置にする
+	}
+	else {
+		// <ボールがディフェンスラインの前にある>
+		home_targetDefenseLineRow = home_currentDefenseLineRow; // 目標を現在のディフェンスライン位置にする
+	}
+	// --AWAY--
+	if (away_currentDefenseLineRow < _ballRow) {
+		// <ボールがディフェンスラインの背後にある (AWAY)>
+		away_targetDefenseLineRow = _ballRow; // 目標をボール位置にする
+	}
+	else {
+		// <ボールがディフェンスラインの前にある>
+		away_targetDefenseLineRow = away_currentDefenseLineRow; // 目標を現在のディフェンスライン位置にする
 	}
 	// **
 
@@ -1941,8 +1962,21 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		// <ボールホルダーなし>
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "BALL HOLDER NULL !!");
 
-		// ** セカンドボール **
-		secondBallRangeTileNum++; // セカンドボール範囲 拡大
+		// ** セカンドボール範囲設定 **
+		// セカンドボール範囲 拡大
+		secondBallRangeTileNum++;
+		AC_Tile* _ballTile = allTiles[ball->currentTileNo - 1]; // ボールタイル
+		// セカンドボール範囲取得処理
+		int _outSideTileNum = secondBallRangeTileNum + 1; // セカンドボールに反応するタイル個数 + 1 (これより内側のタイルを周囲タイルとみなすため)
+		float _aroundDistance = C_Common::NEXT_TO_TILE_DISTANCE * _outSideTileNum; // 周囲タイル範囲 (*この値以下だと周囲タイルとみなす)
+		// *制限
+		// | ⓵周囲タイル範囲以上 |
+		for (AC_Tile* t : allTiles) {
+			float _distanceFromBallTile = _ballTile->GetDistanceTo(t); // ボールタイルからの距離
+			if (_aroundDistance < _distanceFromBallTile) continue; // ⓵周囲タイル範囲以上
+
+			secondBallRangeTileNos.Add(t->tileNo); // セカンドボール範囲取得
+		}
 		// **
 	}
 
@@ -1982,7 +2016,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 	 
 	// *** プレイ選択処理 ***
 	if (ballHolder != nullptr) { // ボールホルダーがいるか
-		// <存在>
+		// <ボールホルダー存在>
 		
 		if (isBallKeeping) { // ボールキープ中か (*前回のSTEP時)
 			// < ボールキープ中 >
@@ -1998,16 +2032,50 @@ void AC_My_Player_Controller::PlayStepPhase()
 			SelectPlayForBallHolder();
 			// **
 
-			// ** ディフェンダーのプレイ選択 **
-			SelectPlayForDefender();
-			// **
+			for (AC_Piece* dp : defencePlayers) {
+				// ** ディフェンダーのプレイ選択 **
+				SelectPlayForDefender(dp);
+				// **
+			}
 		}
 	}
 	else {
-		// <不在>
+		// <ボールホルダー不在>
 		
+		// ** セカンドボールプレイヤー取得 **
+		TArray < AC_Piece*> _secondBallPlayers = {}; // セカンドボールに反応するプレイヤー
+		for (AC_Piece* p : allPieces) {
+			if (secondBallRangeTileNos.Contains(p->currentTileNo)) _secondBallPlayers.Add(p);
+		}
+		// **
+
+
+		// ** ラインコントロール **
+		//  →目標ディフェンスラインへ移動
+		for (AC_Piece* _defensePlayer : defencePlayers) { // すべてのディフェンダー対象
+			// *条件*
+			// | 1.DFポジションのみ
+			// | 2.目標ディフェンスラインが自身Rowと異なる
+			// | 3.セカンドボールに反応していない
+			if (DFPositionRange.Contains(_defensePlayer->position)) { // 1
+				
+				int _myTargetDefenseLineRow = isHomeBall ? away_targetDefenseLineRow : home_targetDefenseLineRow; // 目標のディフェンスライン
+				int _myRow = (_defensePlayer->currentTileNo - 1) / C_Common::TILE_NUM_Y; // 自分のRow
+				if (_myRow != _myTargetDefenseLineRow) { // 2
+					
+					if (_secondBallPlayers.Contains(_defensePlayer) == false) { // 3
+						
+						DefenseLineControl(_defensePlayer, _myTargetDefenseLineRow);
+					}
+				}
+			}
+		}
+		// **
+
 		// ** セカンドボール処理 **
-		MovementForSecondBall();
+		for (AC_Piece* _p : _secondBallPlayers) {
+			AproachToSecondBall(_p);
+		}
 		// **
 	}
 	// ******
@@ -2045,6 +2113,9 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	ballCrossTileNos.Empty(); // 空にする
 	// **
 
+	// ** セカンドボール範囲削除 **
+	secondBallRangeTileNos.Empty();
+	// **
 
 	return false;
 }
