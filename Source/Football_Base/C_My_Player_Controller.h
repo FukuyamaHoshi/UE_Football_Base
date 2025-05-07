@@ -47,6 +47,8 @@ private:
 	void SelectPlayForBallHolder();
 	// ディフェンダーのプレイ選択
 	void SelectPlayForDefender(AC_Piece* defensePlayer);
+	// ゴールキーパーのプレイ選択
+	void SelectPlayForGoalKeeper();
 	// *****************************
 	
 	
@@ -91,6 +93,9 @@ private:
 	// クリアリング
 	// | defencePlayer: 対人をされるプレイヤー |
 	void Clearing(AC_Piece* defencePlayer);
+	// ロングクリアリング
+	//  →同じColumnのディフェンスライン前にボールを送り込む
+	void LongClearing();
 	// キープ中、ボールホルダーへ味方が近づく
 	// | ボールホルダーより後ろの味方で最も近い一人のみ |
 	void ApproachBallHolderWhenBallKeeping();
@@ -99,6 +104,11 @@ private:
 	void DefenseLineControl(AC_Piece* defensePlayer, int targetRow);
 	// セカンドボールに近づく
 	void AproachToSecondBall(AC_Piece* secondBallPlayer);
+	// ターゲットマンのオフザボール
+	//  →ボールホルダーのレーンに移動する
+	void MoveToBallHolderLaneForTargetMan(AC_Piece* targetManPlayer);
+	// ロングパスターゲットに近づく
+	void AproachToLongPassTargetForDefender(AC_Piece* defensePlayer);
 	// **************************
 	
 
@@ -156,6 +166,8 @@ private:
 	void DisplayLineBetweenPlayers();
 	// プレイヤーのレーンを設定
 	void SetLaneForPlayers();
+	// セーフティーパス判定
+	bool CheckPassSafety(AC_Piece* player);
 
 	
 	AC_Piece* selectedPlayer; // 選択されたプレイヤー
@@ -184,7 +196,6 @@ private:
 	AC_Piece* firstDefender = nullptr; // ファーストディフェンダー
 	TArray <int> currentTileNos = {}; // 現在のプレイヤーのタイルNo
 	TArray <int> moveToTileNos = {}; // プレイヤーとボールが動く先のタイルNo (*動く先のタイルを予約し、重複を防ぐ)
-	TArray <int> ballCrossTileNos = {}; // ボール周囲の十字のタイルNo
 	bool isGoal = false; // ゴール判定
 	bool isClering = false; // クリアリング判定
 	int ballHolderRightTileNo = 0; // ボールホルダーの右タイルNo
@@ -198,6 +209,28 @@ private:
 	bool isPreActionedLongBall = false; // ロングボール事前動作後か
 	bool isLongBalled = false; // ロングボール後か
 	bool isFloatingBall = false; // 現在ボールが浮いているか (*ロングボール時ON)
+	AC_Piece* nearestLongBallTargetDF = nullptr; // ロングパスターゲットに最も近いDFプレイヤー(敵)
+	
+	int gamePhase = 0; // ゲームフェーズNo (*プレイSTEPでは変更しない)
+	int nextGamePhase = 0; // 次のゲームフェーズNo (*プレイSTEPで変更)
+	int playPattern = 0; // プレーパターンNo (*プレイSTEPでは変更しない)
+	int nextPlayPattern = 0; // 次のプレーパターンNo  (*プレイSTEPで変更)
+	AC_Piece* nextBallHolder = nullptr; // 次のボールホルダー (*プレイSTEPで変更)
+	int stepCountForPlayPattern = 0; // ステップカウンター (プレイパターン)
+	int stepCountForGamePhase = 0; // ステップカウンター (ゲームフェーズ)
+
+	// ** ⓶セカンドボール回収フェーズ **
+	TArray<int> secondBallCollectRange = {}; // セカンドボール回収範囲
+	TArray<int> offenseSecondBallCollectPoints = {}; // セカンドボール回収ポイント(オフェンス側)
+	TArray<int> defenseSecondBallCollectPoints = {}; // セカンドボール回収ポイント(ディフェンス側)
+	AC_Piece* secondBallCollectPlayer = nullptr; // ボール回収プレイヤー
+	// **
+
+	AC_Piece* sideBreakPlayer = nullptr; // サイドブレイカープレイヤー
+
+	// ** ドリフトワイドプレイパターン **
+	AC_Piece* follower = nullptr; //  フォロワー *サイドブレイカーと同じレーン (*SBを想定)
+
 	struct FDistanceToBallHolder // ボールホルダーとプレイヤーの距離(*比較のため)
 	{
 		AC_Piece* player;
@@ -257,4 +290,24 @@ private:
 	// 目標のディフェンスラインRow
 	int home_targetDefenseLineRow = 0;
 	int away_targetDefenseLineRow = 0;
+	// ペナルティーエリア範囲
+	const TArray <int> HOME_PENALTY_EREA_RANGE = { // HOME
+		6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+		31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
+		56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+		81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
+		106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,
+		131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145
+	};
+	const TArray <int> AWAY_PENALTY_EREA_RANGE = { // AWAY
+		856, 857, 858, 859, 860, 861, 862, 863, 864, 865, 866, 867, 868, 869, 870,
+		881, 882, 883, 884, 885, 886, 887, 888, 889, 890, 891, 892, 893, 894, 895,
+		906, 907, 908, 909, 910, 911, 912, 913, 914, 915, 916, 917, 918, 919, 920,
+		931, 932, 933, 934, 935, 936, 937, 938, 939, 940, 941, 942, 943, 944, 945,
+		956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967, 968, 969, 970,
+		981, 982, 983, 984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995
+	};
+	// tags
+	const FName TARGET_MAN_TAG = "TARGET_MAN";
+	const FName SIDE_BREAKER_TAG = "SIDE_BREAKER";
 };

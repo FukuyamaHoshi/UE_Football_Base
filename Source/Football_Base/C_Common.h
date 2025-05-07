@@ -16,7 +16,7 @@ public:
     // ** Global変数 **
     static constexpr int TILE_NUM_Y = 25; // 横(y)のタイル個数
     static constexpr float NEXT_TO_TILE_DISTANCE = 100.0f; // 前後左右のタイル距離
-    static constexpr float AROUNT_TILE_RANGE = 150.0f; // 周囲タイルの距離範囲 (前後左右: 100.0f,  斜め: 140.0 ~ 150.0f)
+    static constexpr float AROUNT_TILE_RANGE = 150.0f; // 周囲タイルの距離範囲 (前後左右: 100.0f,  斜め: 140.0 ~ 150.0f) *複数になると余計なタイルも取得してしまう
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
     static constexpr bool DEBUG_MODE = true; // デバッグモード
@@ -28,6 +28,14 @@ public:
     static constexpr int HOME_PLACE_EREA[2] = { 126, 500 }; // Homeのプレイヤー配置エリア(全部)
     static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
     static constexpr int PASS_RANGE_TILE_NUM[2] = { 9, 6 }; // パスレンジタイル個数 (横 * 縦) *プレイヤーの向きに対して
+    static constexpr int SECOND_BALL_COLLECT_RANGE_NUM[2] = { 4, 6 }; // セカンドボール回収レンジタイル個数 ( Column(横) * Row(縦) )
+    // ゲームフェーズ
+    static constexpr int DEFAULT_GAME_PHASE = 0; // デフォルト
+    static constexpr int SECOND_BALL_COLLECT_GAME_PHASE = 1; // セカンドボール回収
+    // プレーパターン
+    static constexpr int NO_PLAY_PATTERN = 0; // なし
+    static constexpr int DRIFT_WIDE_PLAY_PATTERN = 1; // ⓵ドリフトワイド
+
     // -ポジション---
     // DF
     static constexpr int GK_POSITION = 0; // GK
