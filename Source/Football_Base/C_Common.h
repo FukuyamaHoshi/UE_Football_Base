@@ -29,12 +29,17 @@ public:
     static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
     static constexpr int PASS_RANGE_TILE_NUM[2] = { 9, 6 }; // パスレンジタイル個数 (横 * 縦) *プレイヤーの向きに対して
     static constexpr int SECOND_BALL_COLLECT_RANGE_NUM[2] = { 4, 6 }; // セカンドボール回収レンジタイル個数 ( Column(横) * Row(縦) )
-    // ゲームフェーズ
-    static constexpr int DEFAULT_GAME_PHASE = 0; // デフォルト
-    static constexpr int SECOND_BALL_COLLECT_GAME_PHASE = 1; // セカンドボール回収
-    // プレーパターン
-    static constexpr int NO_PLAY_PATTERN = 0; // なし
-    static constexpr int DRIFT_WIDE_PLAY_PATTERN = 1; // ⓵ドリフトワイド
+    static constexpr int FINISH_ZORN_ROW[2] = { 34, 5 }; // 最終局面Row (HOME, AWAY)
+    static constexpr int CROSS_ZORN_COLUMN[2] = { 5, 21 }; // クロスColumn (左(以下), 右(以上)) 
+    static constexpr int HANDLE_CROSS_RANGE_ROW[2] = { 31, 8 }; // クロス対応Row (HOME, AWAY)
+    // マッチフェーズ
+    static constexpr int DEFAULT_MATCH_PHASE = 0; // デフォルト
+    static constexpr int SECOND_BALL_COLLECT_MATCH_PHASE = 1; // セカンドボール回収
+    static constexpr int LINE_BREAK_MATCH_PHASE = 2; // 裏抜け
+    static constexpr int CROSS_MATCH_PHASE = 3; // クロス
+    // リレーショナルプレーパターン
+    static constexpr int NO_RELATIONAL_PLAY_PATTERN = 0; // なし
+    static constexpr int DRIFT_WIDE_RELATIONAL_PLAY_PATTERN = 1; // ⓵ドリフトワイド
 
     // -ポジション---
     // DF

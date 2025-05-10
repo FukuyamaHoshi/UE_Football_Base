@@ -69,7 +69,7 @@ private:
 	// 方向転換 
 	void ChangeOfDirection();
 	// シュート
-	void Shoot();
+	void Shoot(AC_Piece* targetPlayer = nullptr);
 	// 対人
 	// | dueledPlayer: 対人をされるプレイヤー (発火時,ディフェンダー) |
 	// | return bool: デゥエルの勝者(ボールホルダー = ture, ディフェンダー = false) |
@@ -226,10 +226,20 @@ private:
 	AC_Piece* secondBallCollectPlayer = nullptr; // ボール回収プレイヤー
 	// **
 
+	// ⓸クロスフェーズ **
+	TArray<int> handleCrossRange = {}; // クロス対応範囲
+	AC_Piece* crossTargetPlayer = nullptr; // クロスのターゲット
+	bool isCrossTargetOffense = false; // クロスターゲットがオフェンスか
+	const TArray<int> AWAY_DEFENSE_HANDLE_CROSS_POINTS = { 935, 937, 939, 941 };
+	// **
+
 	AC_Piece* sideBreakPlayer = nullptr; // サイドブレイカープレイヤー
 
 	// ** ドリフトワイドプレイパターン **
 	AC_Piece* follower = nullptr; //  フォロワー *サイドブレイカーと同じレーン (*SBを想定)
+	// **
+
+
 
 	struct FDistanceToBallHolder // ボールホルダーとプレイヤーの距離(*比較のため)
 	{
