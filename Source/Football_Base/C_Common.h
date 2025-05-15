@@ -28,7 +28,7 @@ public:
     static constexpr int HOME_PLACE_EREA[2] = { 126, 500 }; // Homeのプレイヤー配置エリア(全部)
     static constexpr int AWAY_PLACE_EREA[2] = { 501, 875 }; // Awayのプレイヤー配置エリア(全部)
     static constexpr int PASS_RANGE_TILE_NUM[2] = { 9, 6 }; // パスレンジタイル個数 (横 * 縦) *プレイヤーの向きに対して
-    static constexpr int SECOND_BALL_COLLECT_RANGE_NUM[2] = { 4, 6 }; // セカンドボール回収レンジタイル個数 ( Column(横) * Row(縦) )
+    static constexpr int SECOND_BALL_COLLECT_RANGE_NUM[2] = { 4, 2 }; // セカンドボール回収レンジタイル個数 ( Column(横) * Row(縦) )
     static constexpr int FINISH_ZORN_ROW[2] = { 34, 5 }; // 最終局面Row (HOME, AWAY)
     static constexpr int CROSS_ZORN_COLUMN[2] = { 5, 21 }; // クロスColumn (左(以下), 右(以上)) 
     static constexpr int HANDLE_CROSS_RANGE_ROW[2] = { 31, 8 }; // クロス対応Row (HOME, AWAY)

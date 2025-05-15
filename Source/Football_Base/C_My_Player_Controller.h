@@ -211,33 +211,38 @@ private:
 	bool isFloatingBall = false; // 現在ボールが浮いているか (*ロングボール時ON)
 	AC_Piece* nearestLongBallTargetDF = nullptr; // ロングパスターゲットに最も近いDFプレイヤー(敵)
 	
-	int gamePhase = 0; // ゲームフェーズNo (*プレイSTEPでは変更しない)
-	int nextGamePhase = 0; // 次のゲームフェーズNo (*プレイSTEPで変更)
-	int playPattern = 0; // プレーパターンNo (*プレイSTEPでは変更しない)
-	int nextPlayPattern = 0; // 次のプレーパターンNo  (*プレイSTEPで変更)
+	
+	
 	AC_Piece* nextBallHolder = nullptr; // 次のボールホルダー (*プレイSTEPで変更)
-	int stepCountForPlayPattern = 0; // ステップカウンター (プレイパターン)
-	int stepCountForGamePhase = 0; // ステップカウンター (ゲームフェーズ)
+	
 
-	// ** ⓶セカンドボール回収フェーズ **
+	// **** マッチフェーズ ****
+	int matchPhase = 0; // マッチフェーズNo (*プレイSTEPでは変更しない)
+	bool isFinishMatchPhase = false; // マッチフェーズ終了フラグ
+	int stepCountForGamePhase = 0; // ステップカウンター
+	// < セカンドボール回収 >
 	TArray<int> secondBallCollectRange = {}; // セカンドボール回収範囲
 	TArray<int> offenseSecondBallCollectPoints = {}; // セカンドボール回収ポイント(オフェンス側)
 	TArray<int> defenseSecondBallCollectPoints = {}; // セカンドボール回収ポイント(ディフェンス側)
 	AC_Piece* secondBallCollectPlayer = nullptr; // ボール回収プレイヤー
-	// **
-
-	// ⓸クロスフェーズ **
+	// < クロス >
 	TArray<int> handleCrossRange = {}; // クロス対応範囲
 	AC_Piece* crossTargetPlayer = nullptr; // クロスのターゲット
 	bool isCrossTargetOffense = false; // クロスターゲットがオフェンスか
-	const TArray<int> AWAY_DEFENSE_HANDLE_CROSS_POINTS = { 935, 937, 939, 941 };
-	// **
+	const TArray<int> AWAY_DEFENSE_HANDLE_CROSS_POINTS = { 935, 937, 939, 941 }; // クロス対応ポイント (AWAY)
+	// ********************
 
-	AC_Piece* sideBreakPlayer = nullptr; // サイドブレイカープレイヤー
 
-	// ** ドリフトワイドプレイパターン **
+
+	// **** リレーショナルプレーパターン ****
+	int playPattern = 0; // プレーパターンNo (*プレイSTEPでは変更しない)
+	bool isFinishPlayPattern = false; // プレーパターン終了フラグ
+	int stepCountForPlayPattern = 0; // ステップカウンター
+	// < ドリフトワイドプレイパターン >
+	TArray <AC_Piece*> sideBreakPlayeres = {}; // サイドブレイクプレイヤー(全て) *試合開始時に全て取得
+	AC_Piece* mySideBreaker = nullptr; //  対象のサイドブレイカー
 	AC_Piece* follower = nullptr; //  フォロワー *サイドブレイカーと同じレーン (*SBを想定)
-	// **
+	// **********************************
 
 
 

@@ -494,43 +494,6 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	AC_Piece* _shortPassTarget = nullptr; // ショートパスターゲット
 	AC_Piece* _longPassTarget = nullptr; // ロングパスターゲット
 	int _ballHolderRow = (ballHolder->currentTileNo - 1) / C_Common::TILE_NUM_Y;
-	int _ballHolderColumn = (ballHolder->currentTileNo - 1) % C_Common::TILE_NUM_Y;
-	int _enemyCurrentDifenseLine = isHomeBall ? away_currentDefenseLineRow : home_currentDefenseLineRow;
-	int _myFinishZornRow = isHomeBall ? C_Common::FINISH_ZORN_ROW[0] : C_Common::FINISH_ZORN_ROW[1];
-
-	// ** クロスフェーズトリガー **
-	if (_myFinishZornRow <= _ballHolderRow) {
-		if (_ballHolderColumn < C_Common::CROSS_ZORN_COLUMN[0] || _ballHolderColumn > C_Common::CROSS_ZORN_COLUMN[1]) {
-			nextGamePhase = C_Common::CROSS_MATCH_PHASE;
-
-			return;
-		}
-	}
-	// **
-	
-	// ** 裏抜けフェーズトリガー **
-	if (_enemyCurrentDifenseLine < _ballHolderRow) {
-		nextGamePhase = C_Common::LINE_BREAK_MATCH_PHASE;
-
-		return;
-	}
-	// **
-	
-	// ** ⓵ドリフトワイドパターントリガー  **
-	if (sideBreakPlayer != nullptr) {
-		// *条件*
-		// 1.サイドブレイカーが存在
-		// 2.ボールホルダーポジションが,CH or LIH or RIH
-		// 3.サイドブレイカーが端のレーンにいる
-		if (ballHolder->position == C_Common::LIH_POSITION || ballHolder->position == C_Common::RIH_POSITION || ballHolder->position == C_Common::CH_POSITION) {
-			if (sideBreakPlayer->currentLane == C_Common::LANE_FIRST || sideBreakPlayer->currentLane == C_Common::LANE_FIFTH) {
-				nextPlayPattern = C_Common::DRIFT_WIDE_RELATIONAL_PLAY_PATTERN;
-
-				return;
-			}
-		}
-	}
-	// **
 
 	// ** ロングボール動作 **
 	if (isPreActionedLongBall) {
@@ -554,9 +517,9 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 	// ** 
 
 	// ** エアバトル **
-	// | 勝者:                            |
-	// |  ボールホルダー: ボールのみ4マス前進 |
-	// |  ディフェンダー: クリアリング       |
+	// | 勝者:
+	// |  ボールホルダー: ボールのみ4マス前進
+	// |  ディフェンダー: セカンドボール →ボールホルダーからボールを引き離す(*2タイル)
 	if (isFloatingBall) { // ボールが浮いている
 		for (AC_Piece* p : defencePlayers) { // ディフェンダーの中で
 			if (ballHolderAroundTileNos.Contains(p->currentTileNo)) { // ボールホルダー周囲にいれば
@@ -601,10 +564,14 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 				else {
 					// <ディフェンダーが勝利>
 
-					// ** セカンドボール回収フェーズ **
+					// ●セカンドボール
 					if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "SECOND_BALL", true, true, FColor::Cyan, 2.f, TEXT("None"));
-					nextGamePhase = C_Common::SECOND_BALL_COLLECT_MATCH_PHASE; // フェーズ開始
-					// **
+					const int _SECOND_BALL_MOVE_NUM = 2; // ボールが動くタイル距離
+					int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y;
+					int _ballColumn = (ball->currentTileNo - 1) % C_Common::TILE_NUM_Y;
+					int _targetNo = isHomeBall ? ((_ballRow - _SECOND_BALL_MOVE_NUM) * C_Common::TILE_NUM_Y) + (_ballColumn + 1): ((_ballRow + _SECOND_BALL_MOVE_NUM) * C_Common::TILE_NUM_Y) + (_ballColumn + 1); // 前後2タイルで設定
+
+					ball->SetMoveTo(allTiles[_targetNo - 1]->GetActorLocation()); // 移動処理
 				}
 
 				return;
@@ -1825,13 +1792,20 @@ void AC_My_Player_Controller::StartOfMatch()
 			}
 		}
 	}
+
+	// ●サイドブレイカー取得 (全て)
+	for (AC_Piece* _player : allPieces) {
+		if (_player->ActorHasTag(SIDE_BREAKER_TAG)) {
+			sideBreakPlayeres.Add(_player);
+		}
+	}
 }
 
 // ③-⑴ 準備ステップフェーズ
 // ⓵フェーズカウント
 // ⓶初期値セット
 // ③ボールホルダーの切り替え
-// ⓸ゲームフェーズ・プレイパターンの評価
+// ⓸マッチフェーズ・プレイパターンの評価・事前処理
 void AC_My_Player_Controller::PrepareStepPhase()
 {
 	// **** 常に処理する ****
@@ -1843,9 +1817,8 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	if (stepCount == 1) { // Stepの初回か
 		// <初回時>
 
-		// ** 試合開始時処理 **
+		// ●試合開始時処理
 		StartOfMatch();
-		// **
 	}
 	else {
 		// <初回時以外>
@@ -1856,9 +1829,6 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 	// ●レーンを設定
 	SetLaneForPlayers();
-
-	// ●変数のセット
-	int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ボールRow
 
 	// ●ディフェンスラインを設定 (現在)
 	// --Home-
@@ -1875,86 +1845,172 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	AC_Piece* _away_defenseLinePlayer = allAwayPieces[1]; // ディフェンスラインのプレイヤー
 	away_currentDefenseLineRow = (_away_defenseLinePlayer->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ディフェンスラインRow
 
-	// ●ゲームフェーズの切り替え
-	gamePhase = nextGamePhase;
-	
-	// ●プレイパターンの切り替え
-	playPattern = nextPlayPattern;
-
-	// ●ボールホルダーの切り替え
+	// ●ボールホルダーの切り替え (各フェーズごと)
 	if (nextBallHolder != nullptr) {
 		ballHolder = nextBallHolder;
 		nextBallHolder = nullptr;
 	}
 
+	// ●ロングボール終了直後の時の処理 (ロングボール時)
+	//  →ボールホルダーの切り替え
+	if (isLongBalled) {
+		// < ロングボール終了直後 >
+		if (longPassTarget != nullptr) {
+			// <ターゲットがいる>
+
+			// -- ロングパス
+			preBallHolder = ballHolder; // ←リターンパスを禁止にする
+			ballHolder = longPassTarget; // ボールホルダー切り替え
+
+			longPassTarget = nullptr; // ターゲットを空へ
+			nearestLongBallTargetDF = nullptr; // DFを空へ
+		}
+		else {
+			// <ターゲットがいない>
+
+			// -- ロングアタック or ロングクリアリング
+			preBallHolder = ballHolder; // 前回のボールホルダーを取得
+			ballHolder = nullptr; // ボールホルダーを空へ
+		}
+
+		isPreActionedLongBall = false; // ロングボール事前動作終了
+		isLongBalled = false; // ロングボール終了
+		isFloatingBall = true; // ボールが浮いている
+	}
+	else {
+		// < ロングボール終了直後でない >
+
+		isFloatingBall = false; // ボールが浮いていない
+	}
+
+	// ●ロングパスターゲットに最も近いDFを取得 (ロングボール時)
+	if (longPassTarget != nullptr) {
+		TArray<AC_Piece*> _DF_defenderes = {};
+		for (AC_Piece* _defender : defencePlayers) {
+			if (DFPositionRange.Contains(_defender->position)) {
+				_DF_defenderes.Add(_defender);
+			}
+		}
+
+		_DF_defenderes.StableSort([&](const AC_Piece& A, const AC_Piece& B) { // 距離順にソート
+			return longPassTarget->GetDistanceTo(&A) < longPassTarget->GetDistanceTo(&B); // 近い
+			});
+
+		nearestLongBallTargetDF = _DF_defenderes[0];
+	}
+
+	// ●クリアリング終了直後の時の処理
+	if (isClering) { // 前回のSTEPにてクリアリングが実行されているか
+		preBallHolder = ballHolder; // 前回のボールホルダーを取得
+		ballHolder = nullptr; // ボールホルダーを空へ
+
+		isClering = false; // クリアリング判定
+	}
+
+	// ●エアバトル終了直後の時の処理
+	if (isAirBattle) { // 前回のSTEPにてエアバトルが実行されているか
+		preBallHolder = ballHolder; // 前回のボールホルダーを取得
+		ballHolder = nullptr; // ボールホルダーを空へ
+
+		isAirBattle = false; // エアバトルOFF
+	}
+
+	// ●ショートパス終了直後の時の処理
+	//  →ボールホルダーの切り替え
+	if (passTarget != nullptr) { // パスターゲットが設定されているか (前回のStepでパスが実行されているか)
+		preBallHolder = ballHolder; // ←リターンパスを禁止にする
+		ballHolder = passTarget; // ボールホルダー切り替え
+
+		passTarget = nullptr; // 空にする
+	}
+
+	// ●変数のセット
+	int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y; // 〇ボールRow (ローカル)
+	isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // 〇Homeボール判定
+	if (isHomeBall) { // 〇攻守のプレイヤー
+		// < HOME >
+		offencePlayers = allHomePieces;
+		defencePlayers = allAwayPieces;
+	}
+	else {
+		// < AWAY >
+		offencePlayers = allAwayPieces;
+		defencePlayers = allHomePieces;
+	}
+	int _ballHolderRow = (ballHolder->currentTileNo - 1) / C_Common::TILE_NUM_Y; // 〇ボールホルダーRow (ローカル)
+	int _ballHolderColumn = (ballHolder->currentTileNo - 1) % C_Common::TILE_NUM_Y; // 〇ボールホルダーColumn (ローカル)
 	// **********
 
 
 
-	// **** マッチフェーズごとの処理 ****
-	// < ⓵デフォルトフェーズ >
-	if (gamePhase == C_Common::DEFAULT_MATCH_PHASE) {
 
-		// ●ロングボール時
-		if (isLongBalled) {
-			if (longPassTarget != nullptr) {
-				// <ターゲットがいる>
-
-				// -- ロングパス
-				preBallHolder = ballHolder; // ←リターンパスを禁止にする
-				ballHolder = longPassTarget; // ボールホルダー切り替え
-
-				longPassTarget = nullptr; // ターゲットを空へ
-				nearestLongBallTargetDF = nullptr; // DFを空へ
+	// **** トリガー発火処理 ****
+	// -- マッチフェーズ --
+	// | 各々デフォルトフェーズで分ける |
+	// < ③クロスフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
+		int _myFinishZornRow = isHomeBall ? C_Common::FINISH_ZORN_ROW[0] : C_Common::FINISH_ZORN_ROW[1]; // 自分のフィニッシュゾーン
+		// *条件*
+		// 1.デフォルトフェーズ
+		// 2.ボールホルダーがクロスゾーンに存在 ( ⑴フィニッシュRow + ⑵クロスColumn )
+		if (_myFinishZornRow <= _ballHolderRow) { // 2 ⑴
+			if (_ballHolderColumn < C_Common::CROSS_ZORN_COLUMN[0] || _ballHolderColumn > C_Common::CROSS_ZORN_COLUMN[1]) { // 2 ⑵
+				matchPhase = C_Common::CROSS_MATCH_PHASE;
 			}
-			else {
-				// <ターゲットがいない>
-
-				// -- ロングアタック or ロングクリアリング
-				preBallHolder = ballHolder; // 前回のボールホルダーを取得
-				ballHolder = nullptr; // ボールホルダーを空へ
-			}
-
-			isPreActionedLongBall = false; // ロングボール事前動作終了
-			isLongBalled = false; // ロングボール終了
-			isFloatingBall = true; // ボールが浮いている
 		}
-		else {
-			isFloatingBall = false; // ボールが浮いていない
+	}
+	// < ⓶ラインブレイクフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
+		int _enemyCurrentDifenseLine = isHomeBall ? away_currentDefenseLineRow : home_currentDefenseLineRow; // 相手のディフェンスラインRow
+		// * 条件 *
+		// 1.デフォルトフェーズ
+		// 2.相手のディフェンスラインよりボールホルダーが高い位置に存在
+		if (_enemyCurrentDifenseLine < _ballHolderRow) { // 2
+			matchPhase = C_Common::LINE_BREAK_MATCH_PHASE;
 		}
+	}
+	// < ⓵セカンドボールフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
+		// * 条件 *
+		// 1.デフォルトフェーズ
+		// 2.ボールホルダーの周囲にボールが存在しない
+		float _fromBallDistance = ballHolder->GetDistanceTo(ball); // ボールホルダーとボールとの距離
+		if (C_Common::AROUNT_TILE_RANGE < _fromBallDistance) { // 2
+			matchPhase = C_Common::SECOND_BALL_COLLECT_MATCH_PHASE;
+		}
+	}
+	
+	// -- リレーショナルプレーパターン --
+	// | 各々デフォルトフェーズとプレーパターンで分ける |
+	// < ⓵ドリフトワイドパターン >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
+		// *条件*
+		// 1.デフォルトフェーズかつプレイパターンなし (*mustの条件)
+		// 2.サイドブレイカーがオフェンス(自分のチーム)
+		// 3.ボールホルダーポジションが,CH or LIH or RIH
+		// 4.サイドブレイカーが端のレーンにいる
+		for (AC_Piece* _sideBreaker : sideBreakPlayeres) {
+			if (offencePlayers.Contains(_sideBreaker)) { // 2
+				if (ballHolder->position == C_Common::LIH_POSITION || ballHolder->position == C_Common::RIH_POSITION || ballHolder->position == C_Common::CH_POSITION) { // 3
+					if (_sideBreaker->currentLane == C_Common::LANE_FIRST || _sideBreaker->currentLane == C_Common::LANE_FIFTH) { // 4
+						playPattern = C_Common::DRIFT_WIDE_RELATIONAL_PLAY_PATTERN;
+						mySideBreaker = _sideBreaker; // 対象のサイドブレイカー
 
-		// ●ロングパスターゲットに最も近いDFを取得
-		if (longPassTarget != nullptr) {
-			TArray<AC_Piece*> _DF_defenderes = {};
-			for (AC_Piece* _defender : defencePlayers) {
-				if (DFPositionRange.Contains(_defender->position)) {
-					_DF_defenderes.Add(_defender);
+						break;
+					}
 				}
 			}
-
-			_DF_defenderes.StableSort([&](const AC_Piece& A, const AC_Piece& B) { // 距離順にソート
-				return longPassTarget->GetDistanceTo(&A) < longPassTarget->GetDistanceTo(&B); // 近い
-				});
-
-			nearestLongBallTargetDF = _DF_defenderes[0];
 		}
+	}
+	// ***********************
 
-		// ●クリアリング時 (前回のSTEPにて)
-		if (isClering) { // 前回のSTEPにてクリアリングが実行されているか
-			preBallHolder = ballHolder; // 前回のボールホルダーを取得
-			ballHolder = nullptr; // ボールホルダーを空へ
 
-			isClering = false; // クリアリング判定
-		}
 
-		// ●エアバトル時 (前回のSTEPにて)
-		if (isAirBattle) { // 前回のSTEPにてエアバトルが実行されているか
-			preBallHolder = ballHolder; // 前回のボールホルダーを取得
-			ballHolder = nullptr; // ボールホルダーを空へ
 
-			isAirBattle = false; // エアバトルOFF
-		}
-
+	// **** 開始時処理 ****
+	// -- マッチフェーズ --
+	// < ⓵デフォルトフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) {
 		// ●ディフェンスラインを設定 (目標)
 		// | ボールがディフェンスラインの背後にあれば目標ラインを合わせる |
 		// --HOME--
@@ -1976,29 +2032,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			away_targetDefenseLineRow = away_currentDefenseLineRow; // 目標を現在のディフェンスライン位置にする
 		}
 
-		// ●ショートパス時 (前回のSTEPにて)
-		if (passTarget != nullptr) { // パスターゲットが設定されているか (前回のStepでパスが実行されているか)
-			preBallHolder = ballHolder; // ←リターンパスを禁止にする
-			ballHolder = passTarget; // ボールホルダー切り替え
-
-			passTarget = nullptr; // 空にする
-		}
-
 		if (ballHolder != nullptr) { // ボールホルダーが存在する
-			// ●どちらがオフェンスか
-			isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // Homeボールか
-
-			// ●オフェンスとディフェンスのプレイヤーをセット
-			if (isHomeBall) {
-				// < HOME >
-				offencePlayers = allHomePieces;
-				defencePlayers = allAwayPieces;
-			}
-			else {
-				// < AWAY >
-				offencePlayers = allAwayPieces;
-				defencePlayers = allHomePieces;
-			}
 
 			// ●ファーストディフェンダーをセット
 			firstDefender = GetFirstDefender();
@@ -2124,24 +2158,15 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 				ballHolderAroundTileNos.Add(_tileNo);
 			}
-
-			// ●サイドブレイカー取得 (1名のみ)
-			for (AC_Piece* _player : offencePlayers) {
-				if (_player->ActorHasTag(SIDE_BREAKER_TAG)) {
-					sideBreakPlayer = _player;
-
-					break;
-				}
-			}
 		}
 
 	}
 	// < ⓶セカンドボール回収フェーズ >
-	else if (gamePhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
+	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
 		// --
-
+		
 		// ●初回時
 		// ⓵セカンドボール回収エリア設定
 		// ⓶セカンドボール回収ポイントの設定
@@ -2151,9 +2176,8 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			for (AC_Tile* _tile : allTiles) {
 				// *制限*
 				// | 1.ボールタイル
-				// | 2.設定Coulomの以内
-				// | 3.ボールRow以上
-				// | 4.設定Row以下
+				// | 2.周囲Coulomの以内
+				// | 3.周囲Row以内
 				if (_tile->tileNo == ball->currentTileNo) continue; // 1
 
 				// Coulmn対応
@@ -2163,10 +2187,9 @@ void AC_My_Player_Controller::PrepareStepPhase()
 				if (_diffCoulmn > C_Common::SECOND_BALL_COLLECT_RANGE_NUM[0]) continue; // 2
 
 				// Row対応
-				int _ballRows = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y; // ボールRow  ← -1が右端対応
-				int _tileRows = (_tile->tileNo - 1) / C_Common::TILE_NUM_Y; // 個別のタイルRow  ← -1が右端対応
-				if (_ballRows < _tileRows) continue; // 3
-				if ((_ballRows - C_Common::SECOND_BALL_COLLECT_RANGE_NUM[1]) >= _tileRows) continue; // 4
+				int _tileRow = (_tile->tileNo - 1) / C_Common::TILE_NUM_Y; // 個別のタイルRow  ← -1が右端対応
+				int _diffRow = FMath::Abs(_tileRow - _ballRow); // Rowの差
+				if (_diffRow > C_Common::SECOND_BALL_COLLECT_RANGE_NUM[1]) continue; // 3
 
 
 				secondBallCollectRange.Add(_tile->tileNo); // エリア取得
@@ -2178,8 +2201,8 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			for (int _tileNo : secondBallCollectRange) {
 				int _tileRow = (_tileNo - 1) / C_Common::TILE_NUM_Y; // タイルRow
 
-				if (_tileRow == (_ballRow - 4)) offenseSecondBallCollectPoints.Add(_tileNo); // オフェンス側はボールの4列下Row
-				if (_tileRow == (_ballRow - 1)) defenseSecondBallCollectPoints.Add(_tileNo); // ディフェンス側はボールの1列下Row
+				if (_tileRow == (_ballRow - 1)) offenseSecondBallCollectPoints.Add(_tileNo); // オフェンス側はボールの4列下Row
+				if (_tileRow == (_ballRow + 1)) defenseSecondBallCollectPoints.Add(_tileNo); // ディフェンス側はボールの1列下Row
 			}
 			// --
 
@@ -2192,13 +2215,13 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 	}
 	// < ③裏抜けフェーズ >
-	else if (gamePhase == C_Common::LINE_BREAK_MATCH_PHASE) {
+	else if (matchPhase == C_Common::LINE_BREAK_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
 		// --
 	}
 	// < ⓸クロスフェーズ >
-	else if (gamePhase == C_Common::CROSS_MATCH_PHASE) {
+	else if (matchPhase == C_Common::CROSS_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
 		// --
@@ -2223,19 +2246,15 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	else {
 
 	}
-	// *******************************
 
-
-
-	// **** プレイパターンの処理 ****
-	// ●インクリメント (何かしらのプレイパターン)
-	if (playPattern != C_Common::NO_RELATIONAL_PLAY_PATTERN) {
-		stepCountForPlayPattern++;
-	}
+	// -- リレーショナルプレーパターン --
 	// < ⓵ドリフトワイドパターン >
 	if (playPattern == C_Common::DRIFT_WIDE_RELATIONAL_PLAY_PATTERN) {
+		// -- STEPカウント --
+		stepCountForPlayPattern++;
+		// --
 	}
-	// *******************************
+	// **********************
 	
 
 	// ** フェーズ中の処理 (必ず最後!!!) ***
@@ -2274,7 +2293,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 
 	// ** マッチフェーズ **
 	// < ⓵デフォルトフェーズ >
-	if (gamePhase == C_Common::DEFAULT_MATCH_PHASE) {
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) {
 
 		// < ⓵ドリフトワイドパターン >
 		//  →サイドブレイカーがサイドレーンに流れ、ボールを移動させる
@@ -2284,7 +2303,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 			//  →サイドライン際のバイタル位置
 			if (stepCountForPlayPattern == 1) {
 				// サイドブレイカーを仕掛けの位置へ移動
-				if (sideBreakPlayer->currentLane == C_Common::LANE_FIRST) {
+				if (mySideBreaker->currentLane == C_Common::LANE_FIRST) {
 					// <左レーン>
 
 					// 仕掛け位置取得
@@ -2292,7 +2311,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 					int _targetColumn = 1; // 左端
 					int _targetTileNo = _targetRow + _targetColumn;
 					// 移動
-					sideBreakPlayer->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation());
+					mySideBreaker->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation());
 				}
 				else {
 					// <右レーン>
@@ -2302,7 +2321,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 					int _targetColumn = 25; // 右端
 					int _targetTileNo = _targetRow + _targetColumn;
 					// 移動
-					sideBreakPlayer->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation());
+					mySideBreaker->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation());
 				}
 			}
 			// < STEP 2 >
@@ -2311,12 +2330,12 @@ void AC_My_Player_Controller::PlayStepPhase()
 			else if (stepCountForPlayPattern == 2) {
 				// フォロワー取得
 				//  →サイドブレイカーと同じレーン (*SBを想定)
-				if (sideBreakPlayer != nullptr) {
+				if (mySideBreaker != nullptr) {
 					// * 条件 *
 					// 1.サイドブレイカーと同じレーン
 					// 2.次のボールホルダーより後ろ
 					for (AC_Piece* _player : offencePlayers) {
-						if (sideBreakPlayer->currentLane == _player->currentLane) {
+						if (mySideBreaker->currentLane == _player->currentLane) {
 							bool _isBackThanBallHolder = isHomeBall ? ballHolder->currentTileNo > _player->currentTileNo:  ballHolder->currentTileNo < _player->currentTileNo;
 							if (_isBackThanBallHolder) {
 								follower = _player;
@@ -2346,16 +2365,18 @@ void AC_My_Player_Controller::PlayStepPhase()
 			// < STEP 4 >
 			// ●サイドブレイカーへパス
 			else if (stepCountForPlayPattern == 4) {
-				if (sideBreakPlayer != nullptr) {
-					ShortPass(sideBreakPlayer);
+				if (mySideBreaker != nullptr) {
+					ShortPass(mySideBreaker);
 				}
 			}
-			// ●パターン終了
+			// < 最終STEP >
+			// ●プレイパターン終了
 			// ●変数リセット
 			else {
-				nextPlayPattern = C_Common::NO_RELATIONAL_PLAY_PATTERN;
-
+				isFinishPlayPattern = true; // プレイパターン終了
+				// 変数リセット
 				follower = nullptr;
+				mySideBreaker = nullptr;
 			}
 		}
 		// < プレイパターンなし >
@@ -2398,7 +2419,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 		}
 	}
 	// < ⓶セカンドボール回収フェーズ >
-	else if (gamePhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
+	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
 		// < STEP 1 >
 		// ●セカンドボール回収ポイントに移動
 		// ●勝敗を決定
@@ -2502,8 +2523,8 @@ void AC_My_Player_Controller::PlayStepPhase()
 		// ●フェーズ終了
 		// ●変数リセット
 		else {
-			nextBallHolder = secondBallCollectPlayer;
-			nextGamePhase = C_Common::DEFAULT_MATCH_PHASE;
+			nextBallHolder = secondBallCollectPlayer; // ボールホルダー変更
+			isFinishMatchPhase = true; // フェーズ終了
 			// 変数リセット
 			secondBallCollectRange.Empty();
 			offenseSecondBallCollectPoints.Empty();
@@ -2512,7 +2533,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 		}
 	}
 	// < ③裏抜けフェーズ >
-	else if (gamePhase == C_Common::LINE_BREAK_MATCH_PHASE){
+	else if (matchPhase == C_Common::LINE_BREAK_MATCH_PHASE){
 		// < STEP 1 >
 		// ●ボールホルダーが最終局面に移動した分、フィールドプレイヤーとボールを移動
 		if (stepCountForGamePhase == 1) {
@@ -2539,13 +2560,14 @@ void AC_My_Player_Controller::PlayStepPhase()
 			int _targetTile = (_targetRow * C_Common::TILE_NUM_Y) + (_ballColumn + 1); // 移動先タイル (*Columnを修正)
 			ball->SetMoveTo(allTiles[_targetTile - 1]->GetActorLocation()); // 移動
 		}
+		// < 最終STEP >
 		// ●フェーズ終了
 		else {
-			nextGamePhase = C_Common::DEFAULT_MATCH_PHASE;
+			isFinishMatchPhase = true; // フェーズ終了
 		}
 	}
 	// < ⓸クロスフェーズ >
-	else if (gamePhase == C_Common::CROSS_MATCH_PHASE) {
+	else if (matchPhase == C_Common::CROSS_MATCH_PHASE) {
 		// < STEP 1 >
 		// ●クロス対応ポイントにプレイヤーを移動
 		// ●勝敗の決定
@@ -2743,20 +2765,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 
 			}
 		}
-		// ●フェーズ終了 or セカンドボール回収フェーズへ変更
+		// ●フェーズ終了
 		// ●変数リセット
 		else {
-			// ●フェーズ終了 or セカンドボール回収フェーズへ変更
-			if (isCrossTargetOffense) { // クロスターゲットが
-				// < オフェンス >
-				nextGamePhase = C_Common::DEFAULT_MATCH_PHASE; // デフォルトフェーズ
-			}
-			else {
-				// < ディフェンス >
-				
-				nextGamePhase = C_Common::SECOND_BALL_COLLECT_MATCH_PHASE; // セカンドボール回収フェーズ
-				stepCountForGamePhase = 0; // カウントリセット
-			}
+			isFinishMatchPhase = true; // フェーズ終了
 			// ●変数リセット
 			handleCrossRange.Empty(); // クロス対応範囲
 			crossTargetPlayer = nullptr; // クロスのターゲット
@@ -2804,15 +2816,24 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	secondBallCollectRange.Empty();
 	// **
 
-	// ** ゲームフェーズ **
-	if (nextGamePhase == C_Common::DEFAULT_MATCH_PHASE) {
-		stepCountForGamePhase = 0;
-	}
-	// **
 
-	// ** プレイパターン **
-	if (nextPlayPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) {
-		stepCountForPlayPattern = 0;
+	// ** 終了時処理 **
+	// < マッチフェーズ >
+	// ●デフォルトフェーズへ
+	// ●カウントリセット
+	if (isFinishMatchPhase) {
+		isFinishMatchPhase = false;
+		matchPhase = C_Common::DEFAULT_MATCH_PHASE; // デフォルトフェーズへ
+		stepCountForGamePhase = 0; // カウントリセット
+	}
+
+	// < リレーショナルプレーパターン >
+	// ●プレイパターンなし
+	// ●カウントリセット
+	if (isFinishPlayPattern) {
+		isFinishPlayPattern = false;
+		playPattern = C_Common::NO_RELATIONAL_PLAY_PATTERN; // プレイパターンなし
+		stepCountForPlayPattern = 0; // カウントリセット
 	}
 	// **
 	
