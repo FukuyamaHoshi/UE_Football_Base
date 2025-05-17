@@ -1799,6 +1799,13 @@ void AC_My_Player_Controller::StartOfMatch()
 			sideBreakPlayeres.Add(_player);
 		}
 	}
+
+	// ●ターゲットマン取得 (全て)
+	for (AC_Piece* _player : allPieces) {
+		if (_player->ActorHasTag(TARGET_MAN_TAG)) {
+			targetManPlayeres.Add(_player);
+		}
+	}
 }
 
 // ③-⑴ 準備ステップフェーズ
@@ -1947,6 +1954,16 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	// **** トリガー発火処理 ****
 	// -- マッチフェーズ --
 	// | 各々デフォルトフェーズで分ける |
+	// < ⓵セカンドボールフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
+		// * 条件 *
+		// 1.デフォルトフェーズ
+		// 2.ボールホルダーの周囲にボールが存在しない
+		float _fromBallDistance = ballHolder->GetDistanceTo(ball); // ボールホルダーとボールとの距離
+		if (C_Common::AROUNT_TILE_RANGE < _fromBallDistance) { // 2
+			matchPhase = C_Common::SECOND_BALL_COLLECT_MATCH_PHASE;
+		}
+	}
 	// < ③クロスフェーズ >
 	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
 		int _myFinishZornRow = isHomeBall ? C_Common::FINISH_ZORN_ROW[0] : C_Common::FINISH_ZORN_ROW[1]; // 自分のフィニッシュゾーン
@@ -1967,16 +1984,6 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		// 2.相手のディフェンスラインよりボールホルダーが高い位置に存在
 		if (_enemyCurrentDifenseLine < _ballHolderRow) { // 2
 			matchPhase = C_Common::LINE_BREAK_MATCH_PHASE;
-		}
-	}
-	// < ⓵セカンドボールフェーズ >
-	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
-		// * 条件 *
-		// 1.デフォルトフェーズ
-		// 2.ボールホルダーの周囲にボールが存在しない
-		float _fromBallDistance = ballHolder->GetDistanceTo(ball); // ボールホルダーとボールとの距離
-		if (C_Common::AROUNT_TILE_RANGE < _fromBallDistance) { // 2
-			matchPhase = C_Common::SECOND_BALL_COLLECT_MATCH_PHASE;
 		}
 	}
 	
@@ -2160,6 +2167,23 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			}
 		}
 
+		// ●自チームのTAGプレイヤーの取得 (*判定も兼ねる)
+		// < ターゲットマン >
+		myTargetMans.Empty(); // 空にする
+		for (AC_Piece* _player : targetManPlayeres) {
+			// * 条件 *
+			// 1.オフェンス
+			// 2.ボールホルダーがデフェンダー or GK
+			// 3.ボールホルダーとレーンが異なる
+			if (offencePlayers.Contains(_player)) {
+				if (DFPositionRange.Contains(ballHolder->position) || ballHolder->position == C_Common::GK_POSITION) {
+					if (ballHolder->currentLane != _player->currentLane) {
+						myTargetMans.Add(_player);
+					}
+				}
+			}
+		}
+
 	}
 	// < ⓶セカンドボール回収フェーズ >
 	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
@@ -2294,7 +2318,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 	// ** マッチフェーズ **
 	// < ⓵デフォルトフェーズ >
 	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) {
-
+		// -- デバッグ表示 --
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< DEFAULT_MATCH_PHASE >", true, true, FColor::Cyan, 1.f, TEXT("None"));
+		// ----------------
+		
 		// < ⓵ドリフトワイドパターン >
 		//  →サイドブレイカーがサイドレーンに流れ、ボールを移動させる
 		if (playPattern == C_Common::DRIFT_WIDE_RELATIONAL_PLAY_PATTERN) {
@@ -2381,8 +2408,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 		}
 		// < プレイパターンなし >
 		else {
-			if (ballHolder != nullptr) { // ボールホルダーがいる場合
-				// < ⓪プレイパターンなし >
+			if (ballHolder != nullptr) {
 				// ボールホルダーのプレイ選択
 				if (ballHolder->position == C_Common::GK_POSITION) {
 					// <GK>
@@ -2398,32 +2424,26 @@ void AC_My_Player_Controller::PlayStepPhase()
 					SelectPlayForDefender(_defender);
 				}
 
-				// オフェンス側のオフザボール
-				for (AC_Piece* _offenser : offencePlayers) {
-					// *制限*
-					// | 1.ボールホルダー |
-					if (_offenser == ballHolder) continue; // 1
-
-					// -- ターゲットマン --
-					if (_offenser->ActorHasTag(TARGET_MAN_TAG)) {
-						// *条件*
-						// 1.ターゲットマン
-						// 2.ボールホルダーとレーンが異なる
-						if (ballHolder->currentLane != _offenser->currentLane) {
-							MoveToBallHolderLaneForTargetMan(_offenser); // ボールホルダーレーンに移動
-						}
-					}
-					// --
+				// ●オフザボール処理
+				// < ターゲットマン >
+				for (AC_Piece* _targetMan : myTargetMans) {
+					MoveToBallHolderLaneForTargetMan(_targetMan);
 				}
 			}
 		}
 	}
 	// < ⓶セカンドボール回収フェーズ >
 	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
+		// -- デバッグ表示 --
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< SECOND_BALL_COLLECT_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Blue, 1.f, TEXT("None"));
+		// ----------------
+		
 		// < STEP 1 >
+		// ●フェーズの参加プレイヤー取得・判定
 		// ●セカンドボール回収ポイントに移動
 		// ●勝敗を決定
 		// ●ボール回収プレイヤー取得
+		//  →参加プレイヤー不在時、最も近いプレイヤーをセット
 		if (stepCountForGamePhase == 1) {
 			// ●セカンドボール回収フェーズの参加プレイヤー取得
 			TArray<AC_Piece*> _offenseres = {}; // オフェンス
@@ -2434,82 +2454,98 @@ void AC_My_Player_Controller::PlayStepPhase()
 			for (AC_Piece* _player : defencePlayers) {
 				if (secondBallCollectRange.Contains(_player->currentTileNo)) _defenderes.Add(_player);
 			}
+			// ●参加プレイヤーが存在するか判定
+			if (_offenseres.IsEmpty() && _defenderes.IsEmpty()) {
+				// < 不在 >
 
-			// ●セカンドボール回収ポイントに移動
-			// | 同じColumnのポイントへ |
-			// -オフェンス-
-			for (AC_Piece* _player : _offenseres) {
-				int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y;
-
-				for (int _tileNo : offenseSecondBallCollectPoints) {
-					int _pointColumn = (_tileNo - 1) % C_Common::TILE_NUM_Y;
-					// *条件*
-					// | 1.プレイヤーとポイントのColumnが同じ
-					if (_playerColumn == _pointColumn) { // 1
-						_player->SetMoveTo(allTiles[_tileNo - 1]->GetActorLocation());
-
-						break;
-					}
-				}
-			}
-			// -ディフェンス-
-			for (AC_Piece* _player : _defenderes) {
-				int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y;
-
-				for (int _tileNo : defenseSecondBallCollectPoints) {
-					int _pointColumn = (_tileNo - 1) % C_Common::TILE_NUM_Y;
-					// *条件*
-					// | 1.プレイヤーとポイントのColumnが同じ
-					if (_playerColumn == _pointColumn) { // 1
-						_player->SetMoveTo(allTiles[_tileNo - 1]->GetActorLocation());
-
-						break;
-					}
-				}
-			}
-
-			// ●勝敗を決定
-			//  → ⓵位置の優位性 ⓶ボール回収能力 の合算によって決まる
-			int _offenseAbilitySum = 0; // オフェンス回収能力の合計値
-			int _defenseAbilitySum = 0; // ディフェンス回収能力の合計値
-			int _ballColumn = (ball->currentTileNo - 1) % C_Common::TILE_NUM_Y; // ボールColumn
-			// -- 回収能力の合算 --
-			// -オフェンス-
-			for (AC_Piece* _player : _offenseres) {
-				int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーColumn
-				// ⓵位置による優位性
-				//  →ボールに近い程,優位性高まる
-				int _placeAdvantage = C_Common::SECOND_BALL_COLLECT_RANGE_NUM[0] - FMath::Abs(_ballColumn - _playerColumn);
-				// ⓶ボール回収能力
-				int _ability = _player->physicalContact;
-				// ⓵ + ⓶
-				int _collectAbility = _placeAdvantage + _ability;
-
-				_offenseAbilitySum += _collectAbility;
-			}
-			// -ディフェンス-
-			for (AC_Piece* _player : _defenderes) {
-				int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーColumn
-				// ⓵位置による優位性
-				//  →ボールに近い程,優位性高まる
-				int _placeAdvantage = C_Common::SECOND_BALL_COLLECT_RANGE_NUM[0] - FMath::Abs(_ballColumn - _playerColumn);
-				// ⓶ボール回収能力
-				int _ability = _player->physicalContact;
-				// ⓵ + ⓶
-				int _collectAbility = _placeAdvantage + _ability;
-
-				_defenseAbilitySum += _collectAbility;
-			}
-			bool _isOffenseWin = (_offenseAbilitySum + 1) > _defenseAbilitySum; // 勝敗判定 (*オフェンスが有利)
-
-			// ●ボール回収プレイヤーの取得
-			if (_isOffenseWin) {
-				// <オフェンス勝利>
-				secondBallCollectPlayer = _offenseres[0];
+				// ●最も近いプレイヤーを取得
+				TArray<AC_Piece*> _allPlayers = allPieces; // 全てのプレイヤー
+				// ボールとの距離順にソート
+				_allPlayers.StableSort([&](const AC_Piece& A, const AC_Piece& B) {
+					return ball->GetDistanceTo(&A) < ball->GetDistanceTo(&B); // 近い
+					});
+				secondBallCollectPlayer = _allPlayers[0]; // セカンドボール回収プレイヤーにセット
+			
 			}
 			else {
-				// <ディフェンス勝利>
-				secondBallCollectPlayer = _defenderes[0];
+				// < 存在 >
+				
+				// ●セカンドボール回収ポイントに移動
+				// | 同じColumnのポイントへ |
+				// -オフェンス-
+				for (AC_Piece* _player : _offenseres) {
+					int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y;
+
+					for (int _tileNo : offenseSecondBallCollectPoints) {
+						int _pointColumn = (_tileNo - 1) % C_Common::TILE_NUM_Y;
+						// *条件*
+						// | 1.プレイヤーとポイントのColumnが同じ
+						if (_playerColumn == _pointColumn) { // 1
+							_player->SetMoveTo(allTiles[_tileNo - 1]->GetActorLocation());
+
+							break;
+						}
+					}
+				}
+				// -ディフェンス-
+				for (AC_Piece* _player : _defenderes) {
+					int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y;
+
+					for (int _tileNo : defenseSecondBallCollectPoints) {
+						int _pointColumn = (_tileNo - 1) % C_Common::TILE_NUM_Y;
+						// *条件*
+						// | 1.プレイヤーとポイントのColumnが同じ
+						if (_playerColumn == _pointColumn) { // 1
+							_player->SetMoveTo(allTiles[_tileNo - 1]->GetActorLocation());
+
+							break;
+						}
+					}
+				}
+
+				// ●勝敗を決定
+				//  → ⓵位置の優位性 ⓶ボール回収能力 の合算によって決まる
+				int _offenseAbilitySum = 0; // オフェンス回収能力の合計値
+				int _defenseAbilitySum = 0; // ディフェンス回収能力の合計値
+				int _ballColumn = (ball->currentTileNo - 1) % C_Common::TILE_NUM_Y; // ボールColumn
+				// -- 回収能力の合算 --
+				// -オフェンス-
+				for (AC_Piece* _player : _offenseres) {
+					int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーColumn
+					// ⓵位置による優位性
+					//  →ボールに近い程,優位性高まる
+					int _placeAdvantage = C_Common::SECOND_BALL_COLLECT_RANGE_NUM[0] - FMath::Abs(_ballColumn - _playerColumn);
+					// ⓶ボール回収能力
+					int _ability = _player->physicalContact;
+					// ⓵ + ⓶
+					int _collectAbility = _placeAdvantage + _ability;
+
+					_offenseAbilitySum += _collectAbility;
+				}
+				// -ディフェンス-
+				for (AC_Piece* _player : _defenderes) {
+					int _playerColumn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーColumn
+					// ⓵位置による優位性
+					//  →ボールに近い程,優位性高まる
+					int _placeAdvantage = C_Common::SECOND_BALL_COLLECT_RANGE_NUM[0] - FMath::Abs(_ballColumn - _playerColumn);
+					// ⓶ボール回収能力
+					int _ability = _player->physicalContact;
+					// ⓵ + ⓶
+					int _collectAbility = _placeAdvantage + _ability;
+
+					_defenseAbilitySum += _collectAbility;
+				}
+				bool _isOffenseWin = (_offenseAbilitySum + 1) > _defenseAbilitySum; // 勝敗判定 (*オフェンスが有利)
+
+				// ●ボール回収プレイヤーの取得
+				if (_isOffenseWin) {
+					// <オフェンス勝利>
+					secondBallCollectPlayer = _offenseres[0];
+				}
+				else {
+					// <ディフェンス勝利>
+					secondBallCollectPlayer = _defenderes[0];
+				}
 			}
 		}
 		// < STEP 2 >
@@ -2534,6 +2570,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 	}
 	// < ③裏抜けフェーズ >
 	else if (matchPhase == C_Common::LINE_BREAK_MATCH_PHASE){
+		// -- デバッグ表示 --
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< LINE_BREAK_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Red, 1.f, TEXT("None"));
+		// ----------------
+		
 		// < STEP 1 >
 		// ●ボールホルダーが最終局面に移動した分、フィールドプレイヤーとボールを移動
 		if (stepCountForGamePhase == 1) {
@@ -2568,6 +2608,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 	}
 	// < ⓸クロスフェーズ >
 	else if (matchPhase == C_Common::CROSS_MATCH_PHASE) {
+		// -- デバッグ表示 --
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< CROSS_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Orange, 1.f, TEXT("None"));
+		// ----------------
+		
 		// < STEP 1 >
 		// ●クロス対応ポイントにプレイヤーを移動
 		// ●勝敗の決定

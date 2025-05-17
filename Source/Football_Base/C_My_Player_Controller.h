@@ -213,13 +213,18 @@ private:
 	
 	
 	
-	AC_Piece* nextBallHolder = nullptr; // 次のボールホルダー (*プレイSTEPで変更)
+	// **** オフザボール ****
+	// < ターゲットマン >
+	TArray <AC_Piece*> targetManPlayeres = {}; // ターゲットマンプレイヤー(全て) *試合開始時に全て取得
+	TArray <AC_Piece*> myTargetMans = {}; //  対象のターゲットマン
+	// ********************
 	
 
 	// **** マッチフェーズ ****
 	int matchPhase = 0; // マッチフェーズNo (*プレイSTEPでは変更しない)
 	bool isFinishMatchPhase = false; // マッチフェーズ終了フラグ
 	int stepCountForGamePhase = 0; // ステップカウンター
+	AC_Piece* nextBallHolder = nullptr; // 次のボールホルダー (*プレイSTEPで変更)
 	// < セカンドボール回収 >
 	TArray<int> secondBallCollectRange = {}; // セカンドボール回収範囲
 	TArray<int> offenseSecondBallCollectPoints = {}; // セカンドボール回収ポイント(オフェンス側)
