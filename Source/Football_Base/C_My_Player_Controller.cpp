@@ -259,12 +259,11 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 			if (isGrap) {
 				// < グラップ中 >
 
-				// ** ホバー処理(タイルをハイライトする) **
+				// -- ホバー処理(タイルをハイライトする) --
 				TileHighlightWhenMouseHover();
-				// **
 
-				// ** 選択したプレイヤーにマウスを追従させる **
-				// マウス位置取得
+				// -- 選択したオブジェクトをマウスに追従 --
+				// ●マウス位置取得
 				TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
 				_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // Blocking Volume
 				FHitResult hitResult; // オブジェクト情報
@@ -272,14 +271,19 @@ void AC_My_Player_Controller::Tick(float DeltaTime)
 				bool _isVolumeExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
 
 				// * 制限 *
-				if (_isVolumeExist == false) return; // Volumeか
-				// *
+				// 1.Blocking Volume以外
+				if (_isVolumeExist == false) return; // 1
 
-				// マウスを追従
-				selectedPlayer->SetActorLocation(hitResult.Location);
-				// **
+				// ●マウスに追従
+				// < プレイヤー >
+				if (selectedPlayer != nullptr) {
+					selectedPlayer->SetActorLocation(hitResult.Location); // 追従処理
+				}
+				// < ボール >
+				if (C_Common::DEBUG_MODE && selectedBall != nullptr) {
+					selectedBall->SetActorLocation(hitResult.Location); // 追従処理
+				}
 			}
-			// **
 
 			return;
 		}
@@ -342,31 +346,44 @@ void AC_My_Player_Controller::SetupInput()
 void AC_My_Player_Controller::PressedLeft()
 {
 	// * 制限 *
-	if (isInitialPlacePhase == false) return; // 初期配置フェーズのみ
-	// *
+	// 1.初期配置フェーズ以外
+	// 2.PhisicsBody以外
+	if (isInitialPlacePhase == false) return; // 1
 	
-	// ** マウス位置(クリック時)の情報を取得 **
+	// ●マウス位置(クリック時)の情報を取得
 	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
 	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody)); // プレイヤー: PhysicsBody
 	FHitResult hitResult; // オブジェクト情報
-
-	bool _isPlayerExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
-	// **
+	// マウス位置情報取得処理
+	bool _isPhysicsBodyExist = GetResultFromMouseLocation(hitResult, _objectTypes);
 	
 	// * 制限 *
-	if (_isPlayerExist == false) return; // プレイヤー(PhisicsBody)か
-	if (hitResult.GetActor()->ActorHasTag(FName(TEXT("HOME"))) == false) return; // HOMEプレイヤーか
-	// *
+	if (_isPhysicsBodyExist == false) return; // 2
+	// 条件タグを取得
+	bool _isTagTypes = C_Common::DEBUG_MODE ? hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG) || hitResult.GetActor()->ActorHasTag(BALL_TAG) : hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG);
+	
+	// * 条件 *
+	// 1.HOMEタグ ↔ (デバッグモード時)HOMEタグ or BALLタグ
+	if (_isTagTypes) { // 1
+		
+		// プレイヤーかボールかで処理分ける
+		if (hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG)) {
+			// < HOMEタグ >
+			
+			// ●プレイヤー配置可能エリアを表示
+			DisplayPlayerPlaceableErea();
 
-	// ** プレイヤー配置可能エリアを表示 **
-	DisplayPlayerPlaceableErea();
-	// **
+			// ●マウス位置情報からプレイヤーを取得
+			selectedPlayer = Cast<AC_Piece>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
+		}
+		else {
+			// < BALLタグ >
+			// ●マウス位置情報からボールを取得
+			selectedBall = Cast<AC_Ball>(hitResult.GetActor()); // ボール取得 (キャスト)
+		}
 
-
-	// ** マウス位置情報からプレイヤーを取得 **
-	selectedPlayer = Cast<AC_Piece>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
-	isGrap = true; // フラグON
-	// **
+		isGrap = true; // フラグON
+	}
 }
 
 // 左クリック(リリース)イベント
@@ -375,45 +392,64 @@ void AC_My_Player_Controller::PressedLeft()
 void AC_My_Player_Controller::ReleasedLeft()
 {
 	// * 制限 *
-	if (isInitialPlacePhase == false) return; // 初期配置フェーズでない
-	// *
+	// 1.初期配置フェーズ
+	if (isInitialPlacePhase == false) return; // 1
 
-	// ** プレイヤー配置可能タイルを削除 **
+	// ●プレイヤー配置可能タイルを削除
 	RemovePlayerPlaceRange();
-	// **
 
-	// ** 移動するプレイヤー情報変更 **
-	if (overlayTile != nullptr && selectedPlayer != nullptr) {
-		// <プレイヤーとタイルが存在>
-		// | 移動先がタイルの場合 |
+	// ●タイルNo更新
+	if (overlayTile != nullptr) { // 1
+		// * 条件 *
+		// 1.オーバーレイタイルが存在
+		// -- プレイヤー --
+		// 2.選択されたプレイヤーが存在
+		// 3.GKプレイヤー以外
+		// 4.配置可能エリア(本番モード時のみ)
+		// 
+		// -- ボール -- (*デバッグモード時のみ)
+		// 2.選択されたボールが存在
 		
-		if (placeableRrea.Contains(overlayTile->tileNo)) { // *プレイヤー配置制限対応
-			// <プレイヤー配置可能エリア内>
-			if (selectedPlayer->position != C_Common::GK_POSITION) {
-				// <GK以外のプレイヤー>
-				
-				// *タイルNo更新
-				selectedPlayer->currentTileNo = overlayTile->tileNo; // *移動先タイルへ移動するため
+		// -- プレイヤー --
+		if (selectedPlayer != nullptr) { // 2
+			if (selectedPlayer->position != C_Common::GK_POSITION) { // 3
+				if (C_Common::DEBUG_MODE) {
+					// < デバッグモード >
+					selectedPlayer->currentTileNo = overlayTile->tileNo; // タイルNo更新
+				}
+				else {
+					// < 本番モード >
+					if (placeableRrea.Contains(overlayTile->tileNo)) { // 4
+						selectedPlayer->currentTileNo = overlayTile->tileNo; // タイルNo更新
+					}
+				}
 			}
+		}
+		// -- ボール --
+		if (selectedBall != nullptr && C_Common::DEBUG_MODE) { // 2
+
+			selectedBall->currentTileNo = overlayTile->tileNo; // タイルNo更新
 		}
 	}
 
+	// ●位置の調整 (タイル位置に合わせる)
+	// -- プレイヤー --
 	if (selectedPlayer != nullptr) {
-		// <プレイヤーが存在>
-		
-		// *位置更新
-		// | プレイヤーにセットされているタイルNoへ移動 |
-		FVector _currentTileLocation = allTiles[selectedPlayer->currentTileNo - 1]->GetActorLocation();
+		FVector _currentTileLocation = allTiles[selectedPlayer->currentTileNo - 1]->GetActorLocation(); // 現在セットされているタイルNoへ
 		_currentTileLocation.Z = C_Common::BASE_LOCATION_Z;
 		selectedPlayer->SetActorLocation(_currentTileLocation);
 	}
-	// **
+	// -- ボール --
+	if (selectedBall != nullptr) {
+		FVector _currentTileLocation = allTiles[selectedBall->currentTileNo - 1]->GetActorLocation(); // 現在セットされているタイルNoへ
+		_currentTileLocation.Z = C_Common::BASE_LOCATION_Z;
+		selectedBall->SetActorLocation(_currentTileLocation);
+	}
 
-	// ** 変数リセット **
+	// ●変数リセット
 	overlayTile = nullptr;
 	selectedPlayer = nullptr;
-	// **
-
+	if (C_Common::DEBUG_MODE) selectedBall = nullptr; // *デバッグ時
 	isGrap = false; // フラグ切り替え
 }
 
@@ -431,53 +467,50 @@ void AC_My_Player_Controller::PressedSpaceBar()
 // マウスホバー時,タイルをハイライトする
 void AC_My_Player_Controller::TileHighlightWhenMouseHover()
 {
-	// * 制限 (ポジション) *
+	// * 制限  *
+	// 1.GKのプレイヤー
 	if (selectedPlayer != nullptr) {
-		if (selectedPlayer->position == C_Common::GK_POSITION) return; // GK
+		if (selectedPlayer->position == C_Common::GK_POSITION) return; // 1
 	}
-	// *
 
-	// ** マウス位置(クリック時)の情報を取得 **
+	// ●マウス位置(クリック時)の情報を取得
 	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
 	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // タイル: WorldStatic
 	FHitResult _hitResult; // オブジェクト情報
 
 	bool _isWorldStatic = GetResultFromMouseLocation(_hitResult, _objectTypes); // マウス位置情報取得処理
-	// **
 
-	// * 制限 (タイル以外Hover時) *
-	if (_isWorldStatic == false || _hitResult.GetActor()->ActorHasTag((FName("TILE"))) == false) { // WorldStaticでない or タイルでない
-		// <タイルでない>
+	// ●ハイライト制限処理(タイル以外Hover時)
+	// * 制限 *
+	// 1.WorldStaticでない or タイルタグでない
+	if (_isWorldStatic == false || _hitResult.GetActor()->ActorHasTag((FName("TILE"))) == false) { // 1
 		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
 		overlayTile = nullptr; // *リリース時対応
 
 		return;
 	}
-	// *
 
 	AC_Tile* _currentnHoverTile = Cast<AC_Tile>(_hitResult.GetActor()); // 現在のホバータイル(キャスト)
 
-	// * 制限 (タイルHover時) *
+	// ●ハイライト制限処理(タイルHover時)
+	// * 制限 *
+	// 1.現在ハイライトしているタイルと同じ
+	// 2.プレイヤー配置可能エリア外 (*本番モード時のみ)
 	if (overlayTile != nullptr) { // *初回のみnull入るため
-		if (_currentnHoverTile->tileNo == overlayTile->tileNo) return; // 現在ハイライトしているタイルと同じ
+		if (_currentnHoverTile->tileNo == overlayTile->tileNo) return; // 1
 	}
-
-	if (placeableRrea.Contains(_currentnHoverTile->tileNo) == false) { // プレイヤー配置可能エリア外
-		// <プレイヤー配置可能エリア外>
+	if (placeableRrea.Contains(_currentnHoverTile->tileNo) == false && C_Common::DEBUG_MODE == false) { // 2
 		if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // ハイライト削除
 		overlayTile = nullptr; // *リリース時対応
 
 		return;
 	}
-	// *
 
 
-	// ** タイルをハイライトする **
+	// ●タイルをハイライト・ハイライトタイル取得
 	if (overlayTile != nullptr) overlayTile->RemoveMainMaterial(); // マテリアル削除 (*ハイライトを1つにするため)
-
 	overlayTile = _currentnHoverTile; // ハイライトタイルを格納
 	overlayTile->SetMaterial(); // マテリアルセット (ハイライト処理)
-	// **
 }
 // *************************
 
@@ -1710,20 +1743,51 @@ void AC_My_Player_Controller::AproachToLongPassTargetForDefender(AC_Piece* defen
 
 // ********* フェーズ *********
 // ⓶2次配置フェーズ
-// | AWAYチームをゲーム開始位置(*15マス前)へ移動 (*AWAYが最初必ずディフェンスのため) |
 void AC_My_Player_Controller::SecondPlacePhase()
 {
-	for (AC_Piece* p : allAwayPieces) {
-		// *制限*
-		if (p->position == C_Common::GK_POSITION) continue; // GK
-		// *
+	// ●ボールホルダーの取得
+	// // * 条件 *
+	// | 1.ホールホルダーが不在
+	if (ballHolder == nullptr) {
+		// ボールの十字タイルNoを作成
+		int _ballTileNo = ball->currentTileNo; // ボールタイルNo
+		// 十字マス
+		int _plusX = _ballTileNo + (C_Common::TILE_NUM_Y * 1);
+		int _minusX = _ballTileNo - (C_Common::TILE_NUM_Y * 1);
+		int _plusY = _ballTileNo + 1;
+		int _minusY = _ballTileNo - 1;
+		TArray<int> _ballCrossTileNos = { _plusX, _minusX, _plusY, _minusY }; // ボールの十字タイルNo
 
-		// ** プレイヤーの15マス前のタイル取得(AWAYのみ) **
-		int _currentTileNo = GetTileNoFromLocation(p->GetActorLocation().X, p->GetActorLocation().Y); // 現在位置のタイルNo
-		int _targetTileNo = _currentTileNo + -(C_Common::TILE_NUM_Y * 15); // 15マス前のタイル取得
-		// **
-		
-		if (_targetTileNo < 1 || _targetTileNo > 1000) continue; // タイルNoの範囲内か
+		for (AC_Piece* p : allPieces) {
+			if (_ballCrossTileNos.Contains(p->currentTileNo)) { // 十字タイルにプレイヤーがいる場合
+				ballHolder = p;
+
+				break;
+			}
+		}
+	}
+
+	// * 制限 *
+	// 1.ボールホルダー不在
+	if (ballHolder == nullptr) return; // 1
+	
+	// ●ボール保持チームの取得
+	bool _isHome = ballHolder->ActorHasTag(HOME_PLAYER_TAG);
+	
+	// ●守備側のチームの取得
+	TArray <AC_Piece*> _defenceTeam = _isHome ? allAwayPieces : allHomePieces;
+
+	// ●2次配置位置へ移動
+	//  →15マス前のタイルへ移動
+	for (AC_Piece* p : _defenceTeam) {
+		// * 制限 *
+		// 1.GK
+		// 2.タイルNoの範囲内
+		if (p->position == C_Common::GK_POSITION) continue; // 1
+
+		int _targetTileNo = _isHome ? p->currentTileNo - (C_Common::TILE_NUM_Y * 15) : p->currentTileNo + (C_Common::TILE_NUM_Y * 15); // 移動先のタイルNo
+
+		if (_targetTileNo < 1 || _targetTileNo > 1000) continue; // 2
 
 		p->SetMoveTo(allTiles[_targetTileNo - 1]->GetActorLocation()); // 移動
 	}
@@ -1933,7 +1997,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 	// ●変数のセット
 	int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y; // 〇ボールRow (ローカル)
-	isHomeBall = ballHolder->ActorHasTag(FName("HOME")); // 〇Homeボール判定
+	isHomeBall = ballHolder->ActorHasTag(HOME_PLAYER_TAG); // 〇Homeボール判定
 	if (isHomeBall) { // 〇攻守のプレイヤー
 		// < HOME >
 		offencePlayers = allHomePieces;
@@ -1953,11 +2017,11 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 	// **** トリガー発火処理 ****
 	// -- マッチフェーズ --
-	// | 各々デフォルトフェーズで分ける |
+	// | 各々デフォルトフェーズとプレーパターンで分ける |
 	// < ⓵セカンドボールフェーズ >
-	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
 		// * 条件 *
-		// 1.デフォルトフェーズ
+		// 1.デフォルトフェーズかつプレイパターンなし (*mustの条件)
 		// 2.ボールホルダーの周囲にボールが存在しない
 		float _fromBallDistance = ballHolder->GetDistanceTo(ball); // ボールホルダーとボールとの距離
 		if (C_Common::AROUNT_TILE_RANGE < _fromBallDistance) { // 2
@@ -1965,24 +2029,25 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		}
 	}
 	// < ③クロスフェーズ >
-	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
-		int _myFinishZornRow = isHomeBall ? C_Common::FINISH_ZORN_ROW[0] : C_Common::FINISH_ZORN_ROW[1]; // 自分のフィニッシュゾーン
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
+		bool _isInFinishZorn = isHomeBall ? C_Common::FINISH_ZORN_ROW[0] <= _ballHolderRow : C_Common::FINISH_ZORN_ROW[1] >= _ballHolderRow; // フィニッシュゾーン判定
 		// *条件*
-		// 1.デフォルトフェーズ
+		// 1.デフォルトフェーズかつプレイパターンなし (*mustの条件)
 		// 2.ボールホルダーがクロスゾーンに存在 ( ⑴フィニッシュRow + ⑵クロスColumn )
-		if (_myFinishZornRow <= _ballHolderRow) { // 2 ⑴
+		if (_isInFinishZorn) { // 2 ⑴
 			if (_ballHolderColumn < C_Common::CROSS_ZORN_COLUMN[0] || _ballHolderColumn > C_Common::CROSS_ZORN_COLUMN[1]) { // 2 ⑵
 				matchPhase = C_Common::CROSS_MATCH_PHASE;
 			}
 		}
 	}
 	// < ⓶ラインブレイクフェーズ >
-	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) { // 1
-		int _enemyCurrentDifenseLine = isHomeBall ? away_currentDefenseLineRow : home_currentDefenseLineRow; // 相手のディフェンスラインRow
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
+		int _enemyDifenseLine = isHomeBall ? away_currentDefenseLineRow : home_currentDefenseLineRow; // 相手のディフェンスライン
+		bool _isOverDefenseLine = isHomeBall ? _enemyDifenseLine < _ballHolderRow : _enemyDifenseLine > _ballHolderRow; // 相手ディフェンスラインより高い位置か
 		// * 条件 *
-		// 1.デフォルトフェーズ
+		// 1.デフォルトフェーズかつプレイパターンなし (*mustの条件)
 		// 2.相手のディフェンスラインよりボールホルダーが高い位置に存在
-		if (_enemyCurrentDifenseLine < _ballHolderRow) { // 2
+		if (_isOverDefenseLine) { // 2
 			matchPhase = C_Common::LINE_BREAK_MATCH_PHASE;
 		}
 	}
@@ -2196,7 +2261,6 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		// ⓶セカンドボール回収ポイントの設定
 		if (stepCountForGamePhase == 1) {
 			// -- セカンドボール回収エリア設定 --
-			// | (*暫定) AWAY対応してない |
 			for (AC_Tile* _tile : allTiles) {
 				// *制限*
 				// | 1.ボールタイル
@@ -2221,12 +2285,20 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			// --
 
 			// -- セカンドボール回収ポイントの設定 --
-			// | (*暫定) AWAY対応してない |
+			//  →ボールRowの前後のRowが回収ポイント
 			for (int _tileNo : secondBallCollectRange) {
 				int _tileRow = (_tileNo - 1) / C_Common::TILE_NUM_Y; // タイルRow
-
-				if (_tileRow == (_ballRow - 1)) offenseSecondBallCollectPoints.Add(_tileNo); // オフェンス側はボールの4列下Row
-				if (_tileRow == (_ballRow + 1)) defenseSecondBallCollectPoints.Add(_tileNo); // ディフェンス側はボールの1列下Row
+				
+				if (isHomeBall) {
+					// < HOME >
+					if (_tileRow == (_ballRow - 1)) offenseSecondBallCollectPoints.Add(_tileNo); // 手前側( = オフェンス)
+					if (_tileRow == (_ballRow + 1)) defenseSecondBallCollectPoints.Add(_tileNo); // 後ろ側( = ディフェンス)
+				}
+				else {
+					// < AWAY >
+					if (_tileRow == (_ballRow - 1)) defenseSecondBallCollectPoints.Add(_tileNo); // 手前側( = ディフェンス)
+					if (_tileRow == (_ballRow + 1)) offenseSecondBallCollectPoints.Add(_tileNo); // 後ろ側( = オフェンス)
+				}
 			}
 			// --
 
@@ -2255,10 +2327,12 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		if (stepCountForGamePhase == 1) {
 			for (AC_Tile* _tile : allTiles) {
 				// * 制限 *
-				// 1.タイルRowがクロス対応Row以下
+				// 1.タイルRowがクロス対応Row以外
 				// 2.タイルColumnがクロスゾーン内
 				int _tileRow = (_tile->tileNo - 1) / C_Common::TILE_NUM_Y; // タイルRow
-				if (_tileRow < C_Common::HANDLE_CROSS_RANGE_ROW[0]) continue;
+				// クロス対応Rowの範囲外判定
+				bool _isOutOfHandleCrossRange = isHomeBall ? _tileRow < C_Common::HANDLE_CROSS_RANGE_ROW[0]:_tileRow > C_Common::HANDLE_CROSS_RANGE_ROW[1];
+				if (_isOutOfHandleCrossRange) continue;
 				
 				int _tileColumn = (_tile->tileNo - 1) % C_Common::TILE_NUM_Y; // タイルColumn
 				if ((_tileColumn + 1) <= C_Common::CROSS_ZORN_COLUMN[0] || C_Common::CROSS_ZORN_COLUMN[1] <= (_tileColumn + 1)) continue;
@@ -2329,12 +2403,13 @@ void AC_My_Player_Controller::PlayStepPhase()
 			// ●サイドブレイカーの移動
 			//  →サイドライン際のバイタル位置
 			if (stepCountForPlayPattern == 1) {
+				// 目標Row (相手ディフェンスラインの2Row前)
+				int _targetRow = isHomeBall ? (away_currentDefenseLineRow - 2) * C_Common::TILE_NUM_Y : (home_currentDefenseLineRow + 2) * C_Common::TILE_NUM_Y;
 				// サイドブレイカーを仕掛けの位置へ移動
 				if (mySideBreaker->currentLane == C_Common::LANE_FIRST) {
 					// <左レーン>
 
 					// 仕掛け位置取得
-					int _targetRow = (away_currentDefenseLineRow - 2) * C_Common::TILE_NUM_Y; // ディフェンスライン2Row前
 					int _targetColumn = 1; // 左端
 					int _targetTileNo = _targetRow + _targetColumn;
 					// 移動
@@ -2344,7 +2419,6 @@ void AC_My_Player_Controller::PlayStepPhase()
 					// <右レーン>
 
 					// 仕掛け位置取得
-					int _targetRow = (away_currentDefenseLineRow - 2) * C_Common::TILE_NUM_Y; // ディフェンスライン2Row前
 					int _targetColumn = 25; // 右端
 					int _targetTileNo = _targetRow + _targetColumn;
 					// 移動
@@ -2360,11 +2434,11 @@ void AC_My_Player_Controller::PlayStepPhase()
 				if (mySideBreaker != nullptr) {
 					// * 条件 *
 					// 1.サイドブレイカーと同じレーン
-					// 2.次のボールホルダーより後ろ
+					// 2.ボールホルダーより後ろ
 					for (AC_Piece* _player : offencePlayers) {
-						if (mySideBreaker->currentLane == _player->currentLane) {
+						if (mySideBreaker->currentLane == _player->currentLane) { // 1
 							bool _isBackThanBallHolder = isHomeBall ? ballHolder->currentTileNo > _player->currentTileNo:  ballHolder->currentTileNo < _player->currentTileNo;
-							if (_isBackThanBallHolder) {
+							if (_isBackThanBallHolder) { // 2
 								follower = _player;
 
 								break;
@@ -2376,7 +2450,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 				//  →ボールホルダーの2Row下へ (*Columnは同じ)
 				if (follower != nullptr) {
 					int _column = follower->currentTileNo % C_Common::TILE_NUM_Y;
-					int _row = (ballHolder->currentTileNo / C_Common::TILE_NUM_Y - 2);
+					int _row = isHomeBall ? (ballHolder->currentTileNo / C_Common::TILE_NUM_Y) - 2: (ballHolder->currentTileNo / C_Common::TILE_NUM_Y) + 2;
 					int _moveTo = (C_Common::TILE_NUM_Y * _row) + _column;
 
 					follower->SetMoveTo(allTiles[_moveTo - 1]->GetActorLocation());
@@ -2681,9 +2755,11 @@ void AC_My_Player_Controller::PlayStepPhase()
 			}
 
 			// ●クロス対応ポイントをボールに近い順に並びかえ
-			TArray<int> _defenseHandleCrossPoints = AWAY_DEFENSE_HANDLE_CROSS_POINTS;
+			TArray<int> _defenseHandleCrossPoints = isHomeBall ? AWAY_DEFENSE_HANDLE_CROSS_POINTS: HOME_DEFENSE_HANDLE_CROSS_POINTS;
 			if ((_ballColumn + 1) <= C_Common::CROSS_ZORN_COLUMN[0]) {
 				// < 左からのクロスの場合 >
+
+				// 何もしない
 			}
 			else {
 				// < 右からのクロスの場合 >
@@ -2872,11 +2948,11 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	}
 
 	// < リレーショナルプレーパターン >
-	// ●プレイパターンなし
+	// ●プレイパターンなしへ
 	// ●カウントリセット
 	if (isFinishPlayPattern) {
 		isFinishPlayPattern = false;
-		playPattern = C_Common::NO_RELATIONAL_PLAY_PATTERN; // プレイパターンなし
+		playPattern = C_Common::NO_RELATIONAL_PLAY_PATTERN; // プレイパターンなしへ
 		stepCountForPlayPattern = 0; // カウントリセット
 	}
 	// **

@@ -170,7 +170,8 @@ private:
 	bool CheckPassSafety(AC_Piece* player);
 
 	
-	AC_Piece* selectedPlayer; // 選択されたプレイヤー
+	AC_Piece* selectedPlayer = nullptr; // 選択されたプレイヤー
+	AC_Ball* selectedBall = nullptr; // 選択されたボール(デバッグ時)
 	bool isGrap = false; // Grap(プレイヤー選択中)フラグ
 	TArray <AC_Tile*> allTiles; // すべてのタイル配列
 	AC_Tile* overlayTile; // 光っているタイル
@@ -234,6 +235,7 @@ private:
 	TArray<int> handleCrossRange = {}; // クロス対応範囲
 	AC_Piece* crossTargetPlayer = nullptr; // クロスのターゲット
 	bool isCrossTargetOffense = false; // クロスターゲットがオフェンスか
+	const TArray<int> HOME_DEFENSE_HANDLE_CROSS_POINTS = { 60, 62, 64, 66 }; // クロス対応ポイント (HOME)
 	const TArray<int> AWAY_DEFENSE_HANDLE_CROSS_POINTS = { 935, 937, 939, 941 }; // クロス対応ポイント (AWAY)
 	// ********************
 
@@ -330,4 +332,7 @@ private:
 	// tags
 	const FName TARGET_MAN_TAG = "TARGET_MAN";
 	const FName SIDE_BREAKER_TAG = "SIDE_BREAKER";
+	const FName HOME_PLAYER_TAG = "HOME";
+	const FName AWAY_PLAYER_TAG = "AWAY";
+	const FName BALL_TAG = "BALL";
 };
