@@ -20,7 +20,6 @@ public:
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
     static constexpr bool DEBUG_MODE = true; // デバッグモード
-    static constexpr bool POSITION_EREA_DISPLAY = false; // ポジションエリア表示モード (Away)
     static constexpr bool TILE_RANGE_DISPLAY = false; // タイルレンジ表示モード
     static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
     static constexpr int FORWARD_DIRECTION = 25; // 前向き (*フィールド固定)
@@ -37,6 +36,7 @@ public:
     static constexpr int SECOND_BALL_COLLECT_MATCH_PHASE = 1; // セカンドボール回収
     static constexpr int LINE_BREAK_MATCH_PHASE = 2; // 裏抜け
     static constexpr int CROSS_MATCH_PHASE = 3; // クロス
+    static constexpr int FINISH_MATCH_PHASE = 4; // フィニッシュ (シュート)
     // リレーショナルプレーパターン
     static constexpr int NO_RELATIONAL_PLAY_PATTERN = 0; // なし
     static constexpr int DRIFT_WIDE_RELATIONAL_PLAY_PATTERN = 1; // ⓵ドリフトワイド

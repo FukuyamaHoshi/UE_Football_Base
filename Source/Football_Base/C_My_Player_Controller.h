@@ -153,7 +153,7 @@ private:
 	// 次に動く最短距離のタイルNo取得
 	int GetShortestNextTileNo(int fromTileNo, int toTileNo);
 	// プレイヤー配置可能エリアを表示
-	void DisplayPlayerPlaceableErea();
+	void DisplayPlayerPlaceableErea(bool isSelectHomeTag);
 	// プレイヤー配置レンジを削除
 	void RemovePlayerPlaceRange();
 	// 全てのプレイヤーにポジションを設定

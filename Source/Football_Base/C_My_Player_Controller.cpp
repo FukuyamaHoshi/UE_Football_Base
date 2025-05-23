@@ -360,18 +360,18 @@ void AC_My_Player_Controller::PressedLeft()
 	// * 制限 *
 	if (_isPhysicsBodyExist == false) return; // 2
 	// 条件タグを取得
-	bool _isTagTypes = C_Common::DEBUG_MODE ? hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG) || hitResult.GetActor()->ActorHasTag(BALL_TAG) : hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG);
+	bool _isTagTypes = C_Common::DEBUG_MODE ? hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG) || hitResult.GetActor()->ActorHasTag(AWAY_PLAYER_TAG) || hitResult.GetActor()->ActorHasTag(BALL_TAG) : hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG);
 	
 	// * 条件 *
-	// 1.HOMEタグ ↔ (デバッグモード時)HOMEタグ or BALLタグ
+	// 1.HOMEタグ ↔ (デバッグモード時)HOME・AWAYタグ or BALLタグ
 	if (_isTagTypes) { // 1
 		
 		// プレイヤーかボールかで処理分ける
-		if (hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG)) {
-			// < HOMEタグ >
+		if (hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG) || hitResult.GetActor()->ActorHasTag(AWAY_PLAYER_TAG)) {
+			// < HOME・AWAYタグ >
 			
 			// ●プレイヤー配置可能エリアを表示
-			DisplayPlayerPlaceableErea();
+			DisplayPlayerPlaceableErea(hitResult.GetActor()->ActorHasTag(HOME_PLAYER_TAG));
 
 			// ●マウス位置情報からプレイヤーを取得
 			selectedPlayer = Cast<AC_Piece>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
@@ -598,7 +598,6 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 					// <ディフェンダーが勝利>
 
 					// ●セカンドボール
-					if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "SECOND_BALL", true, true, FColor::Cyan, 2.f, TEXT("None"));
 					const int _SECOND_BALL_MOVE_NUM = 2; // ボールが動くタイル距離
 					int _ballRow = (ball->currentTileNo - 1) / C_Common::TILE_NUM_Y;
 					int _ballColumn = (ball->currentTileNo - 1) % C_Common::TILE_NUM_Y;
@@ -809,26 +808,6 @@ void AC_My_Player_Controller::SelectPlayForBallHolder()
 			}
 		}
 	}
-	//}
-
-	// ** シュート **
-	if (isHomeBall) { // Homeボールか
-		// Home
-		if (f_ballHolderRow > 34.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
-			Shoot();
-
-			return;
-		}
-	}
-	else {
-		// Away
-		if (f_ballHolderRow <= 6.0) { // ペナルティーの高さにいるか (割り切れたら右端のタイル)
-			Shoot();
-
-			return;
-		}
-	}
-	// **
 
 	// ** ロングアタック **
 	//    →DFラインの裏へボールを配給する
@@ -1333,18 +1312,16 @@ void AC_My_Player_Controller::Shoot(AC_Piece* targetPlayer)
 	FVector _goalLocation = FVector(0, 0, 0); // ゴール位置
 	AC_Piece* _shootPlayer = targetPlayer == nullptr ? ballHolder : targetPlayer; // シュートするプレイヤー
 	
-	if (_shootPlayer->ActorHasTag(FName("HOME"))) { // Homeプレイヤーか
-		// Home
+	if (_shootPlayer->ActorHasTag(HOME_PLAYER_TAG)) {
+		// < HOME >
 		_goalLocation = FVector(2050, 0, -40);
 	}
 	else {
-		// Away
+		// < AWAY >
 		_goalLocation = FVector(-2050, 0, -40);
 	}
 
-	// ** ボールを移動させる **
-	ball->SetMoveTo(_goalLocation);
-	// **
+	ball->SetMoveTo(_goalLocation); // 移動
 }
 
 // 対人
@@ -2018,6 +1995,24 @@ void AC_My_Player_Controller::PrepareStepPhase()
 	// **** トリガー発火処理 ****
 	// -- マッチフェーズ --
 	// | 各々デフォルトフェーズとプレーパターンで分ける |
+	// < ⓸フィニッシュフェーズ >
+	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
+		// * 条件 *
+		// 1.デフォルトフェーズかつプレイパターンなし (*mustの条件)
+		// 2.相手ペナルティーエリアに侵入
+		if (isHomeBall) {
+			// < HOME >
+			if (AWAY_PENALTY_EREA_RANGE.Contains(ballHolder->currentTileNo)) { // 2
+				matchPhase = C_Common::FINISH_MATCH_PHASE;
+			}
+		}
+		else {
+			// < AWAY >
+			if (HOME_PENALTY_EREA_RANGE.Contains(ballHolder->currentTileNo)) { // 2
+				matchPhase = C_Common::FINISH_MATCH_PHASE;
+			}
+		}
+	}
 	// < ⓵セカンドボールフェーズ >
 	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE && playPattern == C_Common::NO_RELATIONAL_PLAY_PATTERN) { // 1
 		// * 条件 *
@@ -2081,7 +2076,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 
 	// **** 開始時処理 ****
 	// -- マッチフェーズ --
-	// < ⓵デフォルトフェーズ >
+	// < ⓪デフォルトフェーズ >
 	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) {
 		// ●ディフェンスラインを設定 (目標)
 		// | ボールがディフェンスラインの背後にあれば目標ラインを合わせる |
@@ -2250,7 +2245,7 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		}
 
 	}
-	// < ⓶セカンドボール回収フェーズ >
+	// < ⓵セカンドボール回収フェーズ >
 	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
@@ -2310,13 +2305,13 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		}
 
 	}
-	// < ③裏抜けフェーズ >
+	// < ⓶裏抜けフェーズ >
 	else if (matchPhase == C_Common::LINE_BREAK_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
 		// --
 	}
-	// < ⓸クロスフェーズ >
+	// < ③クロスフェーズ >
 	else if (matchPhase == C_Common::CROSS_MATCH_PHASE) {
 		// -- STEPカウント --
 		stepCountForGamePhase++;
@@ -2340,6 +2335,12 @@ void AC_My_Player_Controller::PrepareStepPhase()
 				handleCrossRange.Add(_tile->tileNo);
 			}
 		}
+	}
+	// < ⓸フィニッシュフェーズ >
+	else if (matchPhase == C_Common::FINISH_MATCH_PHASE) {
+		// -- STEPカウント --
+		stepCountForGamePhase++;
+		// --
 	}
 	else {
 
@@ -2390,7 +2391,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 	// **
 
 	// ** マッチフェーズ **
-	// < ⓵デフォルトフェーズ >
+	// < ⓪デフォルトフェーズ >
 	if (matchPhase == C_Common::DEFAULT_MATCH_PHASE) {
 		// -- デバッグ表示 --
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< DEFAULT_MATCH_PHASE >", true, true, FColor::Cyan, 1.f, TEXT("None"));
@@ -2506,7 +2507,7 @@ void AC_My_Player_Controller::PlayStepPhase()
 			}
 		}
 	}
-	// < ⓶セカンドボール回収フェーズ >
+	// < ⓵セカンドボール回収フェーズ >
 	else if (matchPhase == C_Common::SECOND_BALL_COLLECT_MATCH_PHASE) {
 		// -- デバッグ表示 --
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< SECOND_BALL_COLLECT_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Blue, 1.f, TEXT("None"));
@@ -2642,10 +2643,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 			secondBallCollectPlayer = nullptr;
 		}
 	}
-	// < ③裏抜けフェーズ >
+	// < ⓶裏抜けフェーズ >
 	else if (matchPhase == C_Common::LINE_BREAK_MATCH_PHASE){
 		// -- デバッグ表示 --
-		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< LINE_BREAK_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Red, 1.f, TEXT("None"));
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< LINE_BREAK_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Orange, 1.f, TEXT("None"));
 		// ----------------
 		
 		// < STEP 1 >
@@ -2680,10 +2681,10 @@ void AC_My_Player_Controller::PlayStepPhase()
 			isFinishMatchPhase = true; // フェーズ終了
 		}
 	}
-	// < ⓸クロスフェーズ >
+	// < ③クロスフェーズ >
 	else if (matchPhase == C_Common::CROSS_MATCH_PHASE) {
 		// -- デバッグ表示 --
-		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< CROSS_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Orange, 1.f, TEXT("None"));
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< CROSS_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Green, 1.f, TEXT("None"));
 		// ----------------
 		
 		// < STEP 1 >
@@ -2894,6 +2895,15 @@ void AC_My_Player_Controller::PlayStepPhase()
 			crossTargetPlayer = nullptr; // クロスのターゲット
 			isCrossTargetOffense = false; // クロスターゲットがオフェンスか
 		}
+	}
+	// < ⓸フィニッシュフェーズ >
+	else if (matchPhase == C_Common::FINISH_MATCH_PHASE) {
+		// -- デバッグ表示 --
+		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "< FINISH_MATCH_PHASE > :" + FString::FromInt(stepCountForGamePhase), true, true, FColor::Red, 1.f, TEXT("None"));
+		// ----------------
+
+		// ●シュート
+		Shoot();
 	}
 	else {
 		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "NO GAME PHASE", true, true, FColor::Red, 100.f, TEXT("None"));
@@ -3454,38 +3464,40 @@ int AC_My_Player_Controller::GetShortestNextTileNo(int fromTileNo, int toTileNo)
 }
 
 // プレイヤー配置可能エリアを表示
-void AC_My_Player_Controller::DisplayPlayerPlaceableErea()
+// | HOME or AWAYどちらか表示させる |
+void AC_My_Player_Controller::DisplayPlayerPlaceableErea(bool isSelectHomeTag)
 {
-	// *** 配置可能エリア表示 ***
-	// *HOME*
-	for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
-		if (i <= 250) {
-			// -DF-
-			allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
+	if (isSelectHomeTag) {
+		// -- HOME --
+		for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
+			if (i <= 250) {
+				// -DF-
+				allTiles[i - 1]->SetDFPlayerPlaceRangeMaterial();
 
-			// ** ハーフレーンマテリアルセット **
-			if (LCB_Erea.Contains(i) || RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
-		}
-		else if (i <= 375) {
-			// -MF-
-			allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
+				// ** ハーフレーンマテリアルセット **
+				if (LCB_Erea.Contains(i) || RCB_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
+			else if (i <= 375) {
+				// -MF-
+				allTiles[i - 1]->SetMFPlayerPlaceRangeMaterial();
 
-			// ** ハーフレーンマテリアルセット **
-			if (LIH_Erea.Contains(i) || RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
-		}
-		else {
-			// -FW-
-			allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
-			
-			// ** ハーフレーンマテリアルセット **
-			if (LST_Erea.Contains(i) || RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
-			// **
+				// ** ハーフレーンマテリアルセット **
+				if (LIH_Erea.Contains(i) || RIH_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
+			else {
+				// -FW-
+				allTiles[i - 1]->SetFWPlayerPlaceRangeMaterial();
+
+				// ** ハーフレーンマテリアルセット **
+				if (LST_Erea.Contains(i) || RST_Erea.Contains(i)) allTiles[i - 1]->SetHalfLernMaterial();
+				// **
+			}
 		}
 	}
-	// *AWAY*
-	if (C_Common::POSITION_EREA_DISPLAY) { // 表示モードの場合のみ
+	else {
+		// -- AWAY --
 		for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
 			if (i <= 625) {
 				// -FW-
@@ -3513,7 +3525,6 @@ void AC_My_Player_Controller::DisplayPlayerPlaceableErea()
 			}
 		}
 	}
-	// ***
 }
 
 // プレイヤー配置レンジを削除
