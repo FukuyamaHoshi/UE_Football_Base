@@ -20,7 +20,7 @@ public:
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z
     static constexpr float PIECE_SPEED = 4.0f; // コマの移動速度
     static constexpr bool DEBUG_MODE = true; // デバッグモード
-    static constexpr bool TILE_RANGE_DISPLAY = false; // タイルレンジ表示モード
+    static constexpr bool TILE_RANGE_DISPLAY = true; // タイルレンジ表示モード
     static constexpr float INTERVAL_WITHIN_PHASE = 0.5f; // Before-inフェーズの間隔秒数　(*パスレンジを表示させる時間)
     static constexpr int FORWARD_DIRECTION = 25; // 前向き (*フィールド固定)
     static constexpr int BACKWARD_DIRECTION = -25; // 後ろ向き (*フィールド固定)
@@ -31,6 +31,7 @@ public:
     static constexpr int FINISH_ZORN_ROW[2] = { 34, 5 }; // 最終局面Row (HOME, AWAY)
     static constexpr int CROSS_ZORN_COLUMN[2] = { 5, 21 }; // クロスColumn (左(以下), 右(以上)) 
     static constexpr int HANDLE_CROSS_RANGE_ROW[2] = { 31, 8 }; // クロス対応Row (HOME, AWAY)
+    static constexpr int PRESS_RANGE_TILE_NUM[2] = { 2, 3 }; // プレスレンジタイル個数 (Column(横) * Row(縦)) *プレイヤーの向きに対して
     // マッチフェーズ
     static constexpr int DEFAULT_MATCH_PHASE = 0; // デフォルト
     static constexpr int SECOND_BALL_COLLECT_MATCH_PHASE = 1; // セカンドボール回収

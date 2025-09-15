@@ -947,22 +947,22 @@ void AC_My_Player_Controller::SelectPlayForDefender(AC_Piece* defensePlayer)
 	}
 	// **
 	
-	// ** マーキング **
-	//  →マークレンジ内の非オフェンスプレイヤーの前タイルへ移動
-	for (AC_Piece* _offencePlayer : offencePlayers) {
-		// * 条件 *
-		// | 1.マークレンジ内 |
-		// | 2.ボールホルダーでない |
-		if (defensePlayer->markRange.Contains(_offencePlayer->currentTileNo)) { // 1
-			if (_offencePlayer != ballHolder) { // 2
+	//// ** マーキング **
+	////  →マークレンジ内の非オフェンスプレイヤーの前タイルへ移動
+	//for (AC_Piece* _offencePlayer : offencePlayers) {
+	//	// * 条件 *
+	//	// | 1.マークレンジ内 |
+	//	// | 2.ボールホルダーでない |
+	//	if (defensePlayer->markRange.Contains(_offencePlayer->currentTileNo)) { // 1
+	//		if (_offencePlayer != ballHolder) { // 2
 
-				Marking(defensePlayer, _offencePlayer);
+	//			Marking(defensePlayer, _offencePlayer);
 
-				return;
-			}
-		}
-	}
-	// **
+	//			return;
+	//		}
+	//	}
+	//}
+	//// **
 }
 
 // ゴールキーパーのプレイ選択
@@ -2169,23 +2169,71 @@ void AC_My_Player_Controller::PrepareStepPhase()
 			// ●対人レンジを取得
 			duelRangeTileNos = GetTileNoInDuelRange();
 
-			// ●マークレンジをセット
-			for (AC_Piece* p : defencePlayers) {
-				// * 制限 *
-				// 1.ファーストディフェンダー
-				if (p == firstDefender) continue; // 1
+			//// ●マークレンジをセット
+			//for (AC_Piece* p : defencePlayers) {
+			//	// * 制限 *
+			//	// 1.ファーストディフェンダー
+			//	if (p == firstDefender) continue; // 1
 
-				TArray <int> _range = GetMarkRange(p->currentTileNo, p->direction); // マークレンジ取得
+			//	TArray <int> _range = GetMarkRange(p->currentTileNo, p->direction); // マークレンジ取得
 
-				if (_range.IsEmpty() == false) { // 空でない場合
-					p->markRange = _range; // セット
+			//	if (_range.IsEmpty() == false) { // 空でない場合
+			//		p->markRange = _range; // セット
 
-					// マテリアル表示
-					if (C_Common::TILE_RANGE_DISPLAY) { // タイル範囲表示モードON
-						for (int i : _range) {
-							AC_Tile* t = allTiles[i - 1];
-							t->SetMarkRangeMaterial();
-						}
+			//		// マテリアル表示
+			//		if (C_Common::TILE_RANGE_DISPLAY) { // タイル範囲表示モードON
+			//			for (int i : _range) {
+			//				AC_Tile* t = allTiles[i - 1];
+			//				t->SetMarkRangeMaterial();
+			//			}
+			//		}
+			//	}
+			//}
+
+			// ●プレス範囲をセット
+			for (AC_Piece* _player : defencePlayers) {
+				TArray <int> _pressRange = {};
+				for (AC_Tile* _tile : allTiles) {
+					// * 制限 *
+					// 1.GK
+					// 2.Coulomの差分
+					// 3.Rowの差分
+					// 4.体の向き以外のタイル
+					
+					if (_player->position == C_Common::GK_POSITION) continue; // 1
+
+					// Coulmnのタイル差
+					int _playerCoulmn = (_player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーCoulmn  ← -1が右端対応
+					int _tileCoulmn = (_tile->tileNo - 1) % C_Common::TILE_NUM_Y; // 個別のタイルCoulmn  ← -1が右端対応
+					int _diffCoulmn =  FMath::Abs(_tileCoulmn - _playerCoulmn); // Coulmnの差
+					if (_diffCoulmn > C_Common::PRESS_RANGE_TILE_NUM[0]) continue; // 2
+
+					// Rowのタイル差
+					int _playerRow = (_player->currentTileNo - 1) / C_Common::TILE_NUM_Y; // プレイヤーRow  ← -1が右端対応
+					int _tileRow = (_tile->tileNo - 1) / C_Common::TILE_NUM_Y; // 個別のタイルRow  ← -1が右端対応
+					int _diffRow = FMath::Abs(_tileRow - _playerRow); // Rowの差
+					if (_diffRow > C_Common::PRESS_RANGE_TILE_NUM[1]) continue; // 3
+
+					// 体の向き
+					if (_player->direction == C_Common::FORWARD_DIRECTION) { // 4
+						// < 前向き >
+						if (_playerRow > _tileRow) continue;
+					}
+					else {
+						// < 後ろ向き >
+						if (_playerRow < _tileRow) continue;
+					}
+
+					_pressRange.Add(_tile->tileNo);
+				}
+
+				_player->pressRange = _pressRange; // セット
+
+				// マテリアル表示
+				if (C_Common::TILE_RANGE_DISPLAY) { // タイル範囲表示モードON
+					for (int i : _pressRange) {
+						AC_Tile* t = allTiles[i - 1];
+						t->SetMarkRangeMaterial();
 					}
 				}
 			}
@@ -2233,10 +2281,10 @@ void AC_My_Player_Controller::PrepareStepPhase()
 		for (AC_Piece* _player : targetManPlayeres) {
 			// * 条件 *
 			// 1.オフェンス
-			// 2.ボールホルダーがデフェンダー or GK
+			// 2.GK
 			// 3.ボールホルダーとレーンが異なる
 			if (offencePlayers.Contains(_player)) {
-				if (DFPositionRange.Contains(ballHolder->position) || ballHolder->position == C_Common::GK_POSITION) {
+				if (ballHolder->position == C_Common::GK_POSITION) {
 					if (ballHolder->currentLane != _player->currentLane) {
 						myTargetMans.Add(_player);
 					}
@@ -2378,17 +2426,17 @@ void AC_My_Player_Controller::PlayStepPhase()
 	}
 	// **
 
-	// ** マークレンジ削除 (*マテリアルのみ) **
-	for (AC_Piece* p : defencePlayers) {
-		if (p->markRange.IsEmpty()) continue; // 空のチェック
+	//// ** マークレンジ削除 (*マテリアルのみ) **
+	//for (AC_Piece* p : defencePlayers) {
+	//	if (p->markRange.IsEmpty()) continue; // 空のチェック
 
-		// マテリアル削除
-		for (int i : p->markRange) {
-			AC_Tile* t = allTiles[i - 1];
-			t->RemoveMainMaterial();
-		}
-	}
-	// **
+	//	// マテリアル削除
+	//	for (int i : p->markRange) {
+	//		AC_Tile* t = allTiles[i - 1];
+	//		t->RemoveMainMaterial();
+	//	}
+	//}
+	//// **
 
 	// ** マッチフェーズ **
 	// < ⓪デフォルトフェーズ >
@@ -2925,13 +2973,13 @@ bool AC_My_Player_Controller::ResetStepPhase()
 	}
 	// **
 
-	// ** マークレンジ削除 (*配列のみ) **
-	for (AC_Piece* p : defencePlayers) {
-		if (p->markRange.IsEmpty()) continue; // 空チェック
+	//// ** マークレンジ削除 (*配列のみ) **
+	//for (AC_Piece* p : defencePlayers) {
+	//	if (p->markRange.IsEmpty()) continue; // 空チェック
 
-		p->markRange.Empty(); // 配列削除
-	}
-	// **
+	//	p->markRange.Empty(); // 配列削除
+	//}
+	//// **
 
 	// ** 現在のタイル・タイル予約削除 **
 	currentTileNos.Empty();
@@ -3775,7 +3823,7 @@ void AC_My_Player_Controller::SetLaneForPlayers()
 bool AC_My_Player_Controller::CheckPassSafety(AC_Piece* player)
 {
 	TArray<int> _range = {};
-	const int _aroundTileNum = 3; // 周囲タイル数
+	const int _AROUND_TILE_NUM = 3; // 周囲タイル数
 
 	// セーフティーパスレンジ取得
 	//  →周囲(_aroundTileNum)タイル
@@ -3790,13 +3838,13 @@ bool AC_My_Player_Controller::CheckPassSafety(AC_Piece* player)
 		int _playerCoulmn = (player->currentTileNo - 1) % C_Common::TILE_NUM_Y; // プレイヤーCoulmn  ← -1が右端対応
 		int _tileCoulmn = (_tile->tileNo - 1) % C_Common::TILE_NUM_Y; // 個別のタイルCoulmn  ← -1が右端対応
 		int _diffCoulmn = FMath::Abs(_tileCoulmn - _playerCoulmn); // Coulmnの差
-		if (_diffCoulmn > _aroundTileNum) continue; // 2
+		if (_diffCoulmn > _AROUND_TILE_NUM) continue; // 2
 		
 		// Rowのタイル差
 		int _playerRow = (player->currentTileNo - 1) / C_Common::TILE_NUM_Y; // プレイヤーRow  ← -1が右端対応
 		int _tileRow = (_tile->tileNo - 1) / C_Common::TILE_NUM_Y; // 個別のタイルRow  ← -1が右端対応
 		int _diffRow = FMath::Abs(_tileRow - _playerRow); // Rowの差
-		if (_diffRow > _aroundTileNum) continue; // 3
+		if (_diffRow > _AROUND_TILE_NUM) continue; // 3
 
 
 		_range.Add(_tile->tileNo);

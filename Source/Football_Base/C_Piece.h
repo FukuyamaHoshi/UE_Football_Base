@@ -36,7 +36,8 @@ public:
 	int currentTileNo = 0; // 現在のタイルNo
 	int currentLane = 0; // 現在のレーン
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
-	TArray <int> markRange = {}; // マーク範囲 (プレイヤー各々で保持)
+	//TArray <int> markRange = {}; // マーク範囲 (プレイヤー各々で保持)
+	TArray <int> pressRange = {}; // プレス範囲 (プレイヤー各々で保持)
 	int direction = 0; // 体の向き (前向き: 25, 後ろ向き: -25)
 	bool isMarked = false; // マークされているか
 	int position = 0; // ポジション (内訳はCommon参照)
