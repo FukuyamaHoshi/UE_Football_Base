@@ -1,0 +1,28 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/GameInstance.h"
+#include "My_Game_Instance.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class FOOTBALL_BASE_API UMy_Game_Instance : public UGameInstance
+{
+	GENERATED_BODY()
+
+public:
+	int match_round = 0; // トーナメントのラウンド数
+	// チームボックス情報structure
+	struct FTeamBoxElem
+	{
+		int boxNum; // ボックスNo
+		FString teamName; // チーム名前
+		int state; // チームの状態(色を決定する): 0 = 対戦, 1 = 勝利, 2 = 敗戦, 3 = プレイヤー
+		FString score; // 得点
+	};
+	TArray<FTeamBoxElem> team_box_elems = {}; // チームボックス情報
+};

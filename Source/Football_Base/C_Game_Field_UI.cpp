@@ -4,6 +4,7 @@
 #include "C_Game_Field_UI.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
+#include "My_Game_Instance.h"
 
 void UC_Game_Field_UI::NativeConstruct()
 {
@@ -92,7 +93,17 @@ void UC_Game_Field_UI::TacticsCommand1Clicked()
 // 戦術コマンド2クリック
 void UC_Game_Field_UI::TacticsCommand2Clicked()
 {
-    UKismetSystemLibrary::PrintString(this, "2", true, true, FColor::Cyan, 2.f, TEXT("None"));
+    UKismetSystemLibrary::PrintString(this, "tactick 2 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+    UGameplayStatics::OpenLevel(GetWorld(), TEXT("Route")); // ルートMAPへ(仮)
+
+    // *** 試合ラウンド(決勝とかの)セット ***
+    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (instance)
+    {
+        instance->match_round++; // 次のラウンド
+    }
+    // ***
 }
 
 // 戦術コマンド3クリック
