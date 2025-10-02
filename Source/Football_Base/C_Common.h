@@ -73,6 +73,15 @@ public:
     static constexpr int LANE_FIFTH = 5;
     // ---
 
+    // -- オーグメント --
+    static constexpr int TACTICS_COMMANDS_NUMS = 6; // 戦術コマンド総数
+    static constexpr int STATUS_COMMANDS_NUMS = 3; // ステータスコマンド総数
+    
+
+    // 戦術コマンドテキスト取得
+    static TArray<FString> GetTacticsCommandTexts(int tacticsCommandNo);
+    // ステータスコマンドテキスト取得
+    static TArray<FString> GetStatusCommandTexts(int statusCommandNo);
     // **
     
     

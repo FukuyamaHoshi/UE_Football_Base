@@ -32,11 +32,27 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_1;
     UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Name_1;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Value_1;
+    UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_2;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Name_2;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Value_2;
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_3;
     UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Name_3;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Value_3;
+    UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_4;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Name_4;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* Tactics_Command_Value_4;
     // -- HPバー --
     UPROPERTY(meta = (BindWidget))
     UProgressBar* My_HP_Bar;
@@ -139,6 +155,7 @@ private:
     void UpdateBallPossessIcon();
     // ダメージ計算・取得
     // | 返り値 = +: 敵へダメージ、-: プレイヤーへダメージ |
+    // | **ステータス反映未 |
     int GetDanage();
 
     int myPoint = 0; // 自分のポイント数
@@ -146,10 +163,8 @@ private:
     int round = 0; // ラウンド数
     const FString ROUND_TOP_TEXT = "ROUND"; // ラウンドテキストの先頭
     bool isMyBall = true; // マイポールか
-    // プレイヤー能力
-    int mySideBreakAbilty = 2; // サイド突破力
-    int myPhysicalAbilty = 3; // 走力
-    int myPressResistanceAbilty = 2; // プレス耐性
+    // コマンド
+    TArray< UTextBlock*> tacticsCommandNameBlanks = {}; // 戦術カード名前UI配列
     const FString HP_END_TEXT = "/100"; // HPテキストの末尾
     const FLinearColor POINT_COLOR = FLinearColor(FColor::FromHex("D2D2D2FF")); // ポイントの色
     // 能力の色

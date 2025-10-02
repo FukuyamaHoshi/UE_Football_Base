@@ -58,7 +58,7 @@ void UC_Route_UI::NativeConstruct()
 void UC_Route_UI::NextMatchButtonClicked()
 {
     UKismetSystemLibrary::PrintString(this, "next match", true, true, FColor::Cyan, 2.f, TEXT("None"));
-
+    
     UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ゲームフィールドMAPへ
 }
 

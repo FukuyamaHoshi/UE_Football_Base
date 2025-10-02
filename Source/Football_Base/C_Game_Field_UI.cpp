@@ -5,6 +5,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
 #include "My_Game_Instance.h"
+#include "C_Common.h"
 
 void UC_Game_Field_UI::NativeConstruct()
 {
@@ -32,38 +33,41 @@ void UC_Game_Field_UI::NativeConstruct()
     // ***
 
     // *** 能力値をセット (プレイヤー) ***
-    // 〇サイド突破
-    TArray<UBorder*> _mySideBreakBoxes = { 
-        My_Side_Break_Abilty_Box_1, My_Side_Break_Abilty_Box_2, My_Side_Break_Abilty_Box_3, My_Side_Break_Abilty_Box_4, My_Side_Break_Abilty_Box_5 };
-    // 色をセット
-    for (int i = 0; i < mySideBreakAbilty; ++i) {
-        _mySideBreakBoxes[i]->SetBrushColor(SIDE_BREAK_ABILTY_COLOR);
+    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (instance) {
+        // 〇サイド突破
+        TArray<UBorder*> _mySideBreakBoxes = {
+            My_Side_Break_Abilty_Box_1, My_Side_Break_Abilty_Box_2, My_Side_Break_Abilty_Box_3, My_Side_Break_Abilty_Box_4, My_Side_Break_Abilty_Box_5 };
+        // 色をセット
+        for (int i = 0; i < instance->player_side_break_abilty; ++i) {
+            _mySideBreakBoxes[i]->SetBrushColor(SIDE_BREAK_ABILTY_COLOR);
+        }
+        // テキストをセット
+        FString _mySideBreakText = FString::FromInt(instance->player_side_break_abilty) + ABILTY_END_TEXT;
+        My_Side_Break_Abilty_Text->SetText(FText::FromString(_mySideBreakText));
+
+        // 〇走力
+        TArray<UBorder*> _myPhisicalBoxes = {
+            My_Phisical_Abilty_Box_1, My_Phisical_Abilty_Box_2, My_Phisical_Abilty_Box_3, My_Phisical_Abilty_Box_4, My_Phisical_Abilty_Box_5 };
+        // 色をセット
+        for (int i = 0; i < instance->player_physical_abilty; ++i) {
+            _myPhisicalBoxes[i]->SetBrushColor(PHISICAL_ABILTY_COLOR);
+        }
+        // テキストをセット
+        FString _myPhysicalText = FString::FromInt(instance->player_physical_abilty) + ABILTY_END_TEXT;
+        My_Phisical_Abilty_Text->SetText(FText::FromString(_myPhysicalText));
+
+        // 〇プレス耐性
+        TArray<UBorder*> _myPressResistanceBoxes = {
+            My_Press_Resistance_Abilty_Box_1, My_Press_Resistance_Abilty_Box_2, My_Press_Resistance_Abilty_Box_3, My_Press_Resistance_Abilty_Box_4, My_Press_Resistance_Abilty_Box_5 };
+        // 色をセット
+        for (int i = 0; i < instance->player_press_resistance_abilty; ++i) {
+            _myPressResistanceBoxes[i]->SetBrushColor(PRESS_RESISTANCE_ABILTY_COLOR);
+        }
+        // テキストをセット
+        FString _myPressResistanceText = FString::FromInt(instance->player_press_resistance_abilty) + ABILTY_END_TEXT;
+        My_Press_Resistance_Abilty_Text->SetText(FText::FromString(_myPressResistanceText));
     }
-    // テキストをセット
-    FString _mySideBreakText = FString::FromInt(mySideBreakAbilty) + ABILTY_END_TEXT;
-    My_Side_Break_Abilty_Text->SetText(FText::FromString(_mySideBreakText));
-    
-    // 〇走力
-    TArray<UBorder*> _myPhisicalBoxes = { 
-        My_Phisical_Abilty_Box_1, My_Phisical_Abilty_Box_2, My_Phisical_Abilty_Box_3, My_Phisical_Abilty_Box_4, My_Phisical_Abilty_Box_5 };
-    // 色をセット
-    for (int i = 0; i < myPhysicalAbilty; ++i) {
-        _myPhisicalBoxes[i]->SetBrushColor(PHISICAL_ABILTY_COLOR);
-    }
-    // テキストをセット
-    FString _myPhysicalText = FString::FromInt(myPhysicalAbilty) + ABILTY_END_TEXT;
-    My_Phisical_Abilty_Text->SetText(FText::FromString(_myPhysicalText));
-    
-    // 〇プレス耐性
-    TArray<UBorder*> _myPressResistanceBoxes = { 
-        My_Press_Resistance_Abilty_Box_1, My_Press_Resistance_Abilty_Box_2, My_Press_Resistance_Abilty_Box_3, My_Press_Resistance_Abilty_Box_4, My_Press_Resistance_Abilty_Box_5 };
-    // 色をセット
-    for (int i = 0; i < myPressResistanceAbilty; ++i) {
-        _myPressResistanceBoxes[i]->SetBrushColor(PRESS_RESISTANCE_ABILTY_COLOR);
-    }
-    // テキストをセット
-    FString _myPressResistanceText = FString::FromInt(myPressResistanceAbilty) + ABILTY_END_TEXT;
-    My_Press_Resistance_Abilty_Text->SetText(FText::FromString(_myPressResistanceText));
     // ***
 
     // *** ラウンド数更新 ***
@@ -72,6 +76,21 @@ void UC_Game_Field_UI::NativeConstruct()
 
     // *** ボール保持アイコン更新 ***
     UpdateBallPossessIcon();
+    // ***
+
+    // *** 戦術コマンドカードセット ***
+    if (instance) {
+        if (instance->players_tactics_command_nums.Num() > 0) { // オーグメントがある場合
+            // 戦術カード名前UI配列作成
+            tacticsCommandNameBlanks = { Tactics_Command_Name_1, Tactics_Command_Name_2, Tactics_Command_Name_3, Tactics_Command_Name_4 };
+
+            for (int _i = 0; _i < instance->players_tactics_command_nums.Num(); _i++)
+            {
+                TArray<FString> _texts = C_Common::GetTacticsCommandTexts(instance->players_tactics_command_nums[_i]); // オーグメントテキスト
+                tacticsCommandNameBlanks[_i]->SetText(FText::FromString(_texts[0])); // *名前セット
+            }
+        }
+    }
     // ***
 }
 
@@ -124,7 +143,7 @@ void UC_Game_Field_UI::BattlePhase()
     // *** ダメージ取得 ***
     int _damage = GetDanage();
     // ***
-
+    
     // *** HP更新 ***
     UpdateHP(_damage);
     // ***
@@ -277,13 +296,14 @@ void UC_Game_Field_UI::UpdateBallPossessIcon()
 }
 
 // ダメージ計算・取得
+// | ステータス反映未 |
 int UC_Game_Field_UI::GetDanage()
 {
     const int MY_COMMAND_DAMAGE = 30; // *暫定 (固定値にする)
     const int ENEMY_COMMAND_DAMAGE = 30; // *暫定 (固定値にする)
 
     // *** ダメージ計算 ***
-    int _myDamage = MY_COMMAND_DAMAGE * mySideBreakAbilty; // 自分のダメージ量
+    int _myDamage = MY_COMMAND_DAMAGE; // 自分のダメージ量
     int _enemyDamage = ENEMY_COMMAND_DAMAGE * 3; // 相手のダメージ量
     int _damage = _myDamage - _enemyDamage; // ダメージ計算
     

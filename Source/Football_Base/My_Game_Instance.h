@@ -15,7 +15,7 @@ class FOOTBALL_BASE_API UMy_Game_Instance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	int match_round = 0; // トーナメントのラウンド数
+	int match_round = 0; // *トーナメントのラウンド数
 	// チームボックス情報structure
 	struct FTeamBoxElem
 	{
@@ -24,5 +24,10 @@ public:
 		int state; // チームの状態(色を決定する): 0 = 対戦, 1 = 勝利, 2 = 敗戦, 3 = プレイヤー
 		FString score; // 得点
 	};
-	TArray<FTeamBoxElem> team_box_elems = {}; // チームボックス情報
+	TArray<FTeamBoxElem> team_box_elems = {}; // *チームボックス情報(Route画面)
+	TArray<int> players_tactics_command_nums = {}; // プレイヤーの戦術コマンドNos
+	// プレイヤーステータス
+	int player_side_break_abilty = 1; // サイド突破力
+	int player_physical_abilty = 1; // 走力
+	int player_press_resistance_abilty = 1; // プレス耐性
 };
