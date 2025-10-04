@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,19 +15,19 @@ class FOOTBALL_BASE_API UMy_Game_Instance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	int match_round = 0; // *ƒg[ƒiƒƒ“ƒg‚Ìƒ‰ƒEƒ“ƒh”
-	// ƒ`[ƒ€ƒ{ƒbƒNƒXî•ñstructure
+	int match_round = 0; // *ãƒˆãƒ¼ãƒŠãƒ¡ãƒ³ãƒˆã®ãƒ©ã‚¦ãƒ³ãƒ‰æ•°
+	// ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹æƒ…å ±structure
 	struct FTeamBoxElem
 	{
-		int boxNum; // ƒ{ƒbƒNƒXNo
-		FString teamName; // ƒ`[ƒ€–¼‘O
-		int state; // ƒ`[ƒ€‚Ìó‘Ô(F‚ğŒˆ’è‚·‚é): 0 = ‘Îí, 1 = Ÿ—˜, 2 = ”sí, 3 = ƒvƒŒƒCƒ„[
-		FString score; // “¾“_
+		int boxNum; // ãƒœãƒƒã‚¯ã‚¹No
+		FString teamName; // ãƒãƒ¼ãƒ åå‰
+		int state; // ãƒãƒ¼ãƒ ã®çŠ¶æ…‹(è‰²ã‚’æ±ºå®šã™ã‚‹): 0 = å¯¾æˆ¦, 1 = å‹åˆ©, 2 = æ•—æˆ¦, 3 = ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+		FString score; // å¾—ç‚¹
 	};
-	TArray<FTeamBoxElem> team_box_elems = {}; // *ƒ`[ƒ€ƒ{ƒbƒNƒXî•ñ(Route‰æ–Ê)
-	TArray<int> players_tactics_command_nums = {}; // ƒvƒŒƒCƒ„[‚ÌípƒRƒ}ƒ“ƒhNos
-	// ƒvƒŒƒCƒ„[ƒXƒe[ƒ^ƒX
-	int player_side_break_abilty = 1; // ƒTƒCƒh“Ë”j—Í
-	int player_physical_abilty = 1; // ‘–—Í
-	int player_press_resistance_abilty = 1; // ƒvƒŒƒX‘Ï«
+	TArray<FTeamBoxElem> team_box_elems = {}; // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹æƒ…å ±(Routeç”»é¢)
+	TArray<int> players_tactics_command_nums = { 1, 2 }; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰Nos (***ä»®ã®åˆæœŸã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹
+	int player_side_break_abilty = 1; // ã‚µã‚¤ãƒ‰çªç ´åŠ›
+	int player_physical_abilty = 1; // èµ°åŠ›
+	int player_press_resistance_abilty = 1; // ãƒ—ãƒ¬ã‚¹è€æ€§
 };

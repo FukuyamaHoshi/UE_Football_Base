@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Orgument_UI.h"
@@ -9,8 +9,8 @@
 
 void UC_Orgument_UI::NativeConstruct()
 {
-	// *** ƒNƒŠƒbƒNƒCƒxƒ“ƒg‚ğƒoƒCƒ“ƒh ***
-	// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“
+	// *** ã‚¯ãƒªãƒƒã‚¯ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ ***
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³
 	if (Orgument_Button_1)
 	{
 		Orgument_Button_1->OnClicked.AddUniqueDynamic(this, &UC_Orgument_UI::OrgumentButton1Clicked);
@@ -24,103 +24,105 @@ void UC_Orgument_UI::NativeConstruct()
 		Orgument_Button_3->OnClicked.AddUniqueDynamic(this, &UC_Orgument_UI::OrgumentButton3Clicked);
 	}
 	
-	// ƒI[ƒOƒƒ“ƒg–¼‘O”z—ñì¬
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆåå‰é…åˆ—ä½œæˆ
 	orgumentNameTextBlanks = { Orgument_Name_1, Orgument_Name_2, Orgument_Name_3 };
-	// ƒI[ƒOƒƒ“ƒgí—Ş”z—ñì¬
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆç¨®é¡é…åˆ—ä½œæˆ
 	orgumentTypeTextBlanks = { Orgument_Type_1, Orgument_Type_2, Orgument_Type_3 };
-	// ƒI[ƒOƒƒ“ƒgà–¾”z—ñì¬
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆèª¬æ˜é…åˆ—ä½œæˆ
 	orgumentNoteMultiTextBlanks = { Orgument_Note_1, Orgument_Note_2, Orgument_Note_3 };
 
 	
-	// *** •\¦‚·‚éƒI[ƒOƒƒ“ƒgNo‚ğ3‚ÂŒˆ’è ***
-	// -- ípƒRƒ}ƒ“ƒh --
+	// *** è¡¨ç¤ºã™ã‚‹ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆNoã‚’3ã¤æ±ºå®š ***
+	// -- æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ --
 	while (displayOrgumentNums.Num() < 2)
 	{
-		int _tacticsNo = FMath::RandRange(1, C_Common::TACTICS_COMMANDS_NUMS); // ƒ‰ƒ“ƒ_ƒ€
-		if (displayOrgumentNums.Contains(_tacticsNo)) continue; // ”í‚Á‚Ä‚¢‚½‚çƒXƒLƒbƒv
+		int _tacticsNo = FMath::RandRange(1, C_Common::TACTICS_COMMANDS_NUMS); // ãƒ©ãƒ³ãƒ€ãƒ 
+		if (displayOrgumentNums.Contains(_tacticsNo)) continue; // è¢«ã£ã¦ã„ãŸã‚‰ã‚¹ã‚­ãƒƒãƒ—
 
 		displayOrgumentNums.Add(_tacticsNo);
 	}
-	// -- ƒXƒe[ƒ^ƒX --
-	int _statusNo = FMath::RandRange(1, C_Common::STATUS_COMMANDS_NUMS); // ƒ‰ƒ“ƒ_ƒ€
+	// -- ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ --
+	int _statusNo = FMath::RandRange(1, C_Common::STATUS_COMMANDS_NUMS); // ãƒ©ãƒ³ãƒ€ãƒ 
 	displayOrgumentNums.Add(_statusNo);
 	// ***
-
-	// *** ƒI[ƒOƒƒ“ƒgƒeƒLƒXƒgUI•\¦E•Ï”ƒZƒbƒg ***
-	// -- ípƒRƒ}ƒ“ƒh --
+	
+	// *** ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆUIè¡¨ç¤ºãƒ»å¤‰æ•°ã‚»ãƒƒãƒˆ ***
+	// -- æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ --
 	for (int _i = 0; _i < 2; _i++)
 	{
-		// œƒI[ƒOƒƒ“ƒgƒeƒLƒXƒgæ“¾
+		// â—ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆå–å¾—
 		TArray<FString> _tacticsTexts = C_Common::GetTacticsCommandTexts(displayOrgumentNums[_i]);
-		// œUI•\¦
-		orgumentNameTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[0])); // –¼‘O
-		orgumentTypeTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[1])); // í—Ş
-		orgumentNoteMultiTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[2])); // à–¾
+		// â—UIè¡¨ç¤º
+		orgumentNameTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[0])); // åå‰
+		orgumentTypeTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[1])); // ç¨®é¡
+		orgumentNoteMultiTextBlanks[_i]->SetText(FText::FromString(_tacticsTexts[2])); // èª¬æ˜
 	}
-	// -- ƒXƒe[ƒ^ƒX --
-	// œƒI[ƒOƒƒ“ƒgƒeƒLƒXƒgæ“¾
+	// -- ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ --
+	// â—ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆå–å¾—
 	TArray<FString> _statusTexts = C_Common::GetStatusCommandTexts(displayOrgumentNums[2]);
-	// -- UI•\¦ --
-	orgumentNameTextBlanks[2]->SetText(FText::FromString(_statusTexts[0])); // –¼‘O
-	orgumentTypeTextBlanks[2]->SetText(FText::FromString(_statusTexts[1])); // í—Ş
-	orgumentNoteMultiTextBlanks[2]->SetText(FText::FromString(_statusTexts[2])); // à–¾
+	// -- UIè¡¨ç¤º --
+	orgumentNameTextBlanks[2]->SetText(FText::FromString(_statusTexts[0])); // åå‰
+	orgumentTypeTextBlanks[2]->SetText(FText::FromString(_statusTexts[1])); // ç¨®é¡
+	orgumentNoteMultiTextBlanks[2]->SetText(FText::FromString(_statusTexts[2])); // èª¬æ˜
 	// --
 	// ***
 }
 
-// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“ƒNƒŠƒbƒN (1)
+// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯ (1)
 void UC_Orgument_UI::OrgumentButton1Clicked()
 {
 	UKismetSystemLibrary::PrintString(this, "ORGUMENT 1: " + FString::FromInt(displayOrgumentNums[0]), true, true, FColor::Cyan, 10.0f, TEXT("None"));
 
-	// *** ípƒRƒ}ƒ“ƒhNo‚ğ•Û‘¶ ***
-	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-	if (instance == nullptr) return; // nullƒ`ƒFƒbƒN
+	// *** æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰Noã‚’ä¿å­˜ ***
+	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+	if (instance == nullptr) return; // nullãƒã‚§ãƒƒã‚¯
 
-	instance->players_tactics_command_nums.Add(displayOrgumentNums[0]);
+	// *æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã¯4ã¤ã«åˆ¶é™
+	if (instance->players_tactics_command_nums.Num() < 4) instance->players_tactics_command_nums.Add(displayOrgumentNums[0]);
 	// ***
 
-	// *** ƒQ[ƒ€ƒtƒB[ƒ‹ƒh‚ÖˆÚ“® **
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ƒQ[ƒ€ƒtƒB[ƒ‹ƒhMAP‚Ö
+	// *** ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã¸ç§»å‹• **
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰MAPã¸
 	// ***
 }
 
-// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“ƒNƒŠƒbƒN (2)
+// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯ (2)
 void UC_Orgument_UI::OrgumentButton2Clicked()
 {
 	UKismetSystemLibrary::PrintString(this, "ORGUMENT 2: " + FString::FromInt(displayOrgumentNums[1]), true, true, FColor::Cyan, 10.0f, TEXT("None"));
 
-	// *** ípƒRƒ}ƒ“ƒhNo‚ğ•Û‘¶ ***
-	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-	if (instance == nullptr) return; // nullƒ`ƒFƒbƒN
+	// *** æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰Noã‚’ä¿å­˜ ***
+	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+	if (instance == nullptr) return; // nullãƒã‚§ãƒƒã‚¯
 
-	instance->players_tactics_command_nums.Add(displayOrgumentNums[1]);
+	// *æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã¯4ã¤ã«åˆ¶é™
+	if (instance->players_tactics_command_nums.Num() < 4) instance->players_tactics_command_nums.Add(displayOrgumentNums[1]);
 	// ***
 
-	// *** ƒQ[ƒ€ƒtƒB[ƒ‹ƒh‚ÖˆÚ“® **
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ƒQ[ƒ€ƒtƒB[ƒ‹ƒhMAP‚Ö
+	// *** ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã¸ç§»å‹• **
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰MAPã¸
 	// ***
 }
 
-// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“ƒNƒŠƒbƒN (3)
+// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯ (3)
 void UC_Orgument_UI::OrgumentButton3Clicked()
 {
 	UKismetSystemLibrary::PrintString(this, "ORGUMENT 3: " + FString::FromInt(displayOrgumentNums[2]), true, true, FColor::Cyan, 10.0f, TEXT("None"));
 
-	// *** ƒXƒe[ƒ^ƒX‚ğ•ÏX‚·‚é ***
-	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
+	// *** ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’å¤‰æ›´ã™ã‚‹ ***
+	UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	if (instance) {
 
-		int _statusCommandNo = displayOrgumentNums[2]; // ƒXƒe[ƒ^ƒXƒRƒ}ƒ“ƒhNo
-		if (_statusCommandNo == 1) // ƒTƒCƒhƒAƒ^ƒbƒN1UP
+		int _statusCommandNo = displayOrgumentNums[2]; // ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒãƒ³ãƒ‰No
+		if (_statusCommandNo == 1) // ã‚µã‚¤ãƒ‰ã‚¢ã‚¿ãƒƒã‚¯1UP
 		{
 			instance->player_side_break_abilty++;
 		}
-		else if (_statusCommandNo == 2) // ‘Ì—Í1UP
+		else if (_statusCommandNo == 2) // ä½“åŠ›1UP
 		{
 			instance->player_physical_abilty++;
 		}
-		else if (_statusCommandNo == 3) // ƒvƒŒƒX‘Ï«1UP
+		else if (_statusCommandNo == 3) // ãƒ—ãƒ¬ã‚¹è€æ€§1UP
 		{
 			instance->player_press_resistance_abilty++;
 		}
@@ -128,7 +130,7 @@ void UC_Orgument_UI::OrgumentButton3Clicked()
 	}
 	// ***
 
-	// *** ƒQ[ƒ€ƒtƒB[ƒ‹ƒh‚ÖˆÚ“® **
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ƒQ[ƒ€ƒtƒB[ƒ‹ƒhMAP‚Ö
+	// *** ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã¸ç§»å‹• **
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ã‚²ãƒ¼ãƒ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰MAPã¸
 	// ***
 }

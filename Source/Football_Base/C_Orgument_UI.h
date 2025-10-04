@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,32 +18,32 @@ class FOOTBALL_BASE_API UC_Orgument_UI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override; // ƒRƒ“ƒXƒgƒ‰ƒNƒ^ override
+	virtual void NativeConstruct() override; // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ override
 
 protected:
-	// ********* ƒoƒCƒ“ƒh *********
-	// ƒI[ƒOƒƒ“ƒgƒJ[ƒh1
+	// ********* ãƒã‚¤ãƒ³ãƒ‰ *********
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆã‚«ãƒ¼ãƒ‰1
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Name_1;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Type_1;
 	UPROPERTY(meta = (BindWidget))
 	UMultiLineEditableTextBox* Orgument_Note_1;
-	// ƒI[ƒOƒƒ“ƒgƒJ[ƒh2
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆã‚«ãƒ¼ãƒ‰2
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Name_2;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Type_2;
 	UPROPERTY(meta = (BindWidget))
 	UMultiLineEditableTextBox* Orgument_Note_2;
-	// ƒI[ƒOƒƒ“ƒgƒJ[ƒh3
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆã‚«ãƒ¼ãƒ‰3
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Name_3;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Orgument_Type_3;
 	UPROPERTY(meta = (BindWidget))
 	UMultiLineEditableTextBox* Orgument_Note_3;
-	// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³
 	UPROPERTY(meta = (BindWidget))
 	UButton* Orgument_Button_1;
 	UPROPERTY(meta = (BindWidget))
@@ -52,8 +52,8 @@ protected:
 	UButton* Orgument_Button_3;
 	// ***
 
-	// ********* WigetŠÖ” *********
-	// ƒI[ƒOƒƒ“ƒg‘I‘ğƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+	// ********* Wigeté–¢æ•° *********
+	// ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆé¸æŠãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 	UFUNCTION()
 	void OrgumentButton1Clicked();
 	UFUNCTION()
@@ -64,8 +64,8 @@ protected:
 	
 	
 private:
-	TArray< UTextBlock*> orgumentNameTextBlanks = {}; // ƒI[ƒOƒƒ“ƒg–¼‘O”z—ñ
-	TArray< UTextBlock*> orgumentTypeTextBlanks = {}; // ƒI[ƒOƒƒ“ƒgí—Ş”z—ñ
-	TArray< UMultiLineEditableTextBox*> orgumentNoteMultiTextBlanks = {}; // ƒI[ƒOƒƒ“ƒgà–¾”z—ñ
-	TArray<int> displayOrgumentNums = {}; // •\¦‚·‚éƒI[ƒOƒƒ“ƒgNos
+	TArray< UTextBlock*> orgumentNameTextBlanks = {}; // ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆåå‰é…åˆ—
+	TArray< UTextBlock*> orgumentTypeTextBlanks = {}; // ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆç¨®é¡é…åˆ—
+	TArray< UMultiLineEditableTextBox*> orgumentNoteMultiTextBlanks = {}; // ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆèª¬æ˜é…åˆ—
+	TArray<int> displayOrgumentNums = {}; // è¡¨ç¤ºã™ã‚‹ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆNos
 };

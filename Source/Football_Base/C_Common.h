@@ -77,11 +77,27 @@ public:
     static constexpr int TACTICS_COMMANDS_NUMS = 6; // 戦術コマンド総数
     static constexpr int STATUS_COMMANDS_NUMS = 3; // ステータスコマンド総数
     
+    // -- 戦術コマンドNo --
+    static constexpr int SIDE_ATTACK_COMMAND_NO = 1; // サイドアタック
+    static constexpr int HIGH_LINE_COMMAND_NO = 2; // ハイライン
+    static constexpr int LINE_BREAK_COMMAND_NO = 3; // ラインブレイク
+    static constexpr int LOW_BLOCK_COMMAND_NO = 4; // ローブロック
+    static constexpr int GK_BUILD_UP_COMMAND_NO = 5; // GKビルドアップ
+    static constexpr int SIDE_COMPLESSION_COMMAND_NO = 6; // サイド圧縮
 
     // 戦術コマンドテキスト取得
     static TArray<FString> GetTacticsCommandTexts(int tacticsCommandNo);
     // ステータスコマンドテキスト取得
     static TArray<FString> GetStatusCommandTexts(int statusCommandNo);
+    // 戦術コマンドstructure
+    struct FTacticsCommand
+    {
+        int score; // スコア
+        int type; // タイプ( 1.サイド, 2,.ライン, 3.ブロック )
+        bool isOnBall; //  保持・非保持
+    };
+    // 戦術コマンド値取得
+    static FTacticsCommand GetTacticsCommandValue(int tacticsCommandNo);
     // **
     
     

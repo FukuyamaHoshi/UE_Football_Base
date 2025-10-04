@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Route_UI.h"
@@ -8,13 +8,13 @@
 
 void UC_Route_UI::NativeConstruct()
 {
-    // *** ƒNƒŠƒbƒNƒCƒxƒ“ƒg‚ğƒoƒCƒ“ƒh ***
-    if (Next_Match_Button) // Ÿ‚Ì‡ƒ{ƒ^ƒ“
+    // *** ã‚¯ãƒªãƒƒã‚¯ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ ***
+    if (Next_Match_Button) // æ¬¡ã®è©¦åˆãƒœã‚¿ãƒ³
     {
         Next_Match_Button->OnClicked.AddUniqueDynamic(this, &UC_Route_UI::NextMatchButtonClicked);
     }
 
-    // ƒ`[ƒ€ƒ{ƒbƒNƒX’Ç‰Á
+    // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹è¿½åŠ 
     teamBoxes = {
         Team_Box_1, Team_Box_2, Team_Box_3, Team_Box_4, Team_Box_5,
         Team_Box_6, Team_Box_7, Team_Box_8, Team_Box_9, Team_Box_10,
@@ -23,7 +23,7 @@ void UC_Route_UI::NativeConstruct()
         Team_Box_21, Team_Box_22, Team_Box_23, Team_Box_24, Team_Box_25,
         Team_Box_26, Team_Box_27, Team_Box_28, Team_Box_29, Team_Box_30,
     };
-    // ƒ`[ƒ€ƒeƒLƒXƒg’Ç‰Á
+    // ãƒãƒ¼ãƒ ãƒ†ã‚­ã‚¹ãƒˆè¿½åŠ 
     teamTextBlanks = {
         Team_Text_1, Team_Text_2, Team_Text_3, Team_Text_4, Team_Text_5,
         Team_Text_6, Team_Text_7, Team_Text_8, Team_Text_9, Team_Text_10,
@@ -32,13 +32,13 @@ void UC_Route_UI::NativeConstruct()
         Team_Text_21, Team_Text_22, Team_Text_23, Team_Text_24, Team_Text_25,
         Team_Text_26, Team_Text_27, Team_Text_28, Team_Text_29, Team_Text_30,
     };
-    // ƒ`[ƒ€–¼‘O’Ç‰Á
+    // ãƒãƒ¼ãƒ åå‰è¿½åŠ 
     teamNames = {
         ENEMY_TEAM_NAME_1, ENEMY_TEAM_NAME_2, ENEMY_TEAM_NAME_3, ENEMY_TEAM_NAME_4, ENEMY_TEAM_NAME_5,
         ENEMY_TEAM_NAME_6, ENEMY_TEAM_NAME_7, ENEMY_TEAM_NAME_8, ENEMY_TEAM_NAME_9, ENEMY_TEAM_NAME_10,
         ENEMY_TEAM_NAME_11, ENEMY_TEAM_NAME_12, ENEMY_TEAM_NAME_13, ENEMY_TEAM_NAME_14, ENEMY_TEAM_NAME_15
     };
-    // ƒXƒRƒA”z—ñ’Ç‰Á
+    // ã‚¹ã‚³ã‚¢é…åˆ—è¿½åŠ 
     scoreBlanks = {
         Score_Text_1, Score_Text_2, Score_Text_3, Score_Text_4, Score_Text_5,
         Score_Text_6, Score_Text_7, Score_Text_8, Score_Text_9, Score_Text_10,
@@ -48,60 +48,60 @@ void UC_Route_UI::NativeConstruct()
         Score_Text_26, Score_Text_27, Score_Text_28, Score_Text_29, Score_Text_30
     };
 
-    // *** ‘Îíî•ñ‚ğ•\¦ ***
+    // *** å¯¾æˆ¦æƒ…å ±ã‚’è¡¨ç¤º ***
     DisplayMatchInfo();
     // ***
     
 }
 
-// Ÿ‚Ì‡ƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+// æ¬¡ã®è©¦åˆãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 void UC_Route_UI::NextMatchButtonClicked()
 {
     UKismetSystemLibrary::PrintString(this, "next match", true, true, FColor::Cyan, 2.f, TEXT("None"));
     
-    UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ƒQ[ƒ€ƒtƒB[ƒ‹ƒhMAP‚Ö
+    UGameplayStatics::OpenLevel(GetWorld(), TEXT("Orgument")); // ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆMAPã¸
 }
 
-// ‘Îíî•ñ‚ğ•\¦‚·‚é
+// å¯¾æˆ¦æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
 void UC_Route_UI::DisplayMatchInfo()
 {
-    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-    if (instance == nullptr) return; // nullƒ`ƒFƒbƒN
+    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (instance == nullptr) return; // nullãƒã‚§ãƒƒã‚¯
 
-    int _matchRound = instance->match_round; // ‡ƒ‰ƒEƒ“ƒh
+    int _matchRound = instance->match_round; // è©¦åˆãƒ©ã‚¦ãƒ³ãƒ‰
     
-    // ***  ƒ‰ƒEƒ“ƒh16 *** 
+    // ***  ãƒ©ã‚¦ãƒ³ãƒ‰16 *** 
     if (_matchRound == 1)
     {
-        // -- ƒvƒŒƒCƒ„[‚Ìî•ñ’Ç‰Á --
+        // -- ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æƒ…å ±è¿½åŠ  --
         UMy_Game_Instance::FTeamBoxElem _playerInfo = { PLAYER_BOX_NUMS[0], MY_TEAM_NAME,  3, "" };
         instance->team_box_elems.Add(_playerInfo);
         // --
 
-        // -- ‘Îíî•ñ’Ç‰Á(ƒ‰ƒEƒ“ƒh16) --
-        teamNames.Insert(MY_TEAM_NAME, PLAYER_BOX_NUMS[0] - 1); // ”z—ñ‚É’Ç‰Á(ƒvƒŒƒCƒ„[–¼) *ƒNƒ‰ƒbƒVƒ…‘Î‰
+        // -- å¯¾æˆ¦æƒ…å ±è¿½åŠ (ãƒ©ã‚¦ãƒ³ãƒ‰16) --
+        teamNames.Insert(MY_TEAM_NAME, PLAYER_BOX_NUMS[0] - 1); // é…åˆ—ã«è¿½åŠ (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å) *ã‚¯ãƒ©ãƒƒã‚·ãƒ¥å¯¾å¿œ
         for (int _i = 0; _i < 16; _i++) {
-            if (_i == (PLAYER_BOX_NUMS[0] - 1)) continue; // ƒvƒŒƒCƒ„[î•ñƒXƒLƒbƒv
+            if (_i == (PLAYER_BOX_NUMS[0] - 1)) continue; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã‚¹ã‚­ãƒƒãƒ—
 
             UMy_Game_Instance::FTeamBoxElem _teamInfo = { _i + 1, teamNames[_i], 0, "" };
             instance->team_box_elems.Add(_teamInfo);
         }
         // --
 
-        // -- UIƒZƒbƒg --
+        // -- UIã‚»ãƒƒãƒˆ --
         SetInfoUI();
         // --
     }
     
-    // *** €XŒˆŸ ***
+    // *** æº–ã€…æ±ºå‹ ***
     else if (_matchRound == 2)
     {
-        // -- Ÿ—˜ƒ`[ƒ€Œˆ’è(ƒ‰ƒEƒ“ƒh16) --
-        TArray<int> _winTeamNums = {}; // Ÿ—˜ƒ`[ƒ€No”z—ñ
-        TArray<FString> _winTeamNames = {}; // Ÿ—˜ƒ`[ƒ€–¼‘O”z—ñ
-        for (int _i = 0; _i < 16; _i += 2) { // 2‚¸‚Â
-            // ƒvƒŒƒCƒ„[‚ªŸ—˜‚·‚é‚æ‚¤‚É‘Î‰
-            if (_i < PLAYER_BOX_NUMS[0]) { // *ƒvƒŒƒCƒ„[‚ªˆê”Ôã‚Ìƒ{ƒbƒNƒX‚É‚¢‚é‚Ì‚İ‘Î‰‰Â
+        // -- å‹åˆ©ãƒãƒ¼ãƒ æ±ºå®š(ãƒ©ã‚¦ãƒ³ãƒ‰16) --
+        TArray<int> _winTeamNums = {}; // å‹åˆ©ãƒãƒ¼ãƒ Noé…åˆ—
+        TArray<FString> _winTeamNames = {}; // å‹åˆ©ãƒãƒ¼ãƒ åå‰é…åˆ—
+        for (int _i = 0; _i < 16; _i += 2) { // 2ãšã¤
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå‹åˆ©ã™ã‚‹ã‚ˆã†ã«å¯¾å¿œ
+            if (_i < PLAYER_BOX_NUMS[0]) { // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒä¸€ç•ªä¸Šã®ãƒœãƒƒã‚¯ã‚¹ã«ã„ã‚‹æ™‚ã®ã¿å¯¾å¿œå¯
                 _winTeamNums.Add(PLAYER_BOX_NUMS[0]);
 
                 continue;
@@ -109,64 +109,64 @@ void UC_Route_UI::DisplayMatchInfo()
             int _random = FMath::RandRange(0, 1); // 0 or 1
             int _num = _i + _random;
 
-            _winTeamNums.Add(_num + 1); // ƒ`[ƒ€No‚Ö•ÏŠ·
+            _winTeamNums.Add(_num + 1); // ãƒãƒ¼ãƒ Noã¸å¤‰æ›
         }
         // --
 
-        // -- infoXV  --
+        // -- infoæ›´æ–°  --
         for (UMy_Game_Instance::FTeamBoxElem& _teamBox : instance->team_box_elems) {
-            if (_winTeamNums.Contains(_teamBox.boxNum)) { // œŸ—˜ƒ`[ƒ€‚Ìê‡
+            if (_winTeamNums.Contains(_teamBox.boxNum)) { // â—å‹åˆ©ãƒãƒ¼ãƒ ã®å ´åˆ
                 // state
-                _teamBox.state = 1; // Ÿ—˜‚ÉXV
-                _winTeamNames.Add(_teamBox.teamName); // –¼‘O•Û‘¶
-                // “¾“_
+                _teamBox.state = 1; // å‹åˆ©ã«æ›´æ–°
+                _winTeamNames.Add(_teamBox.teamName); // åå‰ä¿å­˜
+                // å¾—ç‚¹
                 _teamBox.score = "2";
 
                 continue;
             }
 
-            // œ”síƒ`[ƒ€
+            // â—æ•—æˆ¦ãƒãƒ¼ãƒ 
             // state
-            _teamBox.state = 2; // ”sí‚ÉXV
-            // “¾“_
+            _teamBox.state = 2; // æ•—æˆ¦ã«æ›´æ–°
+            // å¾—ç‚¹
             _teamBox.score = FString::FromInt(FMath::RandRange(0, 1)); // 0 or 1
         }
         // --
 
-        //@-- ‘Îíî•ñ’Ç‰Á(€XŒˆŸ) --
-        int _winCounter = 0; // Ÿ—˜ƒ`[ƒ€ƒJƒEƒ“ƒ^[
+        //ã€€-- å¯¾æˆ¦æƒ…å ±è¿½åŠ (æº–ã€…æ±ºå‹) --
+        int _winCounter = 0; // å‹åˆ©ãƒãƒ¼ãƒ ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
         for (int _i = 16; _i < 24; _i++) {
-            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ƒ`[ƒ€î•ñ
+            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ãƒãƒ¼ãƒ æƒ…å ±
 
-            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // Ÿ—˜ƒ`[ƒ€‚ªƒvƒŒƒCƒ„[‚Ìê‡
-                // ƒvƒŒƒCƒ„[
+            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // å‹åˆ©ãƒãƒ¼ãƒ ãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´åˆ
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
                 _teamInfo = { _i + 1, MY_TEAM_NAME, 3, "" };
             }
             else {
-                // ‚»‚Ì‘¼ƒ`[ƒ€
+                // ãã®ä»–ãƒãƒ¼ãƒ 
                 _teamInfo = { _i + 1, _winTeamNames[_winCounter], 0, "" };
             }
 
-            instance->team_box_elems.Add(_teamInfo); // ’Ç‰Á
-            _winCounter++; // ƒCƒ“ƒNƒŠƒƒ“ƒg
+            instance->team_box_elems.Add(_teamInfo); // è¿½åŠ 
+            _winCounter++; // ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
         }
         // --
 
-        // -- UIƒZƒbƒg --
+        // -- UIã‚»ãƒƒãƒˆ --
         SetInfoUI();
         // --
 
     }
     
-    // *** €ŒˆŸ ***
+    // *** æº–æ±ºå‹ ***
     else if (_matchRound == 3)
     {
-        // -- Ÿ—˜ƒ`[ƒ€Œˆ’è(€XŒˆŸ) --
-        TArray<int> _winTeamNums = {}; // Ÿ—˜ƒ`[ƒ€No”z—ñ
-        TArray<FString> _winTeamNames = {}; // Ÿ—˜ƒ`[ƒ€–¼‘O”z—ñ
-        for (int _i = 16; _i < 24; _i += 2) { // 2‚¸‚Â
-            // ƒvƒŒƒCƒ„[‚ªŸ—˜‚·‚é‚æ‚¤‚É‘Î‰
-            if (_i < PLAYER_BOX_NUMS[1]) { // *ƒvƒŒƒCƒ„[‚ªˆê”Ôã‚Ìƒ{ƒbƒNƒX‚É‚¢‚é‚Ì‚İ‘Î‰‰Â
+        // -- å‹åˆ©ãƒãƒ¼ãƒ æ±ºå®š(æº–ã€…æ±ºå‹) --
+        TArray<int> _winTeamNums = {}; // å‹åˆ©ãƒãƒ¼ãƒ Noé…åˆ—
+        TArray<FString> _winTeamNames = {}; // å‹åˆ©ãƒãƒ¼ãƒ åå‰é…åˆ—
+        for (int _i = 16; _i < 24; _i += 2) { // 2ãšã¤
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå‹åˆ©ã™ã‚‹ã‚ˆã†ã«å¯¾å¿œ
+            if (_i < PLAYER_BOX_NUMS[1]) { // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒä¸€ç•ªä¸Šã®ãƒœãƒƒã‚¯ã‚¹ã«ã„ã‚‹æ™‚ã®ã¿å¯¾å¿œå¯
                 _winTeamNums.Add(PLAYER_BOX_NUMS[1]);
 
                 continue;
@@ -174,66 +174,66 @@ void UC_Route_UI::DisplayMatchInfo()
             int _random = FMath::RandRange(0, 1); // 0 or 1
             int _num = _i + _random;
 
-            _winTeamNums.Add(_num + 1); // ƒ`[ƒ€No‚Ö•ÏŠ·
+            _winTeamNums.Add(_num + 1); // ãƒãƒ¼ãƒ Noã¸å¤‰æ›
         }
         // --
 
-        // -- infoXV --
+        // -- infoæ›´æ–° --
         for (UMy_Game_Instance::FTeamBoxElem& _teamBox : instance->team_box_elems) {
-            if (_winTeamNums.Contains(_teamBox.boxNum)) { // œŸ—˜ƒ`[ƒ€‚Ìê‡
+            if (_winTeamNums.Contains(_teamBox.boxNum)) { // â—å‹åˆ©ãƒãƒ¼ãƒ ã®å ´åˆ
                 // state
-                _teamBox.state = 1; // Ÿ—˜‚ÉXV
-                _winTeamNames.Add(_teamBox.teamName); // –¼‘O•Û‘¶
-                // “¾“_
+                _teamBox.state = 1; // å‹åˆ©ã«æ›´æ–°
+                _winTeamNames.Add(_teamBox.teamName); // åå‰ä¿å­˜
+                // å¾—ç‚¹
                 _teamBox.score = "2";
 
                 continue;
             }
 
-            if (_teamBox.boxNum > 16) { // €XŒˆŸˆÈã‚Ìƒ`[ƒ€
-                // œ”síƒ`[ƒ€
+            if (_teamBox.boxNum > 16) { // æº–ã€…æ±ºå‹ä»¥ä¸Šã®ãƒãƒ¼ãƒ 
+                // â—æ•—æˆ¦ãƒãƒ¼ãƒ 
                 // state
-                _teamBox.state = 2; // ”sí‚ÉXV
-                // “¾“_
+                _teamBox.state = 2; // æ•—æˆ¦ã«æ›´æ–°
+                // å¾—ç‚¹
                 _teamBox.score = FString::FromInt(FMath::RandRange(0, 1)); // 0 or 1
             }
         }
         // --
 
-        //@-- ‘Îíî•ñ’Ç‰Á(€ŒˆŸ) --
-        int _winCounter = 0; // Ÿ—˜ƒ`[ƒ€ƒJƒEƒ“ƒ^[
+        //ã€€-- å¯¾æˆ¦æƒ…å ±è¿½åŠ (æº–æ±ºå‹) --
+        int _winCounter = 0; // å‹åˆ©ãƒãƒ¼ãƒ ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
         for (int _i = 24; _i < 28; _i++) {
-            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ƒ`[ƒ€î•ñ
+            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ãƒãƒ¼ãƒ æƒ…å ±
 
-            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // Ÿ—˜ƒ`[ƒ€‚ªƒvƒŒƒCƒ„[‚Ìê‡
-                // ƒvƒŒƒCƒ„[
+            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // å‹åˆ©ãƒãƒ¼ãƒ ãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´åˆ
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
                 _teamInfo = { _i + 1, MY_TEAM_NAME, 3, "" };
             }
             else {
-                // ‚»‚Ì‘¼ƒ`[ƒ€
+                // ãã®ä»–ãƒãƒ¼ãƒ 
                 _teamInfo = { _i + 1, _winTeamNames[_winCounter], 0, "" };
             }
 
-            instance->team_box_elems.Add(_teamInfo); // ’Ç‰Á
-            _winCounter++; // ƒCƒ“ƒNƒŠƒƒ“ƒg
+            instance->team_box_elems.Add(_teamInfo); // è¿½åŠ 
+            _winCounter++; // ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
         }
         // --
 
-        // -- UIƒZƒbƒg --
+        // -- UIã‚»ãƒƒãƒˆ --
         SetInfoUI();
         // --
 
     }
     
-    // *** ŒˆŸ ***
+    // *** æ±ºå‹ ***
     else if (_matchRound == 4)
     {
-        // -- Ÿ—˜ƒ`[ƒ€Œˆ’è(€ŒˆŸ) --
-        TArray<int> _winTeamNums = {}; // Ÿ—˜ƒ`[ƒ€No”z—ñ
-        TArray<FString> _winTeamNames = {}; // Ÿ—˜ƒ`[ƒ€–¼‘O”z—ñ
-        for (int _i = 24; _i < 28; _i += 2) { // 2‚¸‚Â
-            // ƒvƒŒƒCƒ„[‚ªŸ—˜‚·‚é‚æ‚¤‚É‘Î‰
-            if (_i < PLAYER_BOX_NUMS[2]) { // *ƒvƒŒƒCƒ„[‚ªˆê”Ôã‚Ìƒ{ƒbƒNƒX‚É‚¢‚é‚Ì‚İ‘Î‰‰Â
+        // -- å‹åˆ©ãƒãƒ¼ãƒ æ±ºå®š(æº–æ±ºå‹) --
+        TArray<int> _winTeamNums = {}; // å‹åˆ©ãƒãƒ¼ãƒ Noé…åˆ—
+        TArray<FString> _winTeamNames = {}; // å‹åˆ©ãƒãƒ¼ãƒ åå‰é…åˆ—
+        for (int _i = 24; _i < 28; _i += 2) { // 2ãšã¤
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå‹åˆ©ã™ã‚‹ã‚ˆã†ã«å¯¾å¿œ
+            if (_i < PLAYER_BOX_NUMS[2]) { // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒä¸€ç•ªä¸Šã®ãƒœãƒƒã‚¯ã‚¹ã«ã„ã‚‹æ™‚ã®ã¿å¯¾å¿œå¯
                 _winTeamNums.Add(PLAYER_BOX_NUMS[2]);
 
                 continue;
@@ -241,95 +241,95 @@ void UC_Route_UI::DisplayMatchInfo()
             int _random = FMath::RandRange(0, 1); // 0 or 1
             int _num = _i + _random;
 
-            _winTeamNums.Add(_num + 1); // ƒ`[ƒ€No‚Ö•ÏŠ·
+            _winTeamNums.Add(_num + 1); // ãƒãƒ¼ãƒ Noã¸å¤‰æ›
         }
         // --
 
-        // -- infoXV --
+        // -- infoæ›´æ–° --
         for (UMy_Game_Instance::FTeamBoxElem& _teamBox : instance->team_box_elems) {
-            if (_winTeamNums.Contains(_teamBox.boxNum)) { // œŸ—˜ƒ`[ƒ€‚Ìê‡
+            if (_winTeamNums.Contains(_teamBox.boxNum)) { // â—å‹åˆ©ãƒãƒ¼ãƒ ã®å ´åˆ
                 // state
-                _teamBox.state = 1; // Ÿ—˜‚ÉXV
-                _winTeamNames.Add(_teamBox.teamName); // –¼‘O•Û‘¶
-                // “¾“_
+                _teamBox.state = 1; // å‹åˆ©ã«æ›´æ–°
+                _winTeamNames.Add(_teamBox.teamName); // åå‰ä¿å­˜
+                // å¾—ç‚¹
                 _teamBox.score = "2";
 
                 continue;
             }
 
-            if (_teamBox.boxNum > 24) { // €ŒˆŸˆÈã‚Ìƒ`[ƒ€
-                // œ”síƒ`[ƒ€
+            if (_teamBox.boxNum > 24) { // æº–æ±ºå‹ä»¥ä¸Šã®ãƒãƒ¼ãƒ 
+                // â—æ•—æˆ¦ãƒãƒ¼ãƒ 
                 // state
-                _teamBox.state = 2; // ”sí‚ÉXV
-                // “¾“_
+                _teamBox.state = 2; // æ•—æˆ¦ã«æ›´æ–°
+                // å¾—ç‚¹
                 _teamBox.score = FString::FromInt(FMath::RandRange(0, 1)); // 0 or 1
             }
         }
         // --
 
-        //@-- ‘Îíî•ñ’Ç‰Á(ŒˆŸ) --
-        int _winCounter = 0; // Ÿ—˜ƒ`[ƒ€ƒJƒEƒ“ƒ^[
+        //ã€€-- å¯¾æˆ¦æƒ…å ±è¿½åŠ (æ±ºå‹) --
+        int _winCounter = 0; // å‹åˆ©ãƒãƒ¼ãƒ ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
         for (int _i = 28; _i < 30; _i++) {
-            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ƒ`[ƒ€î•ñ
+            UMy_Game_Instance::FTeamBoxElem _teamInfo; // ãƒãƒ¼ãƒ æƒ…å ±
 
-            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // Ÿ—˜ƒ`[ƒ€‚ªƒvƒŒƒCƒ„[‚Ìê‡
-                // ƒvƒŒƒCƒ„[
+            if (_winTeamNames[_winCounter] == MY_TEAM_NAME) { // å‹åˆ©ãƒãƒ¼ãƒ ãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´åˆ
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
                 _teamInfo = { _i + 1, MY_TEAM_NAME, 3, "" };
             }
             else {
-                // ‚»‚Ì‘¼ƒ`[ƒ€
+                // ãã®ä»–ãƒãƒ¼ãƒ 
                 _teamInfo = { _i + 1, _winTeamNames[_winCounter], 0, "" };
             }
 
-            instance->team_box_elems.Add(_teamInfo); // ’Ç‰Á
-            _winCounter++; // ƒCƒ“ƒNƒŠƒƒ“ƒg
+            instance->team_box_elems.Add(_teamInfo); // è¿½åŠ 
+            _winCounter++; // ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
         }
         // --
 
-        // -- UIƒZƒbƒg --
+        // -- UIã‚»ãƒƒãƒˆ --
         SetInfoUI();
         // --
     }
     else {
-        // -- UIƒZƒbƒg --
+        // -- UIã‚»ãƒƒãƒˆ --
         SetInfoUI();
         // --
     }
 }
 
-// UI‚Éî•ñƒZƒbƒg
+// UIã«æƒ…å ±ã‚»ãƒƒãƒˆ
 void UC_Route_UI::SetInfoUI()
 {
-    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-    if (instance == nullptr) return; // nullƒ`ƒFƒbƒN
+    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (instance == nullptr) return; // nullãƒã‚§ãƒƒã‚¯
 
     for (UMy_Game_Instance::FTeamBoxElem _teamBox : instance->team_box_elems) {
-        // –¼‘O
+        // åå‰
         teamTextBlanks[_teamBox.boxNum - 1]->SetText(FText::FromString(_teamBox.teamName));
 
-        // ƒ{ƒbƒNƒXƒJƒ‰[
+        // ãƒœãƒƒã‚¯ã‚¹ã‚«ãƒ©ãƒ¼
         if (_teamBox.state == 0) {
-            // ‘Îí
+            // å¯¾æˆ¦
             teamBoxes[_teamBox.boxNum - 1]->SetBrushColor(TEAM_BOX_MATCH_COLOR);
         }
         else if (_teamBox.state == 1) {
-            // Ÿ—˜
+            // å‹åˆ©
             teamBoxes[_teamBox.boxNum - 1]->SetBrushColor(TEAM_BOX_WIN_COLOR);
         }
         else if (_teamBox.state == 2) {
-            // ”sí
+            // æ•—æˆ¦
             teamBoxes[_teamBox.boxNum - 1]->SetBrushColor(TEAM_BOX_LOSE_COLOR);
-            teamTextBlanks[_teamBox.boxNum - 1]->SetColorAndOpacity(TEAM_TEXT_LOSE_COLOR); // ©ƒeƒLƒXƒgF
+            teamTextBlanks[_teamBox.boxNum - 1]->SetColorAndOpacity(TEAM_TEXT_LOSE_COLOR); // â†ãƒ†ã‚­ã‚¹ãƒˆè‰²
         }
         else if (_teamBox.state == 3) {
-            // ƒvƒŒƒCƒ„[
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
             teamBoxes[_teamBox.boxNum - 1]->SetBrushColor(MY_TEAM_BOX_COLOR);
         }
         else {
             UKismetSystemLibrary::PrintString(this, "route UI error", true, true, FColor::Red, 2.f, TEXT("None"));
         }
 
-        // ƒXƒRƒA
+        // ã‚¹ã‚³ã‚¢
         scoreBlanks[_teamBox.boxNum - 1]->SetText(FText::FromString(_teamBox.score));
 
     }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Game_Field_UI.h"
@@ -9,155 +9,230 @@
 
 void UC_Game_Field_UI::NativeConstruct()
 {
-    // *** ƒNƒŠƒbƒNƒCƒxƒ“ƒg‚ğƒoƒCƒ“ƒh ***
-    if (Match_Start_Button) // ‡ŠJnƒ{ƒ^ƒ“
+    // *** ã‚¯ãƒªãƒƒã‚¯ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ ***
+    if (Match_Start_Button) // è©¦åˆé–‹å§‹ãƒœã‚¿ãƒ³
     {
         Match_Start_Button->OnClicked.AddUniqueDynamic(this, &UC_Game_Field_UI::MatchStartButtonClicked);
     }
-    if (Tactics_Command_Button_1) // ípƒRƒ}ƒ“ƒh1
+    if (Tactics_Command_Button_1) // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰1
     {
         Tactics_Command_Button_1->OnClicked.AddUniqueDynamic(this, &UC_Game_Field_UI::TacticsCommand1Clicked);
     }
-    if (Tactics_Command_Button_2) // ípƒRƒ}ƒ“ƒh2
+    if (Tactics_Command_Button_2) // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰2
     {
         Tactics_Command_Button_2->OnClicked.AddUniqueDynamic(this, &UC_Game_Field_UI::TacticsCommand2Clicked);
     }
-    if (Tactics_Command_Button_3) // ípƒRƒ}ƒ“ƒh3
+    if (Tactics_Command_Button_3) // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰3
     {
         Tactics_Command_Button_3->OnClicked.AddUniqueDynamic(this, &UC_Game_Field_UI::TacticsCommand3Clicked);
     }
-    if (Tactics_Command_Button_4) // ípƒRƒ}ƒ“ƒh4
+    if (Tactics_Command_Button_4) // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰4
     {
         Tactics_Command_Button_4->OnClicked.AddUniqueDynamic(this, &UC_Game_Field_UI::TacticsCommand4Clicked);
     }
     // ***
 
-    // *** ”\—Í’l‚ğƒZƒbƒg (ƒvƒŒƒCƒ„[) ***
-    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-    if (instance) {
-        // ZƒTƒCƒh“Ë”j
+    // *** å¤‰æ•°ãƒ»é…åˆ—ã‚»ãƒƒãƒˆã€€***
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+
+    if (_instance) {
+        // UI(è¡¨ç¤ºãƒ»éè¡¨ç¤º)
+        tacticsCommandBorders = { Tactics_Command_Border_1, Tactics_Command_Border_2, Tactics_Command_Border_3, Tactics_Command_Border_4 }; // ãƒœãƒ¼ãƒ€ãƒ¼
+        tacticsCommandButtons = { Tactics_Command_Button_1, Tactics_Command_Button_2, Tactics_Command_Button_3, Tactics_Command_Button_4 }; // ãƒœã‚¿ãƒ³
+        // UI(ãƒ†ã‚­ã‚¹ãƒˆã‚»ãƒƒãƒˆ)
+        tacticsCommandNameBlanks = { Tactics_Command_Name_1, Tactics_Command_Name_2, Tactics_Command_Name_3, Tactics_Command_Name_4 }; // åå‰
+        tacticsCommandScoreBlanks = { Tactics_Command_Value_1, Tactics_Command_Value_2, Tactics_Command_Value_3, Tactics_Command_Value_4 }; // ã‚¹ã‚³ã‚¢
+    }
+    // ***
+    
+    // *** èƒ½åŠ›å€¤ã‚’ã‚»ãƒƒãƒˆ (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼) ***
+    if (_instance) {
+        // ã€‡ã‚µã‚¤ãƒ‰çªç ´
         TArray<UBorder*> _mySideBreakBoxes = {
             My_Side_Break_Abilty_Box_1, My_Side_Break_Abilty_Box_2, My_Side_Break_Abilty_Box_3, My_Side_Break_Abilty_Box_4, My_Side_Break_Abilty_Box_5 };
-        // F‚ğƒZƒbƒg
-        for (int i = 0; i < instance->player_side_break_abilty; ++i) {
+        // è‰²ã‚’ã‚»ãƒƒãƒˆ
+        for (int i = 0; i < _instance->player_side_break_abilty; ++i) {
             _mySideBreakBoxes[i]->SetBrushColor(SIDE_BREAK_ABILTY_COLOR);
         }
-        // ƒeƒLƒXƒg‚ğƒZƒbƒg
-        FString _mySideBreakText = FString::FromInt(instance->player_side_break_abilty) + ABILTY_END_TEXT;
+        // ãƒ†ã‚­ã‚¹ãƒˆã‚’ã‚»ãƒƒãƒˆ
+        FString _mySideBreakText = FString::FromInt(_instance->player_side_break_abilty) + ABILTY_END_TEXT;
         My_Side_Break_Abilty_Text->SetText(FText::FromString(_mySideBreakText));
 
-        // Z‘–—Í
+        // ã€‡èµ°åŠ›
         TArray<UBorder*> _myPhisicalBoxes = {
             My_Phisical_Abilty_Box_1, My_Phisical_Abilty_Box_2, My_Phisical_Abilty_Box_3, My_Phisical_Abilty_Box_4, My_Phisical_Abilty_Box_5 };
-        // F‚ğƒZƒbƒg
-        for (int i = 0; i < instance->player_physical_abilty; ++i) {
+        // è‰²ã‚’ã‚»ãƒƒãƒˆ
+        for (int i = 0; i < _instance->player_physical_abilty; ++i) {
             _myPhisicalBoxes[i]->SetBrushColor(PHISICAL_ABILTY_COLOR);
         }
-        // ƒeƒLƒXƒg‚ğƒZƒbƒg
-        FString _myPhysicalText = FString::FromInt(instance->player_physical_abilty) + ABILTY_END_TEXT;
+        // ãƒ†ã‚­ã‚¹ãƒˆã‚’ã‚»ãƒƒãƒˆ
+        FString _myPhysicalText = FString::FromInt(_instance->player_physical_abilty) + ABILTY_END_TEXT;
         My_Phisical_Abilty_Text->SetText(FText::FromString(_myPhysicalText));
 
-        // ZƒvƒŒƒX‘Ï«
+        // ã€‡ãƒ—ãƒ¬ã‚¹è€æ€§
         TArray<UBorder*> _myPressResistanceBoxes = {
             My_Press_Resistance_Abilty_Box_1, My_Press_Resistance_Abilty_Box_2, My_Press_Resistance_Abilty_Box_3, My_Press_Resistance_Abilty_Box_4, My_Press_Resistance_Abilty_Box_5 };
-        // F‚ğƒZƒbƒg
-        for (int i = 0; i < instance->player_press_resistance_abilty; ++i) {
+        // è‰²ã‚’ã‚»ãƒƒãƒˆ
+        for (int i = 0; i < _instance->player_press_resistance_abilty; ++i) {
             _myPressResistanceBoxes[i]->SetBrushColor(PRESS_RESISTANCE_ABILTY_COLOR);
         }
-        // ƒeƒLƒXƒg‚ğƒZƒbƒg
-        FString _myPressResistanceText = FString::FromInt(instance->player_press_resistance_abilty) + ABILTY_END_TEXT;
+        // ãƒ†ã‚­ã‚¹ãƒˆã‚’ã‚»ãƒƒãƒˆ
+        FString _myPressResistanceText = FString::FromInt(_instance->player_press_resistance_abilty) + ABILTY_END_TEXT;
         My_Press_Resistance_Abilty_Text->SetText(FText::FromString(_myPressResistanceText));
     }
     // ***
 
-    // *** ƒ‰ƒEƒ“ƒh”XV ***
+    // *** ãƒ©ã‚¦ãƒ³ãƒ‰æ•°æ›´æ–° ***
     UpdateRoundNum();
     // ***
 
-    // *** ƒ{[ƒ‹•ÛƒAƒCƒRƒ“XV ***
+    // *** ãƒœãƒ¼ãƒ«ä¿æŒã‚¢ã‚¤ã‚³ãƒ³æ›´æ–° ***
     UpdateBallPossessIcon();
     // ***
-
-    // *** ípƒRƒ}ƒ“ƒhƒJ[ƒhƒZƒbƒg ***
-    if (instance) {
-        if (instance->players_tactics_command_nums.Num() > 0) { // ƒI[ƒOƒƒ“ƒg‚ª‚ ‚éê‡
-            // ípƒJ[ƒh–¼‘OUI”z—ñì¬
-            tacticsCommandNameBlanks = { Tactics_Command_Name_1, Tactics_Command_Name_2, Tactics_Command_Name_3, Tactics_Command_Name_4 };
-
-            for (int _i = 0; _i < instance->players_tactics_command_nums.Num(); _i++)
+    
+    // *** æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰UIè¡¨ç¤º ***
+    if (_instance) {
+        if (_instance->players_tactics_command_nums.Num() > 0) { // ã‚ªãƒ¼ã‚°ãƒ¡ãƒ³ãƒˆãŒã‚ã‚‹å ´åˆ
+            for (int _i = 0; _i < _instance->players_tactics_command_nums.Num(); _i++)
             {
-                TArray<FString> _texts = C_Common::GetTacticsCommandTexts(instance->players_tactics_command_nums[_i]); // ƒI[ƒOƒƒ“ƒgƒeƒLƒXƒg
-                tacticsCommandNameBlanks[_i]->SetText(FText::FromString(_texts[0])); // *–¼‘OƒZƒbƒg
+                // -- ãƒãƒ¼ãƒ ã‚»ãƒƒãƒˆ --
+                TArray<FString> _texts = C_Common::GetTacticsCommandTexts(_instance->players_tactics_command_nums[_i]); // ã‚³ãƒãƒ³ãƒ‰ãƒ†ã‚­ã‚¹ãƒˆ
+                tacticsCommandNameBlanks[_i]->SetText(FText::FromString(_texts[0])); // åå‰ã‚»ãƒƒãƒˆ
+                // --
+                
+                // -- ã‚¹ã‚³ã‚¢ã‚»ãƒƒãƒˆ --
+                C_Common::FTacticsCommand _value = C_Common::GetTacticsCommandValue(_instance->players_tactics_command_nums[_i]); // ã‚³ãƒãƒ³ãƒ‰å€¤
+                
+                // â—ã‚¿ã‚¤ãƒ—åˆ¥ã«ã‚¹ã‚³ã‚¢è¨ˆç®—ã¨ãƒœãƒ¼ãƒ€ãƒ¼ã‚«ãƒ©ãƒ¼å¤‰æ›´
+                int _score = 0; // ã‚¹ã‚³ã‚¢
+                if (_value.type == 1) { // ã‚µã‚¤ãƒ‰
+                    _score = _value.score * _instance->player_side_break_abilty; // ã‚µã‚¤ãƒ‰çªç ´ (ã‚¹ã‚³ã‚¢è¨ˆç®—)
+                    tacticsCommandBorders[_i]->SetBrushColor(SIDE_BREAK_BORDER_COLOR); // ãƒœãƒ¼ãƒ€ãƒ¼è‰²å¤‰æ›´
+                }
+                else if (_value.type == 2) { // ãƒ©ã‚¤ãƒ³
+                    _score = _value.score * _instance->player_physical_abilty; // ä½“åŠ› (ã‚¹ã‚³ã‚¢è¨ˆç®—)
+                    tacticsCommandBorders[_i]->SetBrushColor(PHISICAL_BORDER_COLOR); // ãƒœãƒ¼ãƒ€ãƒ¼è‰²å¤‰æ›´
+                }
+                else { // ãƒ–ãƒ­ãƒƒã‚¯
+                    _score = _value.score * _instance->player_press_resistance_abilty; // ãƒ—ãƒ¬ã‚¹è€æ€§ (ã‚¹ã‚³ã‚¢è¨ˆç®—)
+                    tacticsCommandBorders[_i]->SetBrushColor(PRESS_RESISTANCE_BORDER_COLOR); // ãƒœãƒ¼ãƒ€ãƒ¼è‰²å¤‰æ›´
+                }
+                tacticsCommandScoreBlanks[_i]->SetText(FText::FromString(FString::FromInt(_score))); // *ã‚¹ã‚³ã‚¢ã‚»ãƒƒãƒˆ
+                // --
+                
+                // -- UIè¡¨ç¤º --
+                tacticsCommandButtons[_i]->SetVisibility(ESlateVisibility::Visible); // ãƒœã‚¿ãƒ³
+                tacticsCommandBorders[_i]->SetVisibility(ESlateVisibility::Visible); // ãƒœãƒ¼ãƒ€ãƒ¼
+                // --
             }
         }
     }
     // ***
+
+    // *** æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨åˆ¶é™(ãƒœãƒ¼ãƒ«ä¿æŒãƒ»éä¿æŒ) ***
+    UpdateEnableTacticsCommand();
+    // ***
+
+    // *** æ•µã®ã‚³ãƒãƒ³ãƒ‰æ›´æ–° **
+    UpdateEnemyTacticsCommand();
+    // ***
+
 }
 
-// ‡ŠJnƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+// è©¦åˆé–‹å§‹ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 void UC_Game_Field_UI::MatchStartButtonClicked()
 {
 }
 
-// ípƒRƒ}ƒ“ƒh1ƒNƒŠƒbƒN
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰1ã‚¯ãƒªãƒƒã‚¯
 void UC_Game_Field_UI::TacticsCommand1Clicked()
 {
-    UKismetSystemLibrary::PrintString(this, "1", true, true, FColor::Cyan, 2.f, TEXT("None"));
+    UKismetSystemLibrary::PrintString(this, "tactick command 1 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
     
-    // *** ‘Îíˆ— ***
+    // -- é¸æŠã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ --
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance) {
+        selectPlayerTacticsCommand = _instance->players_tactics_command_nums[0]; // ã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ
+    }
+    // --
+    
+    // -- å¯¾æˆ¦å‡¦ç† --
+    BattlePhase();
+    // --
+}
+
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰2ã‚¯ãƒªãƒƒã‚¯
+void UC_Game_Field_UI::TacticsCommand2Clicked()
+{
+    UKismetSystemLibrary::PrintString(this, "tactics command 2 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+    // -- é¸æŠã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ --
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance) {
+        selectPlayerTacticsCommand = _instance->players_tactics_command_nums[1]; // ã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ
+    }
+    // --
+    
+    // *** å¯¾æˆ¦å‡¦ç† ***
     BattlePhase();
     // ***
 }
 
-// ípƒRƒ}ƒ“ƒh2ƒNƒŠƒbƒN
-void UC_Game_Field_UI::TacticsCommand2Clicked()
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰3ã‚¯ãƒªãƒƒã‚¯
+void UC_Game_Field_UI::TacticsCommand3Clicked()
 {
-    UKismetSystemLibrary::PrintString(this, "tactick 2 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
+    UKismetSystemLibrary::PrintString(this, "tactick command 3 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
 
-    UGameplayStatics::OpenLevel(GetWorld(), TEXT("Route")); // ƒ‹[ƒgMAP‚Ö(‰¼)
-
-    // *** ‡ƒ‰ƒEƒ“ƒh(ŒˆŸ‚Æ‚©‚Ì)ƒZƒbƒg ***
-    UMy_Game_Instance* instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
-    if (instance)
-    {
-        instance->match_round++; // Ÿ‚Ìƒ‰ƒEƒ“ƒh
+    // -- é¸æŠã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ --
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance) {
+        selectPlayerTacticsCommand = _instance->players_tactics_command_nums[2]; // ã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ
     }
+    // --
+    
+    // *** å¯¾æˆ¦å‡¦ç† ***
+    BattlePhase();
     // ***
 }
 
-// ípƒRƒ}ƒ“ƒh3ƒNƒŠƒbƒN
-void UC_Game_Field_UI::TacticsCommand3Clicked()
-{
-    UKismetSystemLibrary::PrintString(this, "3", true, true, FColor::Cyan, 2.f, TEXT("None"));
-}
-
-// ípƒRƒ}ƒ“ƒh4ƒNƒŠƒbƒN
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰4ã‚¯ãƒªãƒƒã‚¯
 void UC_Game_Field_UI::TacticsCommand4Clicked()
 {
-    UKismetSystemLibrary::PrintString(this, "4", true, true, FColor::Cyan, 2.f, TEXT("None"));
+    UKismetSystemLibrary::PrintString(this, "tactick command 4 button", true, true, FColor::Cyan, 2.f, TEXT("None"));
+
+    // -- é¸æŠã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ --
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance) {
+        selectPlayerTacticsCommand = _instance->players_tactics_command_nums[3]; // ã‚³ãƒãƒ³ãƒ‰ã‚»ãƒƒãƒˆ
+    }
+    // --
+    
+    // *** å¯¾æˆ¦å‡¦ç† ***
+    BattlePhase();
+    // ***
 }
 
-// ‘Îíˆ—
+// å¯¾æˆ¦å‡¦ç†
 void UC_Game_Field_UI::BattlePhase()
 {
-    // *** ƒ_ƒ[ƒWæ“¾ ***
+    // *** ãƒ€ãƒ¡ãƒ¼ã‚¸å–å¾— ***
     int _damage = GetDanage();
     // ***
     
-    // *** HPXV ***
+    // *** HPæ›´æ–° ***
     UpdateHP(_damage);
     // ***
 
-    // *** ƒ‰ƒEƒ“ƒhXVAˆ— ***
-    //  ¨HP‚ª0‚É‚È‚ê‚Î”­‰Î
+    // *** ãƒ©ã‚¦ãƒ³ãƒ‰æ›´æ–°æ™‚ã€å‡¦ç† ***
+    //  â†’HPãŒ0ã«ãªã‚Œã°ç™ºç«
     int _myHp = My_HP_Bar->GetPercent() * 100; // myHP
-    if (_myHp <= 0) { // ƒvƒŒƒCƒ„[HP‚ª0‚Ìê‡A
+    if (_myHp <= 0) { // -- ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼HPãŒ0ã®å ´åˆ --
 
-        // * ƒ|ƒCƒ“ƒgXV (“G‘¤‚Ì) *
-        // Z”XV
+        // * ãƒã‚¤ãƒ³ãƒˆæ›´æ–° (æ•µå´ã®) *
+        // ã€‡æ•°æ›´æ–°
         enemyPoint++;
-        // ZFƒZƒbƒg
-        if (enemyPoint <= 1) { // ƒ|ƒCƒ“ƒg1ˆÈ‰º‚©
+        // ã€‡è‰²ã‚»ãƒƒãƒˆ
+        if (enemyPoint <= 1) { // ãƒã‚¤ãƒ³ãƒˆ1ä»¥ä¸‹ã‹
             // Point 1
             Enemy_Point_1->SetBrushColor(POINT_COLOR);
         }
@@ -167,38 +242,46 @@ void UC_Game_Field_UI::BattlePhase()
         }
         // *
 
-        // * ‡I—¹ˆ— *
+        // * è©¦åˆçµ‚äº†æ™‚å‡¦ç† *
         if (enemyPoint >= 2) {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("Opening")); // ƒI[ƒvƒjƒ“ƒOMAP‚Ö
+            UGameplayStatics::OpenLevel(GetWorld(), TEXT("Opening")); // ã‚ªãƒ¼ãƒ—ãƒ‹ãƒ³ã‚°MAPã¸
 
             return;
         }
         // *
 
-        // * HPƒŠƒZƒbƒg (ƒvƒŒƒCƒ„[‘¤‚Ì) *
-        My_HP_Bar->SetPercent(1.0f); // HP’l
+        // * HPãƒªã‚»ãƒƒãƒˆ (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å´ã®) *
+        My_HP_Bar->SetPercent(1.0f); // HPå€¤
         FString _myHpText = "100" + HP_END_TEXT;
-        My_HP_Text->SetText(FText::FromString(_myHpText)); // HPƒeƒLƒXƒg
+        My_HP_Text->SetText(FText::FromString(_myHpText)); // HPãƒ†ã‚­ã‚¹ãƒˆ
         // *
 
-        // * ƒ{[ƒ‹•ÛÒEƒAƒCƒRƒ“XV *
+        // * ãƒœãƒ¼ãƒ«ä¿æŒè€…ãƒ»ã‚¢ã‚¤ã‚³ãƒ³æ›´æ–° *
         isMyBall = !isMyBall;
         UpdateBallPossessIcon();
         // *
 
-        // * ƒ‰ƒEƒ“ƒh”XV *
+        // * æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨åˆ¶é™(ãƒœãƒ¼ãƒ«ä¿æŒãƒ»éä¿æŒ) *
+        UpdateEnableTacticsCommand();
+        // *
+
+        // * ãƒ©ã‚¦ãƒ³ãƒ‰æ•°æ›´æ–° *
         UpdateRoundNum();
+        // *
+
+        // * æ•µã®ã‚³ãƒãƒ³ãƒ‰æ›´æ–° *
+        UpdateEnemyTacticsCommand();
         // *
     }
 
-    int _enemyHp = Enemy_HP_Bar->GetPercent() * 100; // “GHP
-    if (_enemyHp <= 0) { // “GHP‚ª0‚Ìê‡A
+    int _enemyHp = Enemy_HP_Bar->GetPercent() * 100; // æ•µHP
+    if (_enemyHp <= 0) { // -- æ•µHPãŒ0ã®å ´åˆ --
 
-        //  * ƒ|ƒCƒ“ƒgXV (ƒvƒŒƒCƒ„[‘¤‚Ì) *
-        // Zƒ|ƒCƒ“ƒg”XV
+        //  * ãƒã‚¤ãƒ³ãƒˆæ›´æ–° (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å´ã®) *
+        // ã€‡ãƒã‚¤ãƒ³ãƒˆæ•°æ›´æ–°
         myPoint++;
-        // ZFƒZƒbƒg
-        if (myPoint <= 1) { // ƒ|ƒCƒ“ƒg1ˆÈ‰º‚©
+        // ã€‡è‰²ã‚»ãƒƒãƒˆ
+        if (myPoint <= 1) { // ãƒã‚¤ãƒ³ãƒˆ1ä»¥ä¸‹ã‹
             // Point 1
             My_Point_1->SetBrushColor(POINT_COLOR);
         }
@@ -208,105 +291,216 @@ void UC_Game_Field_UI::BattlePhase()
         }
         // *
 
-        //  * ‡I—¹ˆ— *
+        //  * è©¦åˆçµ‚äº†æ™‚å‡¦ç† *
         if (myPoint >= 2) {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("Route")); // ƒ‹[ƒgMAP‚Ö
+            
+            // â—è©¦åˆãƒ©ã‚¦ãƒ³ãƒ‰(æ±ºå‹ã¨ã‹ã®)æ›´æ–°
+            UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+            if (_instance)
+            {
+                _instance->match_round++; // æ¬¡ã®ãƒ©ã‚¦ãƒ³ãƒ‰
+            }
+
+            UGameplayStatics::OpenLevel(GetWorld(), TEXT("Route")); // ãƒ«ãƒ¼ãƒˆMAPã¸
 
             return;
         }
         // *
 
-        // * HPƒŠƒZƒbƒg (“G‘¤‚Ì) *
-        Enemy_HP_Bar->SetPercent(1.0f); // HP’l
+        // * HPãƒªã‚»ãƒƒãƒˆ (æ•µå´ã®) *
+        Enemy_HP_Bar->SetPercent(1.0f); // HPå€¤
         FString _enemyHpText = "100" + HP_END_TEXT;
-        Enemy_HP_Text->SetText(FText::FromString(_enemyHpText)); // HPƒeƒLƒXƒg
+        Enemy_HP_Text->SetText(FText::FromString(_enemyHpText)); // HPãƒ†ã‚­ã‚¹ãƒˆ
         // *
 
-        // * ƒ{[ƒ‹•ÛÒEƒAƒCƒRƒ“XV *
+        // * ãƒœãƒ¼ãƒ«ä¿æŒè€…ãƒ»ã‚¢ã‚¤ã‚³ãƒ³æ›´æ–° *
         isMyBall = !isMyBall;
         UpdateBallPossessIcon();
         // *
 
-        // * ƒ‰ƒEƒ“ƒh”XV *
+        // * æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨åˆ¶é™(ãƒœãƒ¼ãƒ«ä¿æŒãƒ»éä¿æŒ) *
+        UpdateEnableTacticsCommand();
+        // *
+
+        // * ãƒ©ã‚¦ãƒ³ãƒ‰æ•°æ›´æ–° *
         UpdateRoundNum();
+        // *
+
+        // * æ•µã®ã‚³ãƒãƒ³ãƒ‰æ›´æ–° *
+        UpdateEnemyTacticsCommand();
         // *
     }
 }
 
-// HP’l‚ğXV
+// HPå€¤ã‚’æ›´æ–°
 void UC_Game_Field_UI::UpdateHP(int damage)
 {
-    // XV‚·‚éHPƒo[æ“¾
-    UProgressBar* _HPBar = nullptr; // HPƒo[
-    UTextBlock* _HPText = nullptr; // HPƒeƒLƒXƒg
-    if (damage > 0) { // ‚Ç‚Á‚¿‚Ìƒ_ƒ[ƒW—Ê‚ª‘½‚¢‚©
-        // “G‚Éƒ_ƒ[ƒW‚ğ—^‚¦‚é
+    // æ›´æ–°ã™ã‚‹HPãƒãƒ¼å–å¾—
+    UProgressBar* _HPBar = nullptr; // HPãƒãƒ¼
+    UTextBlock* _HPText = nullptr; // HPãƒ†ã‚­ã‚¹ãƒˆ
+    if (damage > 0) { // ã©ã£ã¡ã®ãƒ€ãƒ¡ãƒ¼ã‚¸é‡ãŒå¤šã„ã‹
+        // æ•µã«ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹
         _HPBar = Enemy_HP_Bar;
         _HPText = Enemy_HP_Text;
     }
     else {
-        // ©•ª‚ªƒ_ƒ[ƒW‚ğó‚¯‚é
+        // è‡ªåˆ†ãŒãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å—ã‘ã‚‹
         _HPBar = My_HP_Bar;
         _HPText = My_HP_Text;
     }
     // ***
     
-    // *** HP’lƒZƒbƒg ***
-    int _currentHp = _HPBar->GetPercent() * 100; // Œ»İ‚ÌHP
-    // HP’l‚ğXV
-    damage = FMath::Abs(damage); // ³‚Ì”‚Ö•ÏŠ·
-    int _newHp = _currentHp - damage; // XVŒãHP
-    // HP’l‚ğƒZƒbƒg
-    float f_newHp = float(_newHp) / 100; // float‚Ö•ÏŠ·
+    // *** HPå€¤ã‚»ãƒƒãƒˆ ***
+    int _currentHp = _HPBar->GetPercent() * 100; // ç¾åœ¨ã®HP
+    // HPå€¤ã‚’æ›´æ–°
+    damage = FMath::Abs(damage); // æ­£ã®æ•°ã¸å¤‰æ›
+    int _newHp = _currentHp - damage; // æ›´æ–°å¾ŒHP
+    // HPå€¤ã‚’ã‚»ãƒƒãƒˆ
+    float f_newHp = float(_newHp) / 100; // floatã¸å¤‰æ›
     _HPBar->SetPercent(f_newHp);
     // ***
 
-    // *** HPƒeƒLƒXƒgƒZƒbƒg ***
+    // *** HPãƒ†ã‚­ã‚¹ãƒˆã‚»ãƒƒãƒˆ ***
     FString _HPTextValue = FString::FromInt(_newHp) + HP_END_TEXT;
-    _HPText->SetText(FText::FromString(_HPTextValue)); // ƒeƒLƒXƒgXV
+    _HPText->SetText(FText::FromString(_HPTextValue)); // ãƒ†ã‚­ã‚¹ãƒˆæ›´æ–°
     // ***
 }
 
-// ƒ‰ƒEƒ“ƒh”XVEƒZƒbƒg
+// ãƒ©ã‚¦ãƒ³ãƒ‰æ•°æ›´æ–°ãƒ»ã‚»ãƒƒãƒˆ
 void UC_Game_Field_UI::UpdateRoundNum()
 {
-    // -- XV --
+    // -- æ›´æ–° --
     round++;
 
-    // -- ƒZƒbƒg --
+    // -- ã‚»ãƒƒãƒˆ --
     FString _roundText = ROUND_TOP_TEXT + FString::FromInt(round);
     Rount_Text->SetText(FText::FromString(_roundText));
 }
 
-// ƒ{[ƒ‹•ÛƒAƒCƒRƒ“XV
+// ãƒœãƒ¼ãƒ«ä¿æŒã‚¢ã‚¤ã‚³ãƒ³æ›´æ–°
 void UC_Game_Field_UI::UpdateBallPossessIcon()
 {
     if (isMyBall) {
-        // ƒvƒŒƒCƒ„[
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
         My_Ball_Image->SetOpacity(1.0f);
         Enemy_Ball_Image->SetOpacity(0);
         Abilty_Erea_My_Ball_Image->SetOpacity(1.0f);
     }
     else {
-        // “G
+        // æ•µ
         My_Ball_Image->SetOpacity(0);
         Enemy_Ball_Image->SetOpacity(1.0f);
         Abilty_Erea_My_Ball_Image->SetOpacity(0);
     }
 }
 
-// ƒ_ƒ[ƒWŒvZEæ“¾
-// | ƒXƒe[ƒ^ƒX”½‰f–¢ |
+// ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—ãƒ»å–å¾—
+// | è¿”ã‚Šå€¤: + = æ•µã¸ã®ãƒ€ãƒ¡ãƒ¼ã‚¸, - = ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸ã®ãƒ€ãƒ¡ãƒ¼ã‚¸ |
 int UC_Game_Field_UI::GetDanage()
 {
-    const int MY_COMMAND_DAMAGE = 30; // *b’è (ŒÅ’è’l‚É‚·‚é)
-    const int ENEMY_COMMAND_DAMAGE = 30; // *b’è (ŒÅ’è’l‚É‚·‚é)
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance == nullptr) return 0;
+    
+    C_Common::FTacticsCommand _playerCommandValue = C_Common::GetTacticsCommandValue(selectPlayerTacticsCommand); // ã‚³ãƒãƒ³ãƒ‰å€¤ (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼)
+    C_Common::FTacticsCommand _enemyCommandValue = C_Common::GetTacticsCommandValue(enemyTacticsCommand); // ã‚³ãƒãƒ³ãƒ‰å€¤ (æ•µ)
 
-    // *** ƒ_ƒ[ƒWŒvZ ***
-    int _myDamage = MY_COMMAND_DAMAGE; // ©•ª‚Ìƒ_ƒ[ƒW—Ê
-    int _enemyDamage = ENEMY_COMMAND_DAMAGE * 3; // ‘Šè‚Ìƒ_ƒ[ƒW—Ê
-    int _damage = _myDamage - _enemyDamage; // ƒ_ƒ[ƒWŒvZ
+    // -- ã‚¹ã‚³ã‚¢è¨ˆç®— --
+    // â—ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    int _playerScore = 0; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¹ã‚³ã‚¢
+    if (_playerCommandValue.type == 1) { // ã‚µã‚¤ãƒ‰ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // ã‚µã‚¤ãƒ‰çªç ´ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _playerScore = _playerCommandValue.score * _instance->player_side_break_abilty; 
+    }
+    else if (_playerCommandValue.type == 2) { // ãƒ©ã‚¤ãƒ³ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // èµ°åŠ›ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _playerScore = _playerCommandValue.score * _instance->player_physical_abilty;
+    }
+    else { // ãƒ–ãƒ­ãƒƒã‚¯ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // ãƒ—ãƒ¬ã‚¹è€æ€§ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _playerScore = _playerCommandValue.score * _instance->player_press_resistance_abilty;
+    }
+
+    // â—æ•µ
+    int _enemyScore = 0; // æ•µã‚¹ã‚³ã‚¢
+    if (_enemyCommandValue.type == 1) { // ã‚µã‚¤ãƒ‰ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // ã‚µã‚¤ãƒ‰çªç ´ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _enemyScore = _enemyCommandValue.score *enemySideBreakAbilty;
+    }
+    else if (_enemyCommandValue.type == 2) { // ãƒ©ã‚¤ãƒ³ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // èµ°åŠ›ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _enemyScore = _enemyCommandValue.score * enemyPhisicalAbilty;
+    }
+    else { // ãƒ–ãƒ­ãƒƒã‚¯ (ã‚¿ã‚¤ãƒ—ã‚³ãƒãƒ³ãƒ‰)
+        // ãƒ—ãƒ¬ã‚¹è€æ€§ã‚¢ãƒ“ãƒªãƒ†ã‚£ (ãƒãƒ•)
+        _enemyScore = _enemyCommandValue.score *enemyPressResistanceAbilty;
+    }
+    // --
+
+    // -- æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãŒãªã„å ´åˆ --
+    if (selectPlayerTacticsCommand == 0) _playerScore = NONE_TACTICS_COMMAND_SCORE;
+    if (enemyTacticsCommand == 0) _enemyScore = NONE_TACTICS_COMMAND_SCORE;
+    // --
+
+    // -- ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®— --
+    int _damage = _playerScore - _enemyScore;
+    // --
     
     
     return _damage;
+}
+
+// æ•µã®æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰æ›´æ–°
+void UC_Game_Field_UI::UpdateEnemyTacticsCommand()
+{
+    if (isMyBall) {
+        // ãƒœãƒ¼ãƒ«éä¿æŒ
+        enemyTacticsCommand = C_Common::LOW_BLOCK_COMMAND_NO;
+    }
+    else {
+        // ãƒœãƒ¼ãƒ«ä¿æŒ
+        enemyTacticsCommand = C_Common::LINE_BREAK_COMMAND_NO;
+    }
+}
+
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨åˆ¶é™(ãƒœãƒ¼ãƒ«ä¿æŒãƒ»éä¿æŒ)ã‚’æ›´æ–°
+void UC_Game_Field_UI::UpdateEnableTacticsCommand()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+
+    if (_instance) {
+        for (int _i = 0; _i < _instance->players_tactics_command_nums.Num(); _i++) {
+            C_Common::FTacticsCommand _value = C_Common::GetTacticsCommandValue(_instance->players_tactics_command_nums[_i]); // ã‚³ãƒãƒ³ãƒ‰å€¤
+
+            if (isMyBall) {
+                // ãƒœãƒ¼ãƒ«ä¿æŒæ™‚
+                if (_value.isOnBall) {
+                    tacticsCommandButtons[_i]->SetIsEnabled(true); // ä½¿ç”¨å¯
+                    // ãƒ†ã‚­ã‚¹ãƒˆã‚«ãƒ©ãƒ¼
+                    tacticsCommandNameBlanks[_i]->SetColorAndOpacity(FColor::White);
+                    tacticsCommandScoreBlanks[_i]->SetColorAndOpacity(FColor::White);
+                }
+                else {
+                    tacticsCommandButtons[_i]->SetIsEnabled(false); // ä½¿ç”¨ä¸å¯
+                    // ãƒ†ã‚­ã‚¹ãƒˆã‚«ãƒ©ãƒ¼
+                    tacticsCommandNameBlanks[_i]->SetColorAndOpacity(DISABLE_BORDER_TEXT_COLOR);
+                    tacticsCommandScoreBlanks[_i]->SetColorAndOpacity(DISABLE_BORDER_TEXT_COLOR);
+                }
+            }
+            else {
+                // ãƒœãƒ¼ãƒ«éä¿æŒ
+                if (_value.isOnBall) {
+                    tacticsCommandButtons[_i]->SetIsEnabled(false); // ä½¿ç”¨ä¸å¯
+                    // ãƒ†ã‚­ã‚¹ãƒˆã‚«ãƒ©ãƒ¼
+                    tacticsCommandNameBlanks[_i]->SetColorAndOpacity(DISABLE_BORDER_TEXT_COLOR);
+                    tacticsCommandScoreBlanks[_i]->SetColorAndOpacity(DISABLE_BORDER_TEXT_COLOR);
+                }
+                else {
+                    tacticsCommandButtons[_i]->SetIsEnabled(true); // ä½¿ç”¨å¯
+                    // ãƒ†ã‚­ã‚¹ãƒˆã‚«ãƒ©ãƒ¼
+                    tacticsCommandNameBlanks[_i]->SetColorAndOpacity(FColor::White);
+                    tacticsCommandScoreBlanks[_i]->SetColorAndOpacity(FColor::White);
+                }
+            }
+        }
+    }
 }

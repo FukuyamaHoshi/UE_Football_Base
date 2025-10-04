@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Common.h"
@@ -12,53 +12,53 @@ C_Common::~C_Common()
 {
 }
 
-// ípƒRƒ}ƒ“ƒhƒeƒLƒXƒgæ“¾
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãƒ†ã‚­ã‚¹ãƒˆå–å¾—
 TArray<FString> C_Common::GetTacticsCommandTexts(int tacticsCommandNo)
 {
 	TArray<FString> _orgumentTexts = {};
 
 	switch (tacticsCommandNo)
 	{
-	case 1: // ƒTƒCƒhƒAƒ^ƒbƒN
-		_orgumentTexts.Add("ƒTƒCƒhƒAƒ^ƒbƒN");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (•Û)");
-		_orgumentTexts.Add("ƒTƒCƒh‚©‚çƒS[ƒ‹‚ÉŒü‚©‚¤B");
+	case SIDE_ATTACK_COMMAND_NO: // ã‚µã‚¤ãƒ‰ã‚¢ã‚¿ãƒƒã‚¯
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰ã‚¢ã‚¿ãƒƒã‚¯"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (ä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰ã‹ã‚‰ã‚´ãƒ¼ãƒ«ã«å‘ã‹ã†ã€‚"));
 
 		break;
-	case 2: // ƒnƒCƒvƒŒƒX
-		_orgumentTexts.Add("ƒnƒCƒvƒŒƒX");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (”ñ•Û)");
-		_orgumentTexts.Add("‘Oü‚©‚ç‘Šè‚ÉƒvƒŒƒbƒVƒƒ[‚ğ‚©‚¯‚éB");
+	case HIGH_LINE_COMMAND_NO: // ãƒã‚¤ãƒ©ã‚¤ãƒ³
+		_orgumentTexts.Add(TEXT("ãƒã‚¤ãƒ©ã‚¤ãƒ³"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (éä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã‚’é«˜ãä¿ã¡ã€ã‚´ãƒ¼ãƒ«ã‚’å®ˆã‚‹ã€‚"));
 
 		break;
-	case 3: // ƒ‰ƒCƒ“ƒuƒŒƒCƒN
-		_orgumentTexts.Add("ƒ‰ƒCƒ“ƒuƒŒƒCƒN");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (•Û)");
-		_orgumentTexts.Add("‘Šè‚Ì— ‚ÌƒXƒy[ƒX‚ğ‘_‚¤B");
+	case LINE_BREAK_COMMAND_NO: // ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯
+		_orgumentTexts.Add(TEXT("ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (ä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("ç›¸æ‰‹ã®è£ã®ã‚¹ãƒšãƒ¼ã‚¹ã‚’ç‹™ã†ã€‚"));
 
 		break;
-	case 4: // ƒ[ƒuƒƒbƒN
-		_orgumentTexts.Add("ƒ[ƒuƒƒbƒN");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (”ñ•Û)");
-		_orgumentTexts.Add("©w‚ÌƒS[ƒ‹‚Ü‚Åˆø‚¢‚ÄƒS[ƒ‹‚ğç‚éB");
+	case LOW_BLOCK_COMMAND_NO: // ãƒ­ãƒ¼ãƒ–ãƒ­ãƒƒã‚¯
+		_orgumentTexts.Add(TEXT("ãƒ­ãƒ¼ãƒ–ãƒ­ãƒƒã‚¯"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (éä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("è‡ªé™£ã®ã‚´ãƒ¼ãƒ«ã¾ã§å¼•ã„ã¦ã‚´ãƒ¼ãƒ«ã‚’å®ˆã‚‹ã€‚"));
 
 		break;
-	case 5: // GKƒrƒ‹ƒhƒAƒbƒv
-		_orgumentTexts.Add("GKƒrƒ‹ƒhƒAƒbƒv");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (•Û)");
-		_orgumentTexts.Add("GK(ƒS[ƒ‹ƒL[ƒp[)‚©‚çƒ{[ƒ‹‚ğ‚Â‚È‚¬AƒS[ƒ‹‚ğ‘_‚¤B");
+	case GK_BUILD_UP_COMMAND_NO: // GKãƒ“ãƒ«ãƒ‰ã‚¢ãƒƒãƒ—
+		_orgumentTexts.Add(TEXT("GKãƒ“ãƒ«ãƒ‰ã‚¢ãƒƒãƒ—"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (ä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("GK(ã‚´ãƒ¼ãƒ«ã‚­ãƒ¼ãƒ‘ãƒ¼)ã‹ã‚‰ãƒœãƒ¼ãƒ«ã‚’ã¤ãªãã€ã‚´ãƒ¼ãƒ«ã‚’ç‹™ã†ã€‚"));
 
 		break;
-	case 6: // ƒTƒCƒhˆ³k
-		_orgumentTexts.Add("ƒTƒCƒhˆ³k");
-		_orgumentTexts.Add("ípƒRƒ}ƒ“ƒh (”ñ•Û)");
-		_orgumentTexts.Add("ƒTƒCƒh‚Éƒ{[ƒ‹‚ª‚ ‚éê‡A‚»‚ÌƒTƒCƒh‚Öl‚ğW’†‚³‚¹‚éB");
+	case SIDE_COMPLESSION_COMMAND_NO: // ã‚µã‚¤ãƒ‰åœ§ç¸®
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰åœ§ç¸®"));
+		_orgumentTexts.Add(TEXT("æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ (éä¿æŒ)"));
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰ã«ãƒœãƒ¼ãƒ«ãŒã‚ã‚‹å ´åˆã€ãã®ã‚µã‚¤ãƒ‰ã¸äººã‚’é›†ä¸­ã•ã›ã‚‹ã€‚"));
 
 		break;
 	default:
-		_orgumentTexts.Add("error");
-		_orgumentTexts.Add("error");
-		_orgumentTexts.Add("error");
+		_orgumentTexts.Add("tactics command error");
+		_orgumentTexts.Add("tactics command error");
+		_orgumentTexts.Add("tactics command error");
 
 		break;
 	}
@@ -66,29 +66,29 @@ TArray<FString> C_Common::GetTacticsCommandTexts(int tacticsCommandNo)
 	return _orgumentTexts;
 }
 
-// ƒXƒe[ƒ^ƒXƒRƒ}ƒ“ƒhƒeƒLƒXƒgæ“¾
+// ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒãƒ³ãƒ‰ãƒ†ã‚­ã‚¹ãƒˆå–å¾—
 TArray<FString> C_Common::GetStatusCommandTexts(int statusCommandNo)
 {
 	TArray<FString> _orgumentTexts = {};
 
 	switch (statusCommandNo)
 	{
-	case 1: // ƒTƒCƒh“Ë”j1UP
-		_orgumentTexts.Add("ƒTƒCƒh“Ë”j 1UP");
-		_orgumentTexts.Add("ƒXƒe[ƒ^ƒX");
-		_orgumentTexts.Add("ƒTƒCƒh“Ë”jƒXƒe[ƒ^ƒX‚ğ1UP‚³‚¹‚Ü‚·");
+	case 1: // ã‚µã‚¤ãƒ‰çªç ´1UP
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰çªç ´ 1UP"));
+		_orgumentTexts.Add(TEXT("ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹"));
+		_orgumentTexts.Add(TEXT("ã‚µã‚¤ãƒ‰çªç ´ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’1UPã•ã›ã¾ã™"));
 
 		break;
-	case 2: // ‘Ì—Í1UP
-		_orgumentTexts.Add("‘Ì—Í 1UP");
-		_orgumentTexts.Add("ƒXƒe[ƒ^ƒX");
-		_orgumentTexts.Add("‘Ì—ÍƒXƒe[ƒ^ƒX‚ğ1UP‚³‚¹‚Ü‚·");
+	case 2: // ä½“åŠ›1UP
+		_orgumentTexts.Add(TEXT("èµ°åŠ› 1UP"));
+		_orgumentTexts.Add(TEXT("ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹"));
+		_orgumentTexts.Add(TEXT("èµ°åŠ›ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’1UPã•ã›ã¾ã™"));
 
 		break;
-	case 3: // ƒvƒŒƒX‘Ï«1UP
-		_orgumentTexts.Add("ƒvƒŒƒX‘Ï« 1UP");
-		_orgumentTexts.Add("ƒXƒe[ƒ^ƒX");
-		_orgumentTexts.Add("ƒvƒŒƒX‘Ï«ƒXƒe[ƒ^ƒX‚ğ1UP‚³‚¹‚Ü‚·");
+	case 3: // ãƒ—ãƒ¬ã‚¹è€æ€§1UP
+		_orgumentTexts.Add(TEXT("ãƒ—ãƒ¬ã‚¹è€æ€§ 1UP"));
+		_orgumentTexts.Add(TEXT("ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹"));
+		_orgumentTexts.Add(TEXT("ãƒ—ãƒ¬ã‚¹è€æ€§ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’1UPã•ã›ã¾ã™"));
 
 		break;
 	default:
@@ -100,4 +100,59 @@ TArray<FString> C_Common::GetStatusCommandTexts(int statusCommandNo)
 	}
 
 	return _orgumentTexts;
+}
+
+// æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰å€¤å–å¾—
+C_Common::FTacticsCommand C_Common::GetTacticsCommandValue(int tacticsCommandNo)
+{
+	FTacticsCommand _tacticsCommand; // ã‚³ãƒãƒ³ãƒ‰å¤‰æ•°
+
+	switch (tacticsCommandNo)
+	{
+	case SIDE_ATTACK_COMMAND_NO: // ã‚µã‚¤ãƒ‰ã‚¢ã‚¿ãƒƒã‚¯
+		_tacticsCommand.score = 30;
+		_tacticsCommand.type = 1; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = true;
+
+		break;
+	case HIGH_LINE_COMMAND_NO: // ãƒã‚¤ãƒ©ã‚¤ãƒ³
+		_tacticsCommand.score = 15;
+		_tacticsCommand.type = 2; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = false;
+
+		break;
+	case LINE_BREAK_COMMAND_NO: // ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯
+		_tacticsCommand.score = 30;
+		_tacticsCommand.type = 2; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = true;
+
+		break;
+	case LOW_BLOCK_COMMAND_NO: // ãƒ­ãƒ¼ãƒ–ãƒ­ãƒƒã‚¯
+		_tacticsCommand.score = 15;
+		_tacticsCommand.type = 3; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = false;
+
+		break;
+	case GK_BUILD_UP_COMMAND_NO: // GKãƒ“ãƒ«ãƒ‰ã‚¢ãƒƒãƒ—
+		_tacticsCommand.score = 30;
+		_tacticsCommand.type = 3; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = true;
+
+		break;
+	case SIDE_COMPLESSION_COMMAND_NO: // ã‚µã‚¤ãƒ‰åœ§ç¸®
+		_tacticsCommand.score = 30;
+		_tacticsCommand.type = 1; // ( 1.ã‚µã‚¤ãƒ‰, 2,.ãƒ©ã‚¤ãƒ³, 3.ãƒ–ãƒ­ãƒƒã‚¯ )
+		_tacticsCommand.isOnBall = false;
+
+		break;
+	default:
+		// errorã¯0ã«ã™ã‚‹
+		_tacticsCommand.score = 0;
+		_tacticsCommand.type = 0;
+		_tacticsCommand.isOnBall = true;
+
+		break;
+	}
+
+	return _tacticsCommand;
 }

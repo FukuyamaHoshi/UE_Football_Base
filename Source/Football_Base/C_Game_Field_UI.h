@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -21,14 +21,14 @@ class FOOTBALL_BASE_API UC_Game_Field_UI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-    virtual void NativeConstruct() override; // ƒRƒ“ƒXƒgƒ‰ƒNƒ^ override
+    virtual void NativeConstruct() override; // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ override
 
 protected:
-    // ********* ƒoƒCƒ“ƒh *********
-    // -- ‡ŠJnƒ{ƒ^ƒ“ --
+    // ********* ãƒã‚¤ãƒ³ãƒ‰ *********
+    // -- è©¦åˆé–‹å§‹ãƒœã‚¿ãƒ³ --
     UPROPERTY(meta = (BindWidget))
     UButton* Match_Start_Button;
-    // -- ípƒRƒ}ƒ“ƒh --
+    // -- æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ --
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_1;
     UPROPERTY(meta = (BindWidget))
@@ -36,11 +36,15 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_1;
     UPROPERTY(meta = (BindWidget))
+    UBorder* Tactics_Command_Border_1;
+    UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_2;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_2;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_2;
+    UPROPERTY(meta = (BindWidget))
+    UBorder* Tactics_Command_Border_2;
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_3;
     UPROPERTY(meta = (BindWidget))
@@ -48,12 +52,16 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_3;
     UPROPERTY(meta = (BindWidget))
+    UBorder* Tactics_Command_Border_3;
+    UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_4;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_4;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_4;
-    // -- HPƒo[ --
+    UPROPERTY(meta = (BindWidget))
+    UBorder* Tactics_Command_Border_4;
+    // -- HPãƒãƒ¼ --
     UPROPERTY(meta = (BindWidget))
     UProgressBar* My_HP_Bar;
     UPROPERTY(meta = (BindWidget))
@@ -62,7 +70,7 @@ protected:
     UProgressBar* Enemy_HP_Bar;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Enemy_HP_Text;
-    // -- ƒ|ƒCƒ“ƒg --
+    // -- ãƒã‚¤ãƒ³ãƒˆ --
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Point_1;
     UPROPERTY(meta = (BindWidget))
@@ -71,8 +79,8 @@ protected:
     UBorder* Enemy_Point_1;
     UPROPERTY(meta = (BindWidget))
     UBorder* Enemy_Point_2;
-    // -- ”\—Í’l --
-    // ƒTƒCƒh“Ë”j
+    // -- èƒ½åŠ›å€¤ --
+    // ã‚µã‚¤ãƒ‰çªç ´
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Side_Break_Abilty_Box_1;
     UPROPERTY(meta = (BindWidget))
@@ -83,7 +91,7 @@ protected:
     UBorder* My_Side_Break_Abilty_Box_4;
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Side_Break_Abilty_Box_5;
-    // ‘–—Í
+    // èµ°åŠ›
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Phisical_Abilty_Box_1;
     UPROPERTY(meta = (BindWidget))
@@ -94,7 +102,7 @@ protected:
     UBorder* My_Phisical_Abilty_Box_4;
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Phisical_Abilty_Box_5;
-    // ƒvƒŒƒX‘Ï«
+    // ãƒ—ãƒ¬ã‚¹è€æ€§
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Press_Resistance_Abilty_Box_1;
     UPROPERTY(meta = (BindWidget))
@@ -105,72 +113,90 @@ protected:
     UBorder* My_Press_Resistance_Abilty_Box_4;
     UPROPERTY(meta = (BindWidget))
     UBorder* My_Press_Resistance_Abilty_Box_5;
-    // ”\—Í’lƒeƒLƒXƒg
+    // èƒ½åŠ›å€¤ãƒ†ã‚­ã‚¹ãƒˆ
     UPROPERTY(meta = (BindWidget))
     UTextBlock* My_Side_Break_Abilty_Text;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* My_Phisical_Abilty_Text;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* My_Press_Resistance_Abilty_Text;
-    // ƒ‰ƒEƒ“ƒh
+    // ãƒ©ã‚¦ãƒ³ãƒ‰
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Rount_Text;
-    // ƒ{[ƒ‹
+    // ãƒœãƒ¼ãƒ«
     UPROPERTY(meta = (BindWidget))
     UImage* My_Ball_Image;
     UPROPERTY(meta = (BindWidget))
     UImage* Enemy_Ball_Image;
     UPROPERTY(meta = (BindWidget))
-    UImage* Abilty_Erea_My_Ball_Image; // ƒAƒrƒŠƒeƒBƒGƒŠƒA‰æ‘œ
-    // ƒ‰ƒEƒ“ƒh‚Ìó‘Ô
+    UImage* Abilty_Erea_My_Ball_Image; // ã‚¢ãƒ“ãƒªãƒ†ã‚£ã‚¨ãƒªã‚¢ç”»åƒ
+    // ãƒ©ã‚¦ãƒ³ãƒ‰ã®çŠ¶æ…‹
     //UPROPERTY(meta = (BindWidget))
     //UTextBlock* Round_State_Text;
     // **********************
 
-    // WigetŠÖ”
+    // Wigeté–¢æ•°
     UFUNCTION()
-    // ƒQ[ƒ€ƒXƒ^[ƒgƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+    // ã‚²ãƒ¼ãƒ ã‚¹ã‚¿ãƒ¼ãƒˆãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
     void MatchStartButtonClicked();
     UFUNCTION()
-    // ípƒRƒ}ƒ“ƒh1ƒNƒŠƒbƒN
+    // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰1ã‚¯ãƒªãƒƒã‚¯
     void TacticsCommand1Clicked();
     UFUNCTION()
-    // ípƒRƒ}ƒ“ƒh2ƒNƒŠƒbƒN
+    // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰2ã‚¯ãƒªãƒƒã‚¯
     void TacticsCommand2Clicked();
     UFUNCTION()
-    // ípƒRƒ}ƒ“ƒh3ƒNƒŠƒbƒN
+    // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰3ã‚¯ãƒªãƒƒã‚¯
     void TacticsCommand3Clicked();
     UFUNCTION()
-    // ípƒRƒ}ƒ“ƒh4ƒNƒŠƒbƒN
+    // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰4ã‚¯ãƒªãƒƒã‚¯
     void TacticsCommand4Clicked();
     
 private:
-    // ‘Îíˆ—
+    // å¯¾æˆ¦å‡¦ç†
     void BattlePhase();
-    // HP’l‚ğXV
+    // HPå€¤ã‚’æ›´æ–°
     void UpdateHP(int damage);
-    // ƒ‰ƒEƒ“ƒh”XV
+    // ãƒ©ã‚¦ãƒ³ãƒ‰æ•°æ›´æ–°
     void UpdateRoundNum();
-    // ƒ{[ƒ‹•ÛƒAƒCƒRƒ“XV
+    // ãƒœãƒ¼ãƒ«ä¿æŒã‚¢ã‚¤ã‚³ãƒ³æ›´æ–°
     void UpdateBallPossessIcon();
-    // ƒ_ƒ[ƒWŒvZEæ“¾
-    // | •Ô‚è’l = +: “G‚Öƒ_ƒ[ƒWA-: ƒvƒŒƒCƒ„[‚Öƒ_ƒ[ƒW |
-    // | **ƒXƒe[ƒ^ƒX”½‰f–¢ |
+    // ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—ãƒ»å–å¾—
+    // | è¿”ã‚Šå€¤ = +: æ•µã¸ãƒ€ãƒ¡ãƒ¼ã‚¸ã€-: ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸ãƒ€ãƒ¡ãƒ¼ã‚¸ |
+    // | **ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹åæ˜ æœª |
     int GetDanage();
+    // æ•µã®æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰æ›´æ–°
+    void UpdateEnemyTacticsCommand();
+    // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ã®ä½¿ç”¨åˆ¶é™(ãƒœãƒ¼ãƒ«ä¿æŒãƒ»éä¿æŒ)ã‚’æ›´æ–°
+    void UpdateEnableTacticsCommand();
 
-    int myPoint = 0; // ©•ª‚Ìƒ|ƒCƒ“ƒg”
-    int enemyPoint = 0; // “G‚Ìƒ|ƒCƒ“ƒg”
-    int round = 0; // ƒ‰ƒEƒ“ƒh”
-    const FString ROUND_TOP_TEXT = "ROUND"; // ƒ‰ƒEƒ“ƒhƒeƒLƒXƒg‚Ìæ“ª
-    bool isMyBall = true; // ƒ}ƒCƒ|[ƒ‹‚©
-    // ƒRƒ}ƒ“ƒh
-    TArray< UTextBlock*> tacticsCommandNameBlanks = {}; // ípƒJ[ƒh–¼‘OUI”z—ñ
-    const FString HP_END_TEXT = "/100"; // HPƒeƒLƒXƒg‚Ì––”ö
-    const FLinearColor POINT_COLOR = FLinearColor(FColor::FromHex("D2D2D2FF")); // ƒ|ƒCƒ“ƒg‚ÌF
-    // ”\—Í‚ÌF
-    const FLinearColor DEFAULT_ABILTY_COLOR = FLinearColor(FColor::FromHex("283B45FF")); // ƒfƒtƒHƒ‹ƒg (”\—Í‚È‚µ)
-    const FLinearColor SIDE_BREAK_ABILTY_COLOR = FLinearColor(FColor::FromHex("EDBD69FF")); // ƒTƒCƒh“Ë”j—Í
-    const FLinearColor PHISICAL_ABILTY_COLOR = FLinearColor(FColor::FromHex("63E2FDFF")); // ‘–—Í
-    const FLinearColor PRESS_RESISTANCE_ABILTY_COLOR = FLinearColor(FColor::FromHex("7366F0FF")); //ƒvƒŒƒX‘Ï«
-    const FString ABILTY_END_TEXT = "/5"; // ”\—ÍƒeƒLƒXƒg‚Ì––”ö
+    int myPoint = 0; // è‡ªåˆ†ã®ãƒã‚¤ãƒ³ãƒˆæ•°
+    int enemyPoint = 0; // æ•µã®ãƒã‚¤ãƒ³ãƒˆæ•°
+    int round = 0; // ãƒ©ã‚¦ãƒ³ãƒ‰æ•°
+    const FString ROUND_TOP_TEXT = "ROUND"; // ãƒ©ã‚¦ãƒ³ãƒ‰ãƒ†ã‚­ã‚¹ãƒˆã®å…ˆé ­
+    bool isMyBall = true; // ãƒã‚¤ãƒãƒ¼ãƒ«ã‹
+    int selectPlayerTacticsCommand = 0; // é¸æŠã—ãŸæˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰
+    const int NONE_TACTICS_COMMAND_SCORE = 20; // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãªã—ã®ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚¹ã‚³ã‚¢
+    // ã‚³ãƒãƒ³ãƒ‰
+    TArray< UTextBlock*> tacticsCommandNameBlanks = {}; // æˆ¦è¡“ã‚«ãƒ¼ãƒ‰åå‰UIé…åˆ—
+    TArray< UTextBlock*> tacticsCommandScoreBlanks = {}; // æˆ¦è¡“ã‚«ãƒ¼ãƒ‰ã‚¹ã‚³ã‚¢UIé…åˆ—
+    TArray< UBorder*> tacticsCommandBorders = {}; // æˆ¦è¡“ã‚«ãƒ¼ãƒ‰ãƒœãƒ¼ãƒ€ãƒ¼é…åˆ— (*è¡¨ç¤ºãƒ»éè¡¨ç¤ºã®ã¿)
+    TArray< UButton*> tacticsCommandButtons = {}; // æˆ¦è¡“ã‚«ãƒ¼ãƒ‰ãƒœã‚¿ãƒ³é…åˆ— (*è¡¨ç¤ºãƒ»éè¡¨ç¤ºã®ã¿)
+    const FString HP_END_TEXT = "/100"; // HPãƒ†ã‚­ã‚¹ãƒˆã®æœ«å°¾
+    const FLinearColor POINT_COLOR = FLinearColor(FColor::FromHex("D2D2D2FF")); // ãƒã‚¤ãƒ³ãƒˆã®è‰²
+    // èƒ½åŠ›ã®è‰²
+    const FLinearColor DEFAULT_ABILTY_COLOR = FLinearColor(FColor::FromHex("283B45FF")); // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ (èƒ½åŠ›ãªã—)
+    const FLinearColor SIDE_BREAK_ABILTY_COLOR = FLinearColor(FColor::FromHex("EDBD69FF")); // ã‚µã‚¤ãƒ‰çªç ´åŠ› (ã‚¹ãƒ†ã‚¤ã‚¿ã‚¹ãƒãƒ¼)
+    const FLinearColor PHISICAL_ABILTY_COLOR = FLinearColor(FColor::FromHex("63E2FDFF")); // èµ°åŠ› (ã‚¹ãƒ†ã‚¤ã‚¿ã‚¹ãƒãƒ¼)
+    const FLinearColor PRESS_RESISTANCE_ABILTY_COLOR = FLinearColor(FColor::FromHex("7366F0FF")); //ãƒ—ãƒ¬ã‚¹è€æ€§ (ã‚¹ãƒ†ã‚¤ã‚¿ã‚¹ãƒãƒ¼)
+    const FString ABILTY_END_TEXT = "/5"; // èƒ½åŠ›ãƒ†ã‚­ã‚¹ãƒˆã®æœ«å°¾
+    const FLinearColor SIDE_BREAK_BORDER_COLOR = FLinearColor(FColor::FromHex("8C6F3EFF")); // ã‚µã‚¤ãƒ‰çªç ´åŠ›(æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãƒœãƒ¼ãƒ€ãƒ¼)
+    const FLinearColor PHISICAL_BORDER_COLOR = FLinearColor(FColor::FromHex("3B8D9EFF")); // èµ°åŠ› (æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãƒœãƒ¼ãƒ€ãƒ¼)
+    const FLinearColor PRESS_RESISTANCE_BORDER_COLOR = FLinearColor(FColor::FromHex("713FD7FF")); // ãƒ—ãƒ¬ã‚¹è€æ€§ (æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãƒœãƒ¼ãƒ€ãƒ¼)
+    const FLinearColor DISABLE_BORDER_TEXT_COLOR = FLinearColor(FColor::FromHex("A5A5A5FF")); // ã‚³ãƒãƒ³ãƒ‰ä½¿ç”¨ä¸å¯ (æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰ãƒœãƒ¼ãƒ€ãƒ¼)
+    // æ•µã®ã‚³ãƒãƒ³ãƒ‰ãƒ»ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹
+    int enemyTacticsCommand = 0; // æˆ¦è¡“ã‚³ãƒãƒ³ãƒ‰
+    int enemySideBreakAbilty = 1; // ã‚µã‚¤ãƒ‰çªç ´
+    int enemyPhisicalAbilty = 1; // èµ°åŠ›
+    int enemyPressResistanceAbilty = 1; // ãƒ—ãƒ¬ã‚¹è€æ€§
 };
