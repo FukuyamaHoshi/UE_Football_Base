@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,7 +7,9 @@
 #include <Components/Button.h>
 #include <Components/Border.h>
 #include <Components/TextBlock.h>
+#include <Components/RetainerBox.h>
 #include "C_Route_UI.generated.h"
+
 
 /**
  * 
@@ -18,14 +20,16 @@ class FOOTBALL_BASE_API UC_Route_UI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override; // ƒRƒ“ƒXƒgƒ‰ƒNƒ^ override
+	// Sets default values for this actor's properties
+	UC_Route_UI(const FObjectInitializer& ObjectInitializer); // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ãƒ¼(æœ¬å½“ã®)
+	virtual void NativeConstruct() override; // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ override
 
 protected:
-	// ********* ƒoƒCƒ“ƒh *********
-	// -- Ÿ‚Ì‡ƒ{ƒ^ƒ“ --
+	// ********* ãƒã‚¤ãƒ³ãƒ‰ *********
+	// -- æ¬¡ã®è©¦åˆãƒœã‚¿ãƒ³ --
 	UPROPERTY(meta = (BindWidget))
-	UButton* Next_Match_Button;
-	// -- ‡Œ‹‰Ê(ƒ`[ƒ€–¼ƒ{ƒbƒNƒXAƒ`[ƒ€–¼ƒeƒLƒXƒg,“¾“_ƒeƒLƒXƒg) --
+	UButton* Next_Match_Button = nullptr;
+	// -- è©¦åˆçµæœ(ãƒãƒ¼ãƒ åãƒœãƒƒã‚¯ã‚¹ã€ãƒãƒ¼ãƒ åãƒ†ã‚­ã‚¹ãƒˆ,å¾—ç‚¹ãƒ†ã‚­ã‚¹ãƒˆ) --
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_1;
@@ -33,6 +37,8 @@ protected:
 	UTextBlock* Team_Text_1;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_1;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_1;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_2;
@@ -40,6 +46,8 @@ protected:
 	UTextBlock* Team_Text_2;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_2;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_2;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_3;
@@ -47,6 +55,8 @@ protected:
 	UTextBlock* Team_Text_3;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_3;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_3;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_4;
@@ -54,6 +64,8 @@ protected:
 	UTextBlock* Team_Text_4;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_4;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_4;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_5;
@@ -61,6 +73,8 @@ protected:
 	UTextBlock* Team_Text_5;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_5;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_5;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_6;
@@ -68,6 +82,8 @@ protected:
 	UTextBlock* Team_Text_6;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_6;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_6;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_7;
@@ -75,6 +91,8 @@ protected:
 	UTextBlock* Team_Text_7;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_7;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_7;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_8;
@@ -82,6 +100,8 @@ protected:
 	UTextBlock* Team_Text_8;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_8;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_8;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_9;
@@ -89,6 +109,8 @@ protected:
 	UTextBlock* Team_Text_9;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_9;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_9;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_10;
@@ -96,6 +118,8 @@ protected:
 	UTextBlock* Team_Text_10;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_10;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_10;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_11;
@@ -103,6 +127,8 @@ protected:
 	UTextBlock* Team_Text_11;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_11;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_11;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_12;
@@ -110,6 +136,8 @@ protected:
 	UTextBlock* Team_Text_12;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_12;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_12;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_13;
@@ -117,6 +145,8 @@ protected:
 	UTextBlock* Team_Text_13;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_13;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_13;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_14;
@@ -124,6 +154,8 @@ protected:
 	UTextBlock* Team_Text_14;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_14;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_14;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_15;
@@ -131,6 +163,8 @@ protected:
 	UTextBlock* Team_Text_15;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_15;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_15;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_16;
@@ -138,6 +172,8 @@ protected:
 	UTextBlock* Team_Text_16;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_16;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_16;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_17;
@@ -145,6 +181,8 @@ protected:
 	UTextBlock* Team_Text_17;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_17;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_17;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_18;
@@ -152,6 +190,8 @@ protected:
 	UTextBlock* Team_Text_18;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_18;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_18;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_19;
@@ -159,6 +199,8 @@ protected:
 	UTextBlock* Team_Text_19;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_19;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_19;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_20;
@@ -166,6 +208,8 @@ protected:
 	UTextBlock* Team_Text_20;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_20;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_20;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_21;
@@ -173,6 +217,8 @@ protected:
 	UTextBlock* Team_Text_21;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_21;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_21;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_22;
@@ -180,6 +226,8 @@ protected:
 	UTextBlock* Team_Text_22;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_22;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_22;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_23;
@@ -187,6 +235,8 @@ protected:
 	UTextBlock* Team_Text_23;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_23;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_23;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_24;
@@ -194,6 +244,8 @@ protected:
 	UTextBlock* Team_Text_24;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_24;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_24;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_25;
@@ -201,6 +253,8 @@ protected:
 	UTextBlock* Team_Text_25;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_25;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_25;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_26;
@@ -208,6 +262,8 @@ protected:
 	UTextBlock* Team_Text_26;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_26;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_26;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_27;
@@ -215,6 +271,8 @@ protected:
 	UTextBlock* Team_Text_27;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_27;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_27;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_28;
@@ -222,6 +280,8 @@ protected:
 	UTextBlock* Team_Text_28;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_28;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_28;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_29;
@@ -229,6 +289,8 @@ protected:
 	UTextBlock* Team_Text_29;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_29;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_29;
 	// ---
 	UPROPERTY(meta = (BindWidget))
 	UBorder* Team_Box_30;
@@ -236,32 +298,36 @@ protected:
 	UTextBlock* Team_Text_30;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Score_Text_30;
+	UPROPERTY(meta = (BindWidget))
+	URetainerBox* RetainerBox_30;
 
-	// ********* WigetŠÖ” *********
+	// ********* Wigeté–¢æ•° *********
 	UFUNCTION()
-	// Ÿ‚Ì‡ƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+	// æ¬¡ã®è©¦åˆãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 	void NextMatchButtonClicked();
 
 	private:
-		// ‘Îíî•ñ‚ğ•\¦‚·‚é
+		// å¯¾æˆ¦æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
 		void DisplayMatchInfo();
-		// UI‚ÉƒZƒbƒg
+		// UIã«ã‚»ãƒƒãƒˆ
 		void SetInfoUI();
 
-		TArray<UBorder*> teamBoxes = {}; // ƒ`[ƒ€ƒ{ƒbƒNƒX”z—ñ
-		TArray<UTextBlock*> teamTextBlanks = {}; // ƒ`[ƒ€ƒeƒLƒXƒg(‹ó—“)”z—ñ
-		TArray<FString> teamNames = {}; // ƒ`[ƒ€–¼‘O”z—ñ
-		TArray<UTextBlock*> scoreBlanks = {}; // ƒXƒRƒA”z—ñ
+		TArray<UBorder*> teamBoxes = {}; // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹é…åˆ—
+		TArray<UTextBlock*> teamTextBlanks = {}; // ãƒãƒ¼ãƒ ãƒ†ã‚­ã‚¹ãƒˆ(ç©ºæ¬„)é…åˆ—
+		TArray<FString> teamNames = {}; // ãƒãƒ¼ãƒ åå‰é…åˆ—
+		TArray<UTextBlock*> scoreBlanks = {}; // ã‚¹ã‚³ã‚¢é…åˆ—
+		TArray< URetainerBox*> retainerBoxes = {}; // ç™ºå…‰ãƒœãƒƒã‚¯ã‚¹é…åˆ— (ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼)
+		UMaterialInstance* glowContstantMaterial = nullptr; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç™ºå…‰ãƒãƒ†ãƒªã‚¢ãƒ«
 
-		// F
-		const FLinearColor MY_TEAM_BOX_COLOR = FLinearColor(FColor::FromHex("3FFF68")); // ©•ª‚Ìƒ`[ƒ€ƒ{ƒbƒNƒX‚ÌF
-		const FLinearColor TEAM_BOX_WIN_COLOR = FLinearColor(FColor::FromHex("FFFF01FF")); // ƒ`[ƒ€ƒ{ƒbƒNƒXŸ—˜‚ÌF
-		const FLinearColor TEAM_BOX_LOSE_COLOR = FLinearColor::Black; // ƒ`[ƒ€ƒ{ƒbƒNƒX”sí‚ÌF
-		const FLinearColor TEAM_BOX_MATCH_COLOR = FLinearColor(FColor::FromHex("E7E7E7")); // ƒ`[ƒ€ƒ{ƒbƒNƒX‘Îí‚ÌF
-		const FLinearColor TEAM_TEXT_LOSE_COLOR = FLinearColor(FColor::FromHex("7B7B7BFF")); // ƒ`[ƒ€ƒeƒLƒXƒg”sí‚ÌF
+		// è‰²
+		const FLinearColor MY_TEAM_BOX_COLOR = FLinearColor(FColor::FromHex("3FFF68")); // è‡ªåˆ†ã®ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹ã®è‰²
+		const FLinearColor TEAM_BOX_WIN_COLOR = FLinearColor(FColor::FromHex("FFFF01FF")); // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹å‹åˆ©æ™‚ã®è‰²
+		const FLinearColor TEAM_BOX_LOSE_COLOR = FLinearColor::Black; // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹æ•—æˆ¦æ™‚ã®è‰²
+		const FLinearColor TEAM_BOX_MATCH_COLOR = FLinearColor(FColor::FromHex("E7E7E7")); // ãƒãƒ¼ãƒ ãƒœãƒƒã‚¯ã‚¹å¯¾æˆ¦æ™‚ã®è‰²
+		const FLinearColor TEAM_TEXT_LOSE_COLOR = FLinearColor(FColor::FromHex("7B7B7BFF")); // ãƒãƒ¼ãƒ ãƒ†ã‚­ã‚¹ãƒˆæ•—æˆ¦æ™‚ã®è‰²
 
-		// ƒ`[ƒ€–¼
-		const FString MY_TEAM_NAME = "hoshi157"; // ƒvƒŒƒCƒ„[ƒ`[ƒ€
+		// ãƒãƒ¼ãƒ å
+		const FString MY_TEAM_NAME = "hoshi157"; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒãƒ¼ãƒ 
 		const FString ENEMY_TEAM_NAME_1 = "1";
 		const FString ENEMY_TEAM_NAME_2 = "2";
 		const FString ENEMY_TEAM_NAME_3 = "3";
@@ -278,5 +344,5 @@ protected:
 		const FString ENEMY_TEAM_NAME_14 = "14";
 		const FString ENEMY_TEAM_NAME_15 = "15";
 
-		const TArray<int> PLAYER_BOX_NUMS = {2, 17, 25, 29}; // ƒvƒŒƒCƒ„[ƒ{ƒbƒNƒXNo
+		const TArray<int> PLAYER_BOX_NUMS = {2, 17, 25, 29}; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒœãƒƒã‚¯ã‚¹No
 };

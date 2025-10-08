@@ -6,6 +6,19 @@
 #include <Kismet/GameplayStatics.h>
 #include "My_Game_Instance.h"
 
+// コンストラクター(本当の)
+UC_Route_UI::UC_Route_UI(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+    // *** マテリアル取得 (staticつけない) ***
+    // -- チームボックス発光マテリアル --
+    ConstructorHelpers::FObjectFinder<UMaterialInstance> glowConstantMaterialAsset(TEXT("/Game/Materials/UIs/Material_Instance/MI_Glow_Constant_Team_Box.MI_Glow_Constant_Team_Box"));
+    if (glowConstantMaterialAsset.Succeeded())
+    {
+        glowContstantMaterial = glowConstantMaterialAsset.Object;
+    }
+    // ***
+}
+
 void UC_Route_UI::NativeConstruct()
 {
     // *** クリックイベントをバインド ***
@@ -46,6 +59,15 @@ void UC_Route_UI::NativeConstruct()
         Score_Text_16, Score_Text_17, Score_Text_18, Score_Text_19, Score_Text_20,
         Score_Text_21, Score_Text_22, Score_Text_23, Score_Text_24, Score_Text_25,
         Score_Text_26, Score_Text_27, Score_Text_28, Score_Text_29, Score_Text_30
+    };
+    // 発光ボックス配列追加
+    retainerBoxes = {
+        RetainerBox_1, RetainerBox_2, RetainerBox_3, RetainerBox_4, RetainerBox_5,
+        RetainerBox_6, RetainerBox_7, RetainerBox_8, RetainerBox_9, RetainerBox_10,
+        RetainerBox_11, RetainerBox_12, RetainerBox_13, RetainerBox_14, RetainerBox_15,
+        RetainerBox_16, RetainerBox_17, RetainerBox_18, RetainerBox_19, RetainerBox_20,
+        RetainerBox_21, RetainerBox_22, RetainerBox_23, RetainerBox_24, RetainerBox_25,
+        RetainerBox_26, RetainerBox_27, RetainerBox_28, RetainerBox_29, RetainerBox_30
     };
 
     // *** 対戦情報を表示 ***
@@ -323,7 +345,7 @@ void UC_Route_UI::SetInfoUI()
         }
         else if (_teamBox.state == 3) {
             // プレイヤー
-            teamBoxes[_teamBox.boxNum - 1]->SetBrushColor(MY_TEAM_BOX_COLOR);
+            if (glowContstantMaterial != nullptr) retainerBoxes[_teamBox.boxNum - 1]->SetEffectMaterial(glowContstantMaterial);
         }
         else {
             UKismetSystemLibrary::PrintString(this, "route UI error", true, true, FColor::Red, 2.f, TEXT("None"));
