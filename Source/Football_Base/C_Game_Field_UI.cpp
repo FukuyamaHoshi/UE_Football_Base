@@ -7,6 +7,48 @@
 #include "My_Game_Instance.h"
 #include "C_Common.h"
 
+UC_Game_Field_UI::UC_Game_Field_UI(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+    // *** 戦術アイコン画像取得 (staticつけない) ***
+    // -- ラインブレイク --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _lineBreakAsset(TEXT("/Game/Images/tactics_icon/line_break_icon.line_break_icon"));
+    if (_lineBreakAsset.Succeeded())
+    {
+        lineBreakTacticsImage = _lineBreakAsset.Object;
+    }
+    // -- GKビルドアップ --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _gkBuildUpAsset(TEXT("/Game/Images/tactics_icon/gk_build_up_icon.gk_build_up_icon"));
+    if (_gkBuildUpAsset.Succeeded())
+    {
+        gkBuildUpTacticsImage = _gkBuildUpAsset.Object;
+    }
+    // -- ハイライン --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _highLineAsset(TEXT("/Game/Images/tactics_icon/high_line_icon.high_line_icon"));
+    if (_highLineAsset.Succeeded())
+    {
+        highLineTacticsImage = _highLineAsset.Object;
+    }
+    // -- ローブロック --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _lowBlockAsset(TEXT("/Game/Images/tactics_icon/low_block_icon.low_block_icon"));
+    if (_lowBlockAsset.Succeeded())
+    {
+        lowBlockTacticsImage = _lowBlockAsset.Object;
+    }
+    // -- サイドアタック --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _sideAttackAsset(TEXT("/Game/Images/tactics_icon/side_attack_icon.side_attack_icon"));
+    if (_sideAttackAsset.Succeeded())
+    {
+        sideAttackTacticsImage = _sideAttackAsset.Object;
+    }
+    // -- サイド圧縮 --
+    ConstructorHelpers::FObjectFinder<UTexture2D> _sideCompAsset(TEXT("/Game/Images/tactics_icon/side_comp_icon.side_comp_icon"));
+    if (_sideCompAsset.Succeeded())
+    {
+        sideCompTacticsImage = _sideCompAsset.Object;
+    }
+    // ***
+}
+
 void UC_Game_Field_UI::NativeConstruct()
 {
     // *** クリックイベントをバインド ***
@@ -42,6 +84,7 @@ void UC_Game_Field_UI::NativeConstruct()
         // UI(テキストセット)
         tacticsCommandNameBlanks = { Tactics_Command_Name_1, Tactics_Command_Name_2, Tactics_Command_Name_3, Tactics_Command_Name_4 }; // 名前
         tacticsCommandScoreBlanks = { Tactics_Command_Value_1, Tactics_Command_Value_2, Tactics_Command_Value_3, Tactics_Command_Value_4 }; // スコア
+        tacticsImageBlanks = {Tactics_Image_1, Tactics_Image_2, Tactics_Image_3, Tactics_Image_4 }; // 画像
     }
     // ***
     
@@ -118,6 +161,11 @@ void UC_Game_Field_UI::NativeConstruct()
                     tacticsCommandBorders[_i]->SetBrushColor(PRESS_RESISTANCE_BORDER_COLOR); // ボーダー色変更
                 }
                 tacticsCommandScoreBlanks[_i]->SetText(FText::FromString(FString::FromInt(_score))); // *スコアセット
+                // --
+
+                // -- アイコンセット --
+                UTexture2D* _tacticsImage = GetTacticsImage(_instance->players_tactics_command_nums[_i]); // アイコン取得
+                if (_tacticsImage != nullptr) tacticsImageBlanks[_i]->SetBrushFromTexture(_tacticsImage); // アイコンセット
                 // --
                 
                 // -- UI表示 --
@@ -502,5 +550,34 @@ void UC_Game_Field_UI::UpdateEnableTacticsCommand()
                 }
             }
         }
+    }
+}
+
+// 戦術アイコン画像取得
+UTexture2D* UC_Game_Field_UI::GetTacticsImage(int tacticsCommandNo)
+{
+    switch (tacticsCommandNo)
+    {
+    case C_Common::SIDE_ATTACK_COMMAND_NO: // サイドアタック
+
+        return sideAttackTacticsImage;
+    case C_Common::HIGH_LINE_COMMAND_NO: // ハイライン
+
+        return highLineTacticsImage;
+    case C_Common::LINE_BREAK_COMMAND_NO: // ラインブレイク
+
+        return lineBreakTacticsImage;
+    case C_Common::LOW_BLOCK_COMMAND_NO: // ローブロック
+
+        return lowBlockTacticsImage;
+    case C_Common::GK_BUILD_UP_COMMAND_NO: // GKビルドアップ
+
+        return gkBuildUpTacticsImage;
+    case C_Common::SIDE_COMPLESSION_COMMAND_NO: // サイド圧縮
+
+        return sideCompTacticsImage;
+    default:
+
+        return nullptr;;
     }
 }

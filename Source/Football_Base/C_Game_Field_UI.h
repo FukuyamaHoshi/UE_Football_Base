@@ -21,6 +21,8 @@ class FOOTBALL_BASE_API UC_Game_Field_UI : public UUserWidget
 	GENERATED_BODY()
 
 public:
+    // Sets default values for this actor's properties
+    UC_Game_Field_UI(const FObjectInitializer& ObjectInitializer); // コンストラクター(本当の)
     virtual void NativeConstruct() override; // コンストラクタ override
 
 protected:
@@ -32,6 +34,8 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_1;
     UPROPERTY(meta = (BindWidget))
+    UImage* Tactics_Image_1;
+    UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_1;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_1;
@@ -39,6 +43,8 @@ protected:
     UBorder* Tactics_Command_Border_1;
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_2;
+    UPROPERTY(meta = (BindWidget))
+    UImage* Tactics_Image_2;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_2;
     UPROPERTY(meta = (BindWidget))
@@ -48,6 +54,8 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_3;
     UPROPERTY(meta = (BindWidget))
+    UImage* Tactics_Image_3;
+    UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_3;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Value_3;
@@ -55,6 +63,8 @@ protected:
     UBorder* Tactics_Command_Border_3;
     UPROPERTY(meta = (BindWidget))
     UButton* Tactics_Command_Button_4;
+    UPROPERTY(meta = (BindWidget))
+    UImage* Tactics_Image_4;
     UPROPERTY(meta = (BindWidget))
     UTextBlock* Tactics_Command_Name_4;
     UPROPERTY(meta = (BindWidget))
@@ -169,6 +179,8 @@ private:
     void UpdateEnemyTacticsCommand();
     // 戦術コマンドの使用制限(ボール保持・非保持)を更新
     void UpdateEnableTacticsCommand();
+    // 戦術アイコン画像取得
+    UTexture2D* GetTacticsImage(int tacticsCommandNo);
 
     int myPoint = 0; // 自分のポイント数
     int enemyPoint = 0; // 敵のポイント数
@@ -180,6 +192,7 @@ private:
     // コマンド
     TArray< UTextBlock*> tacticsCommandNameBlanks = {}; // 戦術カード名前UI配列
     TArray< UTextBlock*> tacticsCommandScoreBlanks = {}; // 戦術カードスコアUI配列
+    TArray< UImage*> tacticsImageBlanks = {}; // 戦術カード画像UI配列
     TArray< UBorder*> tacticsCommandBorders = {}; // 戦術カードボーダー配列 (*表示・非表示のみ)
     TArray< UButton*> tacticsCommandButtons = {}; // 戦術カードボタン配列 (*表示・非表示のみ)
     const FString HP_END_TEXT = "/100"; // HPテキストの末尾
@@ -199,4 +212,11 @@ private:
     int enemySideBreakAbilty = 1; // サイド突破
     int enemyPhisicalAbilty = 1; // 走力
     int enemyPressResistanceAbilty = 1; // プレス耐性
+    // 戦術アイコン画像
+    UTexture2D* lineBreakTacticsImage = nullptr; // ラインブレイク
+    UTexture2D* gkBuildUpTacticsImage = nullptr; // GKビルドアップ
+    UTexture2D* highLineTacticsImage = nullptr; // ハイライン
+    UTexture2D* lowBlockTacticsImage = nullptr; // ローブロック
+    UTexture2D* sideAttackTacticsImage = nullptr; // サイドアタック
+    UTexture2D* sideCompTacticsImage = nullptr; // サイド圧縮
 };
