@@ -15,313 +15,313 @@
 // Called when the game starts or when spawned
 void AC_My_Player_Controller::BeginPlay()
 {
-	Super::BeginPlay();
+	//Super::BeginPlay();
 
-	// ** デバッグ表示 **
-	if (C_Common::DEBUG_MODE) {
-		UKismetSystemLibrary::PrintString(this, "CURRENT MODE IS DEBUG", true, true, FColor::Cyan, 10.0f, TEXT("None"));
-	}
-	// **
+	//// ** デバッグ表示 **
+	//if (C_Common::DEBUG_MODE) {
+	//	UKismetSystemLibrary::PrintString(this, "CURRENT MODE IS DEBUG", true, true, FColor::Cyan, 10.0f, TEXT("None"));
+	//}
+	//// **
 
-	SetShowMouseCursor(true); // カーソルを有効にする（ゲーム全体の）
-	
-	SetupInput(); // 入力設定
+	//SetShowMouseCursor(true); // カーソルを有効にする（ゲーム全体の）
+	//
+	//SetupInput(); // 入力設定
 
-	// *** 全てのタイルを取得 ***
-	TArray<AActor*> actorTiles; // タイルアクター配列
-	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), actorTiles); // クラスで探す
+	//// *** 全てのタイルを取得 ***
+	//TArray<AActor*> actorTiles; // タイルアクター配列
+	//UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), actorTiles); // クラスで探す
 
-	for (AActor* a : actorTiles) {
-		AC_Tile* tile = Cast<AC_Tile>(a); // キャスト
-		allTiles.Add(tile); // 追加
-	}
-	 // ***
+	//for (AActor* a : actorTiles) {
+	//	AC_Tile* tile = Cast<AC_Tile>(a); // キャスト
+	//	allTiles.Add(tile); // 追加
+	//}
+	// // ***
 
-	// *** タイルNo設定 ***
-	// // 全てのタイル配列をソート
-	// xが小さい && yが小さい順にソート
-	allTiles.StableSort([](const AC_Tile& A, const AC_Tile& B) {
-		if (A.GetActorLocation().X != B.GetActorLocation().X) {
-			// xが同じでない(同じ列ででない)
-			return A.GetActorLocation().X < B.GetActorLocation().X; // xが小さい方
-		}
-		else {
-			// 同じ列なら
-			return A.GetActorLocation().Y < B.GetActorLocation().Y; // yが小さい方
-		}
-		});
+	//// *** タイルNo設定 ***
+	//// // 全てのタイル配列をソート
+	//// xが小さい && yが小さい順にソート
+	//allTiles.StableSort([](const AC_Tile& A, const AC_Tile& B) {
+	//	if (A.GetActorLocation().X != B.GetActorLocation().X) {
+	//		// xが同じでない(同じ列ででない)
+	//		return A.GetActorLocation().X < B.GetActorLocation().X; // xが小さい方
+	//	}
+	//	else {
+	//		// 同じ列なら
+	//		return A.GetActorLocation().Y < B.GetActorLocation().Y; // yが小さい方
+	//	}
+	//	});
 
-	// タイルにNoを設定
-	for (int i = 0; i < allTiles.Num(); ++i) {
-		allTiles[i]->tileNo = i + 1;
-	}
-	// ***
+	//// タイルにNoを設定
+	//for (int i = 0; i < allTiles.Num(); ++i) {
+	//	allTiles[i]->tileNo = i + 1;
+	//}
+	//// ***
 
-	// *** デカール取得 ***
-	// (コンストラクタ以外のマテリアルはLoadObject使用)
-	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
-	// ***
+	//// *** デカール取得 ***
+	//// (コンストラクタ以外のマテリアルはLoadObject使用)
+	//playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
+	//// ***
 
-	// *** ボール取得 ***
-	AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // クラスで探す
-	ball = Cast<AC_Ball>(aBall); // キャスト
-	// ***
+	//// *** ボール取得 ***
+	//AActor* aBall = UGameplayStatics::GetActorOfClass(this, AC_Ball::StaticClass()); // クラスで探す
+	//ball = Cast<AC_Ball>(aBall); // キャスト
+	//// ***
 
-	// *** プレイヤー取得 ***
-	TArray<AActor*> a_allPieces; // コマアクター配列
-	UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // クラスで探す
-	// 型変換
-	for (AActor* a : a_allPieces) {
-		AC_Piece* piece = Cast<AC_Piece>(a); // キャスト
-		// HomeとAwayのコマの配列作成
-		if (piece->ActorHasTag(FName("HOME"))) {
-			// Home
-			allHomePieces.Add(piece);
-		}
-		else {
-			// Away
-			allAwayPieces.Add(piece);
-		}
-		allPieces.Add(piece); // 追加
-	}
-	// ***
+	//// *** プレイヤー取得 ***
+	//TArray<AActor*> a_allPieces; // コマアクター配列
+	//UGameplayStatics::GetAllActorsOfClass(this, AC_Piece::StaticClass(), a_allPieces); // クラスで探す
+	//// 型変換
+	//for (AActor* a : a_allPieces) {
+	//	AC_Piece* piece = Cast<AC_Piece>(a); // キャスト
+	//	// HomeとAwayのコマの配列作成
+	//	if (piece->ActorHasTag(FName("HOME"))) {
+	//		// Home
+	//		allHomePieces.Add(piece);
+	//	}
+	//	else {
+	//		// Away
+	//		allAwayPieces.Add(piece);
+	//	}
+	//	allPieces.Add(piece); // 追加
+	//}
+	//// ***
 
-	// ** ポジションエリア配列作成 **
-	// | プレイヤー配置可能エリアも追加 |
-	// *HOME*
-	for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
-		if (i <= 250) {
-			// -DF-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				LSB_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				LCB_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				CB_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				RCB_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else {
-				RSB_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-		}
-		else if (i <= 375) {
-			// -MF-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				LH_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				LIH_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				CH_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				RIH_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else {
-				RH_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-		}
-		else {
-			// -FW-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				LWG_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				LST_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				CF_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				RST_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-			else {
-				RWG_Erea.Add(i);
-				placeableRrea.Add(i); // プレイヤー配置可能エリア
-			}
-		}
-	}
-	// *AWAY*
-	for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
-		if (i <= 625) {
-			// -FW-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				Away_RWG_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				Away_RST_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				Away_CF_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				Away_LST_Erea.Add(i);
-			}
-			else {
-				Away_LWG_Erea.Add(i);
-			}
-		}
-		else if (i <= 750) {
-			// -MF-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				Away_RH_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				Away_RIH_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				Away_CH_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				Away_LIH_Erea.Add(i);
-			}
-			else {
-				Away_LH_Erea.Add(i);
-			}
-		}
-		else {
-			// -DF-
-			if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
-				Away_RSB_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
-				Away_RCB_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
-				Away_CB_Erea.Add(i);
-			}
-			else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
-				Away_LCB_Erea.Add(i);
-			}
-			else {
-				Away_LSB_Erea.Add(i);
-			}
-		}
-	}
+	//// ** ポジションエリア配列作成 **
+	//// | プレイヤー配置可能エリアも追加 |
+	//// *HOME*
+	//for (int i = C_Common::HOME_PLACE_EREA[0]; i <= C_Common::HOME_PLACE_EREA[1]; i++) {
+	//	if (i <= 250) {
+	//		// -DF-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			LSB_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			LCB_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			CB_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			RCB_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else {
+	//			RSB_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//	}
+	//	else if (i <= 375) {
+	//		// -MF-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			LH_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			LIH_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			CH_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			RIH_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else {
+	//			RH_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//	}
+	//	else {
+	//		// -FW-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			LWG_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			LST_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			CF_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			RST_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//		else {
+	//			RWG_Erea.Add(i);
+	//			placeableRrea.Add(i); // プレイヤー配置可能エリア
+	//		}
+	//	}
+	//}
+	//// *AWAY*
+	//for (int i = C_Common::AWAY_PLACE_EREA[0]; i <= C_Common::AWAY_PLACE_EREA[1]; i++) {
+	//	if (i <= 625) {
+	//		// -FW-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			Away_RWG_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			Away_RST_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			Away_CF_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			Away_LST_Erea.Add(i);
+	//		}
+	//		else {
+	//			Away_LWG_Erea.Add(i);
+	//		}
+	//	}
+	//	else if (i <= 750) {
+	//		// -MF-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			Away_RH_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			Away_RIH_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			Away_CH_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			Away_LIH_Erea.Add(i);
+	//		}
+	//		else {
+	//			Away_LH_Erea.Add(i);
+	//		}
+	//	}
+	//	else {
+	//		// -DF-
+	//		if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 5) {
+	//			Away_RSB_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 10) {
+	//			Away_RCB_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 15) {
+	//			Away_CB_Erea.Add(i);
+	//		}
+	//		else if (i % C_Common::TILE_NUM_Y >= 1 && i % C_Common::TILE_NUM_Y <= 20) {
+	//			Away_LCB_Erea.Add(i);
+	//		}
+	//		else {
+	//			Away_LSB_Erea.Add(i);
+	//		}
+	//	}
+	//}
 
-	// ** 全てのプレイヤーとボールにタイルNoを設定 **
-	SetTileNoToAllPlayersAndBall();
-	// **
-	
-	// ** プレイヤーにポジションをセット **
-	SetPositionToAllPlayer(); // ←ゲーム起動時に呼ばないとコマが移動できなくなる
-	// **
+	//// ** 全てのプレイヤーとボールにタイルNoを設定 **
+	//SetTileNoToAllPlayersAndBall();
+	//// **
+	//
+	//// ** プレイヤーにポジションをセット **
+	//SetPositionToAllPlayer(); // ←ゲーム起動時に呼ばないとコマが移動できなくなる
+	//// **
 
-	// ** プレイヤーとボール位置をタイル位置へ設定 **
-	SetPlayerAndBallToTilePosition();
-	// **
+	//// ** プレイヤーとボール位置をタイル位置へ設定 **
+	//SetPlayerAndBallToTilePosition();
+	//// **
 
-	// ** プレイヤー間のライン表示 **
-	//DisplayLineBetweenPlayers();
-	// **
+	//// ** プレイヤー間のライン表示 **
+	////DisplayLineBetweenPlayers();
+	//// **
 }
 
 // Called every frame
 void AC_My_Player_Controller::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	//Super::Tick(DeltaTime);
 
-	// ゴール判定
-	if (isGoal) {
-		// < ゴール後 >
-		if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "GOOL !!!!!!!", true, true, FColor::Red, 2.f, TEXT("None"));
-	}
-	else 
-	{
-		// < ゴール前 >
-		
-		// *************************
-		// フェーズ処理
-		// *************************
-		
-		// ** ①初期配置フェーズ処理 **
-		// | 連続処理 (Tick) |
-		if (isInitialPlacePhase) {
-			if (isGrap) {
-				// < グラップ中 >
+	//// ゴール判定
+	//if (isGoal) {
+	//	// < ゴール後 >
+	//	if (C_Common::DEBUG_MODE) UKismetSystemLibrary::PrintString(this, "GOOL !!!!!!!", true, true, FColor::Red, 2.f, TEXT("None"));
+	//}
+	//else 
+	//{
+	//	// < ゴール前 >
+	//	
+	//	// *************************
+	//	// フェーズ処理
+	//	// *************************
+	//	
+	//	// ** ①初期配置フェーズ処理 **
+	//	// | 連続処理 (Tick) |
+	//	if (isInitialPlacePhase) {
+	//		if (isGrap) {
+	//			// < グラップ中 >
 
-				// -- ホバー処理(タイルをハイライトする) --
-				TileHighlightWhenMouseHover();
+	//			// -- ホバー処理(タイルをハイライトする) --
+	//			TileHighlightWhenMouseHover();
 
-				// -- 選択したオブジェクトをマウスに追従 --
-				// ●マウス位置取得
-				TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
-				_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // Blocking Volume
-				FHitResult hitResult; // オブジェクト情報
+	//			// -- 選択したオブジェクトをマウスに追従 --
+	//			// ●マウス位置取得
+	//			TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	//			_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // Blocking Volume
+	//			FHitResult hitResult; // オブジェクト情報
 
-				bool _isVolumeExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
+	//			bool _isVolumeExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
 
-				// * 制限 *
-				// 1.Blocking Volume以外
-				if (_isVolumeExist == false) return; // 1
+	//			// * 制限 *
+	//			// 1.Blocking Volume以外
+	//			if (_isVolumeExist == false) return; // 1
 
-				// ●マウスに追従
-				// < プレイヤー >
-				if (selectedPlayer != nullptr) {
-					selectedPlayer->SetActorLocation(hitResult.Location); // 追従処理
-				}
-				// < ボール >
-				if (C_Common::DEBUG_MODE && selectedBall != nullptr) {
-					selectedBall->SetActorLocation(hitResult.Location); // 追従処理
-				}
-			}
+	//			// ●マウスに追従
+	//			// < プレイヤー >
+	//			if (selectedPlayer != nullptr) {
+	//				selectedPlayer->SetActorLocation(hitResult.Location); // 追従処理
+	//			}
+	//			// < ボール >
+	//			if (C_Common::DEBUG_MODE && selectedBall != nullptr) {
+	//				selectedBall->SetActorLocation(hitResult.Location); // 追従処理
+	//			}
+	//		}
 
-			return;
-		}
+	//		return;
+	//	}
 
-		// ** ⓶2次配置フェーズ **
-		// | ゲーム開始時に一度のみ |
-		if (isSecondPlacePhase) {
-			isPlayStepPhase = true; // 対戦フェーズがよばれないように
-			isSecondPlacePhase = false; // *一度しか呼べれないようにする
+	//	// ** ⓶2次配置フェーズ **
+	//	// | ゲーム開始時に一度のみ |
+	//	if (isSecondPlacePhase) {
+	//		isPlayStepPhase = true; // 対戦フェーズがよばれないように
+	//		isSecondPlacePhase = false; // *一度しか呼べれないようにする
 
-			// ** ポジションを設定する **
-			SetPositionToAllPlayer(); // ←*対戦フェーズで呼ぶと2次配置後の配置でポジションが決まってしまうため
-			//**
-			
-			// ** ⓶2次配置フェーズ処理 **
-			SecondPlacePhase();
-			// **
+	//		// ** ポジションを設定する **
+	//		SetPositionToAllPlayer(); // ←*対戦フェーズで呼ぶと2次配置後の配置でポジションが決まってしまうため
+	//		//**
+	//		
+	//		// ** ⓶2次配置フェーズ処理 **
+	//		SecondPlacePhase();
+	//		// **
 
-			// ** 監視処理 **
-			SetTimerMonitorPlayStepPhase(); // ⑶対戦フェーズを開始するか
-			// **
+	//		// ** 監視処理 **
+	//		SetTimerMonitorPlayStepPhase(); // ⑶対戦フェーズを開始するか
+	//		// **
 
-			return;
-		}
-		// **
+	//		return;
+	//	}
+	//	// **
 
-		// ** ⓷対戦フェーズ処理 **
-		// | ステップ処理 (Monitor関数) |
-		// ③-⑵プレイステップフェーズが終了しているか
-		if (isPlayStepPhase == false) {
-			isPlayStepPhase = true; // ③-⑵プレイステップフェーズ開始
+	//	// ** ⓷対戦フェーズ処理 **
+	//	// | ステップ処理 (Monitor関数) |
+	//	// ③-⑵プレイステップフェーズが終了しているか
+	//	if (isPlayStepPhase == false) {
+	//		isPlayStepPhase = true; // ③-⑵プレイステップフェーズ開始
 
-			// ** ③-⑴ 準備ステップフェーズ開始 **
-			PrepareStepPhase();
-			// **
-		}
-		// **
-	}
+	//		// ** ③-⑴ 準備ステップフェーズ開始 **
+	//		PrepareStepPhase();
+	//		// **
+	//	}
+	//	// **
+	//}
 }
 
 
