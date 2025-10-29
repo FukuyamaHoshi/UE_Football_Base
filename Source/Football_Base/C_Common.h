@@ -99,6 +99,13 @@ public:
     // 戦術コマンド値取得
     static FTacticsCommand GetTacticsCommandValue(int tacticsCommandNo);
     // **
+
+    // ゲームフェーズ (ゲーム中の場面) *マッチフェーズでない
+    // ---------------------
+    // 0: オープニング
+    // 1: マネージャー選択
+    // ---------------------
+    static constexpr int MANAGER_SELECT_PHASE = 1; // マネージャー選択
     
     
     // ***** ゲーム内時間ごとの名称 *****************

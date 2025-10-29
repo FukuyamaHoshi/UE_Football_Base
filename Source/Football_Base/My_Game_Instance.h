@@ -30,4 +30,9 @@ public:
 	int player_side_break_abilty = 1; // サイド突破力
 	int player_physical_abilty = 1; // 走力
 	int player_press_resistance_abilty = 1; // プレス耐性
+
+	// ゲームフェーズ (ゲーム中の場面) *マッチフェーズでない
+	// 0: オープニング
+	// 1: マネージャー選択
+	int game_phase = 0;
 };

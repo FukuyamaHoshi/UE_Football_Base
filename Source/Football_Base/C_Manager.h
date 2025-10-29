@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,5 +25,14 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// アウトライン表示
+	void VisibleOutline();
+	// アウトライン非表示
+	void HiddenOutline();
+
+private:
+	USkeletalMeshComponent* mySkeltalMesh = nullptr; // メッシュ
+	UMaterial* outLineMaterial = nullptr; // アウトラインマテリアル
 
 };

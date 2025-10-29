@@ -1,34 +1,41 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Opening_UI.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
+#include "My_Game_Instance.h"
+#include "C_Common.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 void UC_Opening_UI::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    // ƒNƒŠƒbƒNƒCƒxƒ“ƒg‚ðƒoƒCƒ“ƒh
-    if (Play_Button) // ƒvƒŒƒCƒ{ƒ^ƒ“
+    // ã‚¯ãƒªãƒƒã‚¯ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰
+    if (Play_Button) // ãƒ—ãƒ¬ã‚¤ãƒœã‚¿ãƒ³
     {
         Play_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayButtonClicked);
     }
-    if (Quit_Button) // I—¹ƒ{ƒ^ƒ“
+    if (Quit_Button) // çµ‚äº†ãƒœã‚¿ãƒ³
     {
         Quit_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::QuitButtonClicked);
     }
 }
 
-// ƒQ[ƒ€ƒXƒ^[ƒgƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+// ã‚²ãƒ¼ãƒ ã‚¹ã‚¿ãƒ¼ãƒˆãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 void UC_Opening_UI::PlayButtonClicked()
 {
-    UGameplayStatics::OpenLevel(GetWorld(), TEXT("Game_Field_Map")); // ƒQ[ƒ€ƒtƒB[ƒ‹ƒh‚ÖˆÚ“®
+    // â—ãƒžãƒãƒ¼ã‚¸ãƒ£ãƒ¼é¸æŠžãƒ•ã‚§ãƒ¼ã‚ºã¸
+    // UIå¤‰æ›´
+    UI_Switcher->SetActiveWidgetIndex(C_Common::MANAGER_SELECT_PHASE);
+    // ãƒ•ã‚§ãƒ¼ã‚ºå¤‰æ›´
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
+    if (_instance) _instance->game_phase = C_Common::MANAGER_SELECT_PHASE;
 }
 
-// I—¹ƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+// çµ‚äº†ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 void UC_Opening_UI::QuitButtonClicked()
 {
-    UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(), EQuitPreference::Quit, false); // ƒQ[ƒ€I—¹
+    UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(), EQuitPreference::Quit, false); // ã‚²ãƒ¼ãƒ çµ‚äº†
 }

@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include <Components/Button.h>
+#include <Components/WidgetSwitcher.h>
 #include "C_Opening_UI.generated.h"
 
 /**
@@ -16,21 +17,23 @@ class FOOTBALL_BASE_API UC_Opening_UI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-    virtual void NativeConstruct() override; // ƒRƒ“ƒXƒgƒ‰ƒNƒ^ override
+    virtual void NativeConstruct() override; // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ override
 
-    // ƒ{ƒ^ƒ“‚ğƒoƒCƒ“ƒh
 protected:
+    // ãƒœã‚¿ãƒ³
     UPROPERTY(meta = (BindWidget))
         UButton* Play_Button;
 
     UPROPERTY(meta = (BindWidget))
         UButton* Quit_Button;
+    // Widgetã‚¹ã‚¤ãƒƒãƒãƒ£ãƒ¼
+    UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* UI_Switcher;
 
     UFUNCTION()
-        // ƒQ[ƒ€ƒXƒ^[ƒgƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+        // ã‚²ãƒ¼ãƒ ã‚¹ã‚¿ãƒ¼ãƒˆãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
         void PlayButtonClicked();
     UFUNCTION()
-        // I—¹ƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+        // çµ‚äº†ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
         void QuitButtonClicked();
-	
 };
