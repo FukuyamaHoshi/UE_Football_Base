@@ -7,6 +7,7 @@
 #include <Engine/DecalActor.h>
 #include "My_Game_Instance.h"
 #include "C_Common.h"
+#include "C_Opening_UI.h"
 
 // Sets default values
 AC_Opening_Level_Instance::AC_Opening_Level_Instance()
@@ -29,7 +30,16 @@ void AC_Opening_Level_Instance::BeginPlay()
 	// (コンストラクタ以外のマテリアルはLoadObject使用)
 	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
 	// ***
+
+	// *** 全てのプレイヤーを取得 ***
+	TArray<AActor*> _actorPlayers = {}; // プレイヤーアクター配列
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Player::StaticClass(), _actorPlayers); // クラスで探す
 	
+	for (AActor* _a : _actorPlayers) {
+		AC_Player* _player = Cast<AC_Player>(_a); // キャスト
+		allPlayers.Add(_player); // 追加
+	}
+	// ***
 }
 
 // Called every frame
@@ -58,11 +68,13 @@ void AC_Opening_Level_Instance::SetupInput()
 
 // 左クリック(プレス)イベント
 // ●(プレイヤー選択)デカール表示
+// ●試合開始処理
 void AC_Opening_Level_Instance::PressedLeft()
 {
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance) {
-		if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
+		if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // *(制限)マネージャー選択フェーズのみ
+			
 			// マウス位置情報取得処理
 			TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
 			_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody)); // プレイヤー: PhysicsBody
@@ -90,7 +102,39 @@ void AC_Opening_Level_Instance::PressedLeft()
 					_decalActor->SetActorScale3D(_size); // サイズセット
 				}
 			}
-		
+
+			// *** 試合開始処理 ***
+			// -- フェーズ切り替え --
+			_instance->game_phase = C_Common::MATCH_PHASE;
+			// --
+			
+			// -- プレイヤーを表示 --
+			for (AC_Player* _p : allPlayers) {
+				_p->DisplayMesh();
+			}
+			// --
+
+			// -- ボールホルダー決定 --
+			for (AC_Player* _p : allPlayers) {
+				if (_p->ActorHasTag(FName("GK"))) { // GKをボールホルダーへ
+					ballHolder = _p;
+
+					break;
+				}
+			}
+			// --
+
+			AC_Player* _target = nullptr;
+			for (AC_Player* _p : allPlayers) { // test
+				if (_p->ActorHasTag(FName("RB"))) {
+					_target = _p;
+
+					break;
+				}
+			}
+			if (ballHolder && _target) LongPass(ballHolder, _target);
+
+			// ***
 		}
 	}
 }
@@ -148,5 +192,27 @@ bool AC_Opening_Level_Instance::GetResultFromMouseLocation(FHitResult& hitResult
 
 
 	return _isExist;
+}
+
+// ショートパス
+void AC_Opening_Level_Instance::ShortPass(AC_Player* fromPlayer, AC_Player* toPlayer)
+{
+	// アニメーション
+	fromPlayer->ShotPass(toPlayer); // ショートパス
+	toPlayer->Trap(fromPlayer); // トラップ
+
+	// ボールホルダー切り替え
+	ballHolder = toPlayer;
+}
+
+// ロングパス
+void AC_Opening_Level_Instance::LongPass(AC_Player* fromPlayer, AC_Player* toPlayer)
+{
+	// アニメーション
+	fromPlayer->LongPass(toPlayer); // ロングパス
+	toPlayer->Trap(fromPlayer); // トラップ
+
+	// ボールホルダー切り替え
+	ballHolder = toPlayer;
 }
 

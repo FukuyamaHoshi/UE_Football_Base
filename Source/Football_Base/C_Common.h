@@ -32,6 +32,7 @@ public:
     static constexpr int CROSS_ZORN_COLUMN[2] = { 5, 21 }; // クロスColumn (左(以下), 右(以上)) 
     static constexpr int HANDLE_CROSS_RANGE_ROW[2] = { 31, 8 }; // クロス対応Row (HOME, AWAY)
     static constexpr int PRESS_RANGE_TILE_NUM[2] = { 2, 3 }; // プレスレンジタイル個数 (Column(横) * Row(縦)) *プレイヤーの向きに対して
+    static constexpr double BALL_BASE_LOCATION_Z = 30.0; // ボールの標準の位置Z
     // マッチフェーズ
     static constexpr int DEFAULT_MATCH_PHASE = 0; // デフォルト
     static constexpr int SECOND_BALL_COLLECT_MATCH_PHASE = 1; // セカンドボール回収
@@ -106,6 +107,7 @@ public:
     // 1: マネージャー選択
     // ---------------------
     static constexpr int MANAGER_SELECT_PHASE = 1; // マネージャー選択
+    static constexpr int MATCH_PHASE = 2; // 試合中
     
     
     // ***** ゲーム内時間ごとの名称 *****************

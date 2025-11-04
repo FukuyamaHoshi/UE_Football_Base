@@ -29,6 +29,8 @@ protected:
     // Widgetスイッチャー
     UPROPERTY(meta = (BindWidget))
         UWidgetSwitcher* UI_Switcher;
+    UPROPERTY(meta = (BindWidget))
+        UButton* Match_Start_Button;
 
     UFUNCTION()
         // ゲームスタートボタンクリック

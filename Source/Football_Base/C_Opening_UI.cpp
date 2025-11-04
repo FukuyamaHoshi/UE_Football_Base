@@ -21,6 +21,7 @@ void UC_Opening_UI::NativeConstruct()
     {
         Quit_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::QuitButtonClicked);
     }
+
 }
 
 // ゲームスタートボタンクリック

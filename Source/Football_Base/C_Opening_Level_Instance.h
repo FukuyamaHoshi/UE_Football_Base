@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "C_Manager.h"
+#include "C_Player.h"
+#include "C_Soccer_Ball.h"
 #include "C_Opening_Level_Instance.generated.h"
 
 UCLASS()
@@ -36,9 +38,14 @@ private:
 	// マウス位置に目的のオブジェクトがあるか判定して情報取得
 	// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
 	bool GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
+	// ショートパス
+	void ShortPass(AC_Player* fromPlayer, AC_Player* toPlayer);
+	// ロングパス
+	void LongPass(AC_Player* fromPlayer, AC_Player* toPlayer);
 
 
-	bool isGrap = false; // Grap(プレイヤー選択中)フラグ
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
 	AC_Manager* currentHoverManager = nullptr; // 現在ホバー中のマネージャー
+	TArray<AC_Player*> allPlayers = {}; // 全てのプレイヤー
+	AC_Player* ballHolder = nullptr; // ボールホルダー
 };
