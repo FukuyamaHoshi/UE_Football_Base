@@ -4,6 +4,8 @@
 #include "C_Player.h"
 #include <Kismet/GameplayStatics.h>
 #include <Kismet/KismetMathLibrary.h>
+#include "C_Player_Anim_Instance.h"
+#include "C_Common.h"
 
 // Sets default values
 AC_Player::AC_Player()
@@ -34,6 +36,20 @@ void AC_Player::BeginPlay()
 	shortPassAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_ShortPass.AM_ShortPass"), NULL, LOAD_None, NULL);
 	trapAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Trap.AM_Trap"), NULL, LOAD_None, NULL);
 	// ***
+
+	// *** アニメーションインスタンス取得 ***
+	if (myMesh)
+	{
+		// 2. アニメーションインスタンスを取得
+		UAnimInstance* _animInstance = myMesh->GetAnimInstance();
+
+		// 3. アニメーションインスタンスがUMyAnimInstance型であることを確認
+		if (_animInstance)
+		{
+			playerAnimInstance = Cast<UC_Player_Anim_Instance>(_animInstance);
+		}
+	}
+	// ***
 }
 
 // Called every frame
@@ -55,6 +71,32 @@ void AC_Player::Tick(float DeltaTime)
 			UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
 			if (trapAnim)
 				_animInstance->Montage_Play(trapAnim);
+		}
+	}
+	// ***
+
+	// *** ボールホルダー時アニメーション切り替え ***
+	if (isBallHolder) { // 〇ボールホルダー時
+		// -- ボールキープ --
+		if (isStanding) {
+			if (ball) {
+				if (ball->isMoving == false && isTrap == false) {
+					BallKeeping();
+
+					isStanding = false;
+				}
+			}
+		}
+	}
+	else { // ●ボールホルダーでない
+		// -- スタンディング --
+		if (isStanding == false) {
+			if (playerAnimInstance)
+			{
+				playerAnimInstance->isKeep = false;
+			}
+
+			isStanding = true;
 		}
 	}
 	// ***
@@ -131,5 +173,22 @@ void AC_Player::Trap(AC_Player* fromPlayer)
 
 	// アニメーション実行フラグ
 	isTrap = true;
+}
+
+// ボール保持
+void AC_Player::BallKeeping()
+{
+	// アニメーション
+	if (playerAnimInstance)
+	{
+		playerAnimInstance->isKeep = true;
+	}
+	
+	// ボールをプレイヤーの前へ移動
+	FVector _playerFront = GetActorLocation() + (GetActorForwardVector() * 30.0f); // プレイヤーの前の位置
+	_playerFront.Z = C_Common::BALL_BASE_LOCATION_Z; // ** Zの位置を固定 **
+	if (ball) {
+		ball->SetActorLocation(_playerFront);
+	}
 }
 

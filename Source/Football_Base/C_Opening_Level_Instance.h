@@ -42,6 +42,8 @@ private:
 	void ShortPass(AC_Player* fromPlayer, AC_Player* toPlayer);
 	// ロングパス
 	void LongPass(AC_Player* fromPlayer, AC_Player* toPlayer);
+	// ボールホルダー設定
+	void SetBallHolder(AC_Player* targetPlayer);
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール

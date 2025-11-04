@@ -117,22 +117,25 @@ void AC_Opening_Level_Instance::PressedLeft()
 			// -- ボールホルダー決定 --
 			for (AC_Player* _p : allPlayers) {
 				if (_p->ActorHasTag(FName("GK"))) { // GKをボールホルダーへ
-					ballHolder = _p;
+					SetBallHolder(_p);
 
 					break;
 				}
 			}
 			// --
 
-			AC_Player* _target = nullptr;
-			for (AC_Player* _p : allPlayers) { // test
-				if (_p->ActorHasTag(FName("RB"))) {
-					_target = _p;
+			// -- test test 
+			//AC_Player* _target = nullptr;
+			//for (AC_Player* _p : allPlayers) { // test
+			//	if (_p->ActorHasTag(FName("RB"))) {
+			//		_target = _p;
 
-					break;
-				}
-			}
-			if (ballHolder && _target) LongPass(ballHolder, _target);
+			//		break;
+			//	}
+			//}
+			//if (ballHolder && _target) LongPass(ballHolder, _target);
+			//ballHolder->BallKeeping();
+			// ---------------
 
 			// ***
 		}
@@ -202,7 +205,7 @@ void AC_Opening_Level_Instance::ShortPass(AC_Player* fromPlayer, AC_Player* toPl
 	toPlayer->Trap(fromPlayer); // トラップ
 
 	// ボールホルダー切り替え
-	ballHolder = toPlayer;
+	SetBallHolder(toPlayer);
 }
 
 // ロングパス
@@ -213,6 +216,17 @@ void AC_Opening_Level_Instance::LongPass(AC_Player* fromPlayer, AC_Player* toPla
 	toPlayer->Trap(fromPlayer); // トラップ
 
 	// ボールホルダー切り替え
-	ballHolder = toPlayer;
+	SetBallHolder(toPlayer);
+}
+
+// ボールホルダー設定
+void AC_Opening_Level_Instance::SetBallHolder(AC_Player* targetPlayer)
+{
+	// 前回のボールホルダーがいる
+	if (ballHolder) {
+		ballHolder->isBallHolder = false;
+	}
+	ballHolder = targetPlayer;
+	ballHolder->isBallHolder = true;
 }
 
