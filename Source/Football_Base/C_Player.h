@@ -40,13 +40,22 @@ public:
 	void Trap(AC_Player* fromPlayer);
 	// ボール保持
 	void BallKeeping();
+	// 移動(セット)
+	void MoveTo(FVector toLocation);
 
 private:
+	// 移動処理
+	void Move();
+
 	USkeletalMeshComponent* myMesh = nullptr; // メッシュ
 	AC_Soccer_Ball* ball = nullptr; // ボール
 	UAnimMontage* shortPassAnim = nullptr; // アニメーション(ショートパス)
 	UAnimMontage* trapAnim = nullptr; // アニメーション(トラップ)
+	UAnimMontage* longPassAnim = nullptr; // アニメーション(ロングパス)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	bool isStanding = true; // スタンディング中か (ボールキープアニメーションを一度のみ実行するため)
+	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
+	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
+	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 };

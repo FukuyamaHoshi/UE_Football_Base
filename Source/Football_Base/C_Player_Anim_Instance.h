@@ -17,5 +17,7 @@ class FOOTBALL_BASE_API UC_Player_Anim_Instance : public UAnimInstance
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool isKeep = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool isRun = false;
 	
 };

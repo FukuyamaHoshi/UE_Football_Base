@@ -33,6 +33,7 @@ public:
     static constexpr int HANDLE_CROSS_RANGE_ROW[2] = { 31, 8 }; // クロス対応Row (HOME, AWAY)
     static constexpr int PRESS_RANGE_TILE_NUM[2] = { 2, 3 }; // プレスレンジタイル個数 (Column(横) * Row(縦)) *プレイヤーの向きに対して
     static constexpr double BALL_BASE_LOCATION_Z = 30.0; // ボールの標準の位置Z
+    static constexpr double PLAYER_BASE_LOCATION_Z = 100.0; // プレイヤーの標準の位置Z
     // マッチフェーズ
     static constexpr int DEFAULT_MATCH_PHASE = 0; // デフォルト
     static constexpr int SECOND_BALL_COLLECT_MATCH_PHASE = 1; // セカンドボール回収

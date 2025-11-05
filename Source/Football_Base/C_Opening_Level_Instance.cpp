@@ -135,6 +135,7 @@ void AC_Opening_Level_Instance::PressedLeft()
 			//}
 			//if (ballHolder && _target) LongPass(ballHolder, _target);
 			//ballHolder->BallKeeping();
+			//ballHolder->MoveTo(FVector(0, 0, 0));
 			// ---------------
 
 			// ***
