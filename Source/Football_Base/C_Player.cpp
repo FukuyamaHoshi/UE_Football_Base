@@ -180,6 +180,37 @@ void AC_Player::Trap(AC_Player* fromPlayer)
 	isTrap = true;
 }
 
+// シュート
+void AC_Player::Shoot()
+{
+	// ゴール位置取得
+	FVector _goalLocation = FVector(0, 0, 0);
+	if (ActorHasTag(FName("HOME"))) {
+		_goalLocation = AWAY_GOAL_LOCATION; // AWAY
+	}
+	else {
+		_goalLocation = HOME_GOAL_LOCATION; // HOME
+	}
+
+	// ゴール方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), _goalLocation);
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+
+	// プレイヤーアニメーション
+	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
+	if (longPassAnim)
+		_animInstance->Montage_Play(longPassAnim);
+
+	// ボール移動
+	if (ball) {
+		ball->SetLongPass(_goalLocation);
+	}
+}
+
 // ボール保持
 void AC_Player::BallKeeping()
 {

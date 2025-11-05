@@ -38,6 +38,8 @@ public:
 	void LongPass(AC_Player* targetPlayer);
 	// トラップ
 	void Trap(AC_Player* fromPlayer);
+	// シュート
+	void Shoot();
 	// ボール保持
 	void BallKeeping();
 	// 移動(セット)
@@ -58,4 +60,7 @@ private:
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
+
+	const FVector HOME_GOAL_LOCATION = FVector(-1200.0f, 0, 0); // ゴール位置(home)
+	const FVector AWAY_GOAL_LOCATION = FVector(1200.0f, 0, 0); // ゴール位置(away)
 };

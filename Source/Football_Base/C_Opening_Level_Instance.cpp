@@ -90,7 +90,7 @@ void AC_Opening_Level_Instance::PressedLeft()
 				FVector _location = hitResult.GetActor()->GetActorLocation();
 				_location.Z = 0; // 高さ調整
 				FRotator _rotation = GetActorRotation();
-				FVector _size = FVector(0.4f, 0.4f, 0.4f); // Example size
+				FVector _size = FVector(0.4f, 0.4f, 0.4f);
 				ADecalActor* _decalActor = GetWorld()->SpawnActor<ADecalActor>(
 					_location,
 					_rotation
@@ -103,42 +103,8 @@ void AC_Opening_Level_Instance::PressedLeft()
 				}
 			}
 
-			// *** 試合開始処理 ***
-			// -- フェーズ切り替え --
-			_instance->game_phase = C_Common::MATCH_PHASE;
-			// --
-			
-			// -- プレイヤーを表示 --
-			for (AC_Player* _p : allPlayers) {
-				_p->DisplayMesh();
-			}
-			// --
-
-			// -- ボールホルダー決定 --
-			for (AC_Player* _p : allPlayers) {
-				if (_p->ActorHasTag(FName("GK"))) { // GKをボールホルダーへ
-					SetBallHolder(_p);
-
-					break;
-				}
-			}
-			// --
-
-			// -- test test 
-			//AC_Player* _target = nullptr;
-			//for (AC_Player* _p : allPlayers) { // test
-			//	if (_p->ActorHasTag(FName("RB"))) {
-			//		_target = _p;
-
-			//		break;
-			//	}
-			//}
-			//if (ballHolder && _target) LongPass(ballHolder, _target);
-			//ballHolder->BallKeeping();
-			//ballHolder->MoveTo(FVector(0, 0, 0));
-			// ---------------
-
-			// ***
+			// ●試合開始処理
+			MatchStart();
 		}
 	}
 }
@@ -198,26 +164,86 @@ bool AC_Opening_Level_Instance::GetResultFromMouseLocation(FHitResult& hitResult
 	return _isExist;
 }
 
-// ショートパス
-void AC_Opening_Level_Instance::ShortPass(AC_Player* fromPlayer, AC_Player* toPlayer)
+// 試合開始時処理
+void AC_Opening_Level_Instance::MatchStart()
 {
-	// アニメーション
-	fromPlayer->ShotPass(toPlayer); // ショートパス
-	toPlayer->Trap(fromPlayer); // トラップ
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance) {
+		// -- フェーズ切り替え --
+		_instance->game_phase = C_Common::MATCH_PHASE;
+		// --
 
-	// ボールホルダー切り替え
-	SetBallHolder(toPlayer);
+		// -- プレイヤーを表示 --
+		for (AC_Player* _p : allPlayers) {
+			_p->DisplayMesh();
+		}
+		// --
+
+		// -- ボールホルダー決定 --
+		for (AC_Player* _p : allPlayers) {
+			if (_p->ActorHasTag(FName("GK"))) { // GKをボールホルダーへ
+				SetBallHolder(_p);
+
+				break;
+			}
+		}
+		// --
+
+
+
+		// -- test test
+		AC_Player* _target = nullptr;
+		for (AC_Player* _p : allPlayers) { // test
+			if (_p->ActorHasTag(FName("RB"))) {
+				_target = _p;
+
+				break;
+			}
+		}
+		if (_target) ShortPass(_target);
+		//Shoot();
+		//ballHolder->MoveTo(FVector(0, 0, 0));
+		// ---------------
+	}
+}
+
+// ショートパス
+void AC_Opening_Level_Instance::ShortPass(AC_Player* toPlayer)
+{
+	if (ballHolder) {
+		// アニメーション
+		ballHolder->ShotPass(toPlayer); // ショートパス
+		toPlayer->Trap(ballHolder); // トラップ
+
+		// ボールホルダー切り替え
+		SetBallHolder(toPlayer);
+	}
 }
 
 // ロングパス
-void AC_Opening_Level_Instance::LongPass(AC_Player* fromPlayer, AC_Player* toPlayer)
+void AC_Opening_Level_Instance::LongPass(AC_Player* toPlayer)
 {
-	// アニメーション
-	fromPlayer->LongPass(toPlayer); // ロングパス
-	toPlayer->Trap(fromPlayer); // トラップ
+	if (ballHolder) {
+		// アニメーション
+		ballHolder->LongPass(toPlayer); // ロングパス
+		toPlayer->Trap(ballHolder); // トラップ
 
-	// ボールホルダー切り替え
-	SetBallHolder(toPlayer);
+		// ボールホルダー切り替え
+		SetBallHolder(toPlayer);
+	}
+}
+
+// シュート
+void AC_Opening_Level_Instance::Shoot()
+{
+	if (ballHolder) {
+		// 処理
+		ballHolder->Shoot();
+
+		// ボールホルダーOFF
+		ballHolder->isBallHolder = false;
+		ballHolder = nullptr;
+	}
 }
 
 // ボールホルダー設定

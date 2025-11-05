@@ -38,10 +38,14 @@ private:
 	// マウス位置に目的のオブジェクトがあるか判定して情報取得
 	// | retrun: 目的のオブジェクトか判定, hitRusult: 取得するオブジェクト情報, objectTypes: 目的のオブジェクトの種類(コリジョン) |
 	bool GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
+	// 試合開始時処理
+	void MatchStart();
 	// ショートパス
-	void ShortPass(AC_Player* fromPlayer, AC_Player* toPlayer);
+	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
-	void LongPass(AC_Player* fromPlayer, AC_Player* toPlayer);
+	void LongPass(AC_Player* toPlayer);
+	// シュート
+	void Shoot();
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
 
