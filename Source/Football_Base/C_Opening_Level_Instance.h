@@ -48,10 +48,18 @@ private:
 	void Shoot();
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
+	// プレス回避行動
+	void EscapePressing();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
 	AC_Manager* currentHoverManager = nullptr; // 現在ホバー中のマネージャー
 	TArray<AC_Player*> allPlayers = {}; // 全てのプレイヤー
+	TArray<AC_Player*> homePlayers = {}; // HOMEプレイヤー
+	TArray<AC_Player*> awayPlayers = {}; // AWAYプレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
+	bool isEscapeCommand = false; // プレス回避行動コマンド
+	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
+
+	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 };

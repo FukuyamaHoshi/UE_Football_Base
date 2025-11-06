@@ -37,6 +37,16 @@ void AC_Opening_Level_Instance::BeginPlay()
 	
 	for (AActor* _a : _actorPlayers) {
 		AC_Player* _player = Cast<AC_Player>(_a); // キャスト
+		
+		// HOMEとAWAYで分ける
+		if (_player->ActorHasTag(FName("HOME"))) {
+			// HOMEプレイヤー
+			homePlayers.Add(_player);
+		}
+		else {
+			// AWAYプレイヤー
+			awayPlayers.Add(_player);
+		}
 		allPlayers.Add(_player); // 追加
 	}
 	// ***
@@ -49,11 +59,74 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 	// ホバー時処理
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-	if (_instance) {
-		if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
-			Hover();
-		}
+	if (_instance == nullptr)  return;
+	
+	if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
+		Hover();
 	}
+
+	// *** プレス回避行動 ***
+	if (isEscapeCommand) {
+		if (ballHolder == nullptr) return;
+		if (ballHolder->ballKeepingCount < ESCAPE_INTERVAL) return; // インターバル設定
+
+		// -- ボール保持チーム取得 --
+		TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
+		if (ballHolder->ActorHasTag(FName("HOME"))) {
+			_myTeamPlayers = homePlayers;
+		}
+		else {
+			_myTeamPlayers = awayPlayers;
+		}
+		// -- DFラインのプレイヤー取得 --
+		TArray<AC_Player*> _DFPlayers = {}; // DFプレイヤー
+		for (AC_Player* _p : _myTeamPlayers) {
+			if (_p->position <= C_Common::RSB_POSITION) {
+				_DFPlayers.Add(_p);
+			}
+		}
+		
+		// -- パス先のプレイヤー取得 --
+		AC_Player* _targetPlayer = nullptr; // パス先のプレイヤー
+		bool _isBreak = false; // *2重loop対応
+		if (ballHolder->position == C_Common::GK_POSITION) {
+			// ●ボール保持者がGK ( 左右へ展開 )
+			for (int _i = C_Common::RSB_POSITION; _i > 0; _i--) { // LSB(1) ← RSB(5)
+				for (AC_Player* _player : _DFPlayers) {
+					
+					if (_i == _player->position && GKEscapeToPlayers.Contains(_player) == false) { // ポジション位置 && まだエスケープしてない
+						_targetPlayer = _player;
+						GKEscapeToPlayers.Add(_targetPlayer); // 一時保存
+						_isBreak = true; // *2重loop対応
+
+						break;
+					}
+				}
+
+				if (_isBreak) break; // *2重loop対応
+			}
+		}
+		else {
+			// 〇ボール保持者がGK以外
+			for (AC_Player* _p : _myTeamPlayers) {
+				if ((_p->position == C_Common::GK_POSITION)) { // 必ずGKにパス
+					_targetPlayer = _p;
+
+					break;
+				}
+			}
+		}
+		
+		if (_targetPlayer == nullptr) { // *プレイヤーが取得できなかった場合
+			GKEscapeToPlayers = {}; // 配列リセット
+
+			return;
+		}
+
+		// -- ショートパス --
+		ShortPass(_targetPlayer);
+	}
+	// ***
 }
 
 // ********* input *********
@@ -188,23 +261,9 @@ void AC_Opening_Level_Instance::MatchStart()
 			}
 		}
 		// --
-
-
-
-		// -- test test
-		AC_Player* _target = nullptr;
-		for (AC_Player* _p : allPlayers) { // test
-			if (_p->ActorHasTag(FName("RB"))) {
-				_target = _p;
-
-				break;
-			}
-		}
-		if (_target) ShortPass(_target);
-		//Shoot();
-		//ballHolder->MoveTo(FVector(0, 0, 0));
-		// ---------------
 	}
+
+	EscapePressing(); // test
 }
 
 // ショートパス
@@ -255,5 +314,14 @@ void AC_Opening_Level_Instance::SetBallHolder(AC_Player* targetPlayer)
 	}
 	ballHolder = targetPlayer;
 	ballHolder->isBallHolder = true;
+}
+
+// プレス回避行動
+void AC_Opening_Level_Instance::EscapePressing()
+{
+	if (ballHolder == nullptr) return;
+	
+	GKEscapeToPlayers = {}; // GKプレス回避先リセット
+	isEscapeCommand = true;
 }
 

@@ -51,6 +51,10 @@ void AC_Player::BeginPlay()
 		}
 	}
 	// ***
+
+	// *** ポジションセット ***
+	SetPosition();
+	// ***
 }
 
 // Called every frame
@@ -61,6 +65,7 @@ void AC_Player::Tick(float DeltaTime)
 	// *** 移動処理 ***
 	if (isMoving) Move();
 	// ***
+
 
 	// *** トラップアニメーション ***
 	if (isTrap) {
@@ -80,30 +85,39 @@ void AC_Player::Tick(float DeltaTime)
 	}
 	// ***
 
-	// *** ボールホルダー時アニメーション切り替え ***
+
+	// *** ボールキープアニメーション ***
 	if (isBallHolder) { // 〇ボールホルダー時
 		// -- ボールキープ --
-		if (isStanding) {
+		if (isBallKeeping == false) {
 			if (ball) {
 				if (ball->isMoving == false && isTrap == false) {
 					BallKeeping();
 
-					isStanding = false;
+					isBallKeeping = true; // フラグON ←これは中に
 				}
 			}
 		}
 	}
 	else { // ●ボールホルダーでない
 		// -- スタンディング --
-		if (isStanding == false) {
+		if (isBallKeeping) {
 			if (playerAnimInstance)
 			{
 				playerAnimInstance->isKeep = false;
 			}
-
-			isStanding = true;
+			isBallKeeping = false; // フラグOFF
 		}
 	}
+
+	// -- ボールキープ時間計測 --
+	if (isBallKeeping) {
+		ballKeepingCount += DeltaTime;
+	}
+	else {
+		ballKeepingCount = 0.0f; // リセット
+	}
+
 	// ***
 }
 
@@ -118,6 +132,62 @@ void AC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AC_Player::DisplayMesh()
 {
 	myMesh->SetVisibility(true);
+}
+
+// セットポジション (Tagから変数にポジションを設置する)
+void AC_Player::SetPosition() {
+	// ポジションセット
+	if (ActorHasTag("GK")) {
+		position = C_Common::GK_POSITION;
+	}
+	else if (ActorHasTag("LSB")) {
+		position = C_Common::LSB_POSITION;
+	}
+	else if (ActorHasTag("LCB")) {
+		position = C_Common::LCB_POSITION;
+	}
+	else if (ActorHasTag("CB")) {
+		position = C_Common::CB_POSITION;
+	}
+	else if (ActorHasTag("RCB")) {
+		position = C_Common::RCB_POSITION;
+	}
+	else if (ActorHasTag("RSB")) {
+		position = C_Common::RSB_POSITION;
+	}
+	else if (ActorHasTag("LH")) {
+		position = C_Common::LH_POSITION;
+	}
+	else if (ActorHasTag("LIH")) {
+		position = C_Common::LIH_POSITION;
+	}
+	else if (ActorHasTag("CH")) {
+		position = C_Common::CH_POSITION;
+	}
+	else if (ActorHasTag("RIH")) {
+		position = C_Common::RIH_POSITION;
+	}
+	else if (ActorHasTag("RH")) {
+		position = C_Common::RH_POSITION;
+	}
+	else if (ActorHasTag("LWG")) {
+		position = C_Common::LWG_POSITION;
+	}
+	else if (ActorHasTag("LST")) {
+		position = C_Common::LST_POSITION;
+	}
+	else if (ActorHasTag("CF")) {
+		position = C_Common::CF_POSITION;
+	}
+	else if (ActorHasTag("RST")) {
+		position = C_Common::RST_POSITION;
+	}
+	else if (ActorHasTag("RWG")) {
+		position = C_Common::RWG_POSITION;
+	}
+	else {
+		UKismetSystemLibrary::PrintString(this, "NO POSITION PLAYER EXIST", true, true, FColor::Red, 10.0f, TEXT("None"));
+	}
 }
 
 // ショートパス

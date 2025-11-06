@@ -29,9 +29,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	bool isBallHolder = false; // ボールホルダー判定
+	float ballKeepingCount = 0.0f; // ボールキープ時間カウンター
+	int position = -1; // ポジション (TAGから取得)
 
 	// メッシュを表示する
 	void DisplayMesh();
+	// セットポジション (Tagから変数にポジションを設置する)
+	void SetPosition();
 	// ショートパス
 	void ShotPass(AC_Player* targetPlayer);
 	// ロングパス
@@ -56,10 +60,10 @@ private:
 	UAnimMontage* longPassAnim = nullptr; // アニメーション(ロングパス)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
-	bool isStanding = true; // スタンディング中か (ボールキープアニメーションを一度のみ実行するため)
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
+	bool isBallKeeping = false; // ボールキープ判定
 
 	const FVector HOME_GOAL_LOCATION = FVector(-1200.0f, 0, 0); // ゴール位置(home)
 	const FVector AWAY_GOAL_LOCATION = FVector(1200.0f, 0, 0); // ゴール位置(away)
