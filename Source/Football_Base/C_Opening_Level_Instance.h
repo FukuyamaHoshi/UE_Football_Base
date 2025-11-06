@@ -33,6 +33,14 @@ private:
 	// 左クリック(プレス)イベント
 	// | プレイヤー選択 |
 	void PressedLeft();
+	// Wキー(プレス)イベント
+	void PressedW();
+	// Aキー(プレス)イベント
+	void PressedA();
+	// Sキー(プレス)イベント
+	void PressedS();
+	// Dキー(プレス)イベント
+	void PressedD();
 	// ホバー処理
 	void Hover();
 	// マウス位置に目的のオブジェクトがあるか判定して情報取得
@@ -48,12 +56,10 @@ private:
 	void LongKick(FVector toLocation);
 	// シュート
 	void Shoot();
+	// 裏抜け (走る)
+	void GetBehind(AC_Player* runPlayer, FVector toLocation);
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
-	// プレス回避行動
-	void EscapePressing();
-	// ロングアタック
-	void LongAttack();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -64,6 +70,7 @@ private:
 	AC_Player* ballHolder = nullptr; // ボールホルダー
 	int command = 0; // 現在の戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
+	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

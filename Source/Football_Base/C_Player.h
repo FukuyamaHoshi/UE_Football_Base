@@ -31,6 +31,7 @@ public:
 	bool isBallHolder = false; // ボールホルダー判定
 	float ballKeepingCount = 0.0f; // ボールキープ時間カウンター
 	int position = -1; // ポジション (TAGから取得)
+	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 
 	// メッシュを表示する
 	void DisplayMesh();
@@ -64,7 +65,6 @@ private:
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
-	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 	bool isBallKeeping = false; // ボールキープ判定
 
 	const FVector HOME_GOAL_LOCATION = FVector(-1200.0f, 0, 0); // ゴール位置(home)

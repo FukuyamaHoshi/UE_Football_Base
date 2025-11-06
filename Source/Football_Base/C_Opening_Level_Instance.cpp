@@ -57,14 +57,26 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// ホバー時処理
+	// *** ホバー時処理 ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 	
 	if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
 		Hover();
 	}
+	// ***
 
+	// *** 裏抜けプレイヤー処理 ***
+	if (getBehindingPlayer) {
+		if (getBehindingPlayer->isMoving) return;
+
+		SetBallHolder(getBehindingPlayer);
+		getBehindingPlayer = nullptr;
+	}
+	// ***
+	
+
+	// -------------- コマンド処理 ---------------------
 	// *** プレス回避行動 ***
 	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
@@ -136,27 +148,55 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 		// -- チーム取得 --
 		bool _isHome = false; // Homeか
+		TArray<AC_Player*> _myTeamPlayers = {}; // マイチーム
 		if (ballHolder->ActorHasTag(FName("HOME"))) {
 			_isHome = true;
-		}
-		
-		// -- レーンの取得 --
-		int _lane = 0; // レーン(左から1～5レーン)
-		if (ballHolder->position == C_Common::GK_POSITION) {
-			_lane = 3;
+			_myTeamPlayers = homePlayers;
 		}
 		else {
-			_lane = ballHolder->position;
+			_myTeamPlayers = awayPlayers;
+		}
+
+		// -- FWプレイヤー取得 --
+		TArray<AC_Player*> _myFWPlayers = {}; // FWプレイヤー
+		for (AC_Player* _p : _myTeamPlayers) {
+			if ((_p->position >= C_Common::LWG_POSITION)) {
+				_myFWPlayers.Add(_p);
+
+				break;
+			}
+		}
+
+		// -- レーンの取得 --
+		int _kickerLane = 0; // キッカーのレーン(左から1～5レーン)
+		if (ballHolder->position == C_Common::GK_POSITION) {
+			_kickerLane = 3;
+		}
+		else {
+			_kickerLane = ballHolder->position;
+		}
+
+		// -- 走るプレイヤー取得 --
+		AC_Player* _runPlayer = nullptr;
+		for (AC_Player* _p : _myFWPlayers) {
+			if ((_p->position % 5 == _kickerLane)) { // キッカーと同レーンのFW
+				_runPlayer = _p;
+
+				break;
+			}
 		}
 		
 		// -- ポイントの取得 (キッカーと同じレーン) --
 		FVector _targetLocation = FVector(0, 0, 0);
 		if (_isHome) {
-			_targetLocation = HOME_LONG_ATTACK_POINTS[_lane - 1];
+			_targetLocation = HOME_LONG_ATTACK_POINTS[_kickerLane - 1];
 		}
 		else {
-			_targetLocation = AWAY_LONG_ATTACK_POINTS[_lane - 1];
+			_targetLocation = AWAY_LONG_ATTACK_POINTS[_kickerLane - 1];
 		}
+
+		// -- 裏抜け --
+		if (_runPlayer) GetBehind(_runPlayer, _targetLocation);
 
 		// -- ロングキック --
 		LongKick(_targetLocation);
@@ -172,6 +212,14 @@ void AC_Opening_Level_Instance::SetupInput()
 	EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	// 左クリックのプレスをバインド
 	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AC_Opening_Level_Instance::PressedLeft);
+	// Wキープレスをバインド
+	InputComponent->BindKey(EKeys::W, IE_Pressed, this, &AC_Opening_Level_Instance::PressedW);
+	// Aキープレスをバインド
+	InputComponent->BindKey(EKeys::A, IE_Pressed, this, &AC_Opening_Level_Instance::PressedA);
+	// Sキープレスをバインド
+	InputComponent->BindKey(EKeys::S, IE_Pressed, this, &AC_Opening_Level_Instance::PressedS);
+	// Dキープレスをバインド
+	InputComponent->BindKey(EKeys::D, IE_Pressed, this, &AC_Opening_Level_Instance::PressedD);
 }
 
 // 左クリック(プレス)イベント
@@ -213,6 +261,81 @@ void AC_Opening_Level_Instance::PressedLeft()
 
 			// ●試合開始処理
 			MatchStart();
+		}
+	}
+}
+
+// Wキー(プレス)イベント
+void AC_Opening_Level_Instance::PressedW()
+{
+	UKismetSystemLibrary::PrintString(this, "W", true, true, FColor::Blue, 2.0f, TEXT("None"));
+
+	// *** ロングアタックコマンド ***
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+
+	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
+		// コマンド切り替え
+		if (ballHolder) {
+			command = C_Common::LONG_ATTACK_COMMAND_NO;
+		}
+		else {
+			command = 0;
+		}
+	}
+}
+
+// Aキー(プレス)イベント
+void AC_Opening_Level_Instance::PressedA()
+{
+	UKismetSystemLibrary::PrintString(this, "A", true, true, FColor::Blue, 2.0f, TEXT("None"));
+
+	// *** プレス回避コマンド ***
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+
+	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
+		// コマンド切り替え
+		if (ballHolder) {
+			command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
+		}
+		else {
+			command = 0;
+		}
+	}
+}
+
+// Sキー(プレス)イベント
+void AC_Opening_Level_Instance::PressedS()
+{
+	UKismetSystemLibrary::PrintString(this, "S", true, true, FColor::Blue, 2.0f, TEXT("None"));
+
+	// *** アイドルコマンド ***
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+
+	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
+		// コマンド切り替え
+		command = 0;
+	}
+}
+
+// Dキー(プレス)イベント
+void AC_Opening_Level_Instance::PressedD()
+{
+	UKismetSystemLibrary::PrintString(this, "D", true, true, FColor::Blue, 2.0f, TEXT("None"));
+
+	// *** レーンアタックコマンド ***
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+
+	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
+		// コマンド切り替え
+		if (ballHolder) {
+			command = C_Common::LANE_ATTACK_COMMAND_NO;
+		}
+		else {
+			command = 0;
 		}
 	}
 }
@@ -353,6 +476,13 @@ void AC_Opening_Level_Instance::Shoot()
 	}
 }
 
+// 裏抜け (走る)
+void AC_Opening_Level_Instance::GetBehind(AC_Player* runPlayer, FVector toLocation)
+{
+	runPlayer->MoveTo(toLocation);
+	getBehindingPlayer = runPlayer;
+}
+
 // ボールホルダー設定
 void AC_Opening_Level_Instance::SetBallHolder(AC_Player* targetPlayer)
 {
@@ -363,21 +493,3 @@ void AC_Opening_Level_Instance::SetBallHolder(AC_Player* targetPlayer)
 	ballHolder = targetPlayer;
 	ballHolder->isBallHolder = true;
 }
-
-// プレス回避行動
-void AC_Opening_Level_Instance::EscapePressing()
-{
-	if (ballHolder == nullptr) return;
-	
-	GKEscapeToPlayers = {}; // GKプレス回避先リセット
-	command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
-}
-
-// ロングアタック
-void AC_Opening_Level_Instance::LongAttack() 
-{
-	if (ballHolder == nullptr) return;
-
-	command = C_Common::LONG_ATTACK_COMMAND_NO;
-}
-
