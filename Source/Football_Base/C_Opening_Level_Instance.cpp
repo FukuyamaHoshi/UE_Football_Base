@@ -66,7 +66,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	}
 
 	// *** プレス回避行動 ***
-	if (isEscapeCommand) {
+	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
 		if (ballHolder->ballKeepingCount < ESCAPE_INTERVAL) return; // インターバル設定
 
@@ -125,6 +125,41 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 		// -- ショートパス --
 		ShortPass(_targetPlayer);
+	}
+	// ***
+
+	
+	// *** ロングアタック行動 ***
+	if (command == C_Common::LONG_ATTACK_COMMAND_NO) {
+		if (ballHolder == nullptr) return;
+		if (ballHolder->position >= C_Common::LH_POSITION) return; // DFのプレイヤーのみ発動
+
+		// -- チーム取得 --
+		bool _isHome = false; // Homeか
+		if (ballHolder->ActorHasTag(FName("HOME"))) {
+			_isHome = true;
+		}
+		
+		// -- レーンの取得 --
+		int _lane = 0; // レーン(左から1～5レーン)
+		if (ballHolder->position == C_Common::GK_POSITION) {
+			_lane = 3;
+		}
+		else {
+			_lane = ballHolder->position;
+		}
+		
+		// -- ポイントの取得 (キッカーと同じレーン) --
+		FVector _targetLocation = FVector(0, 0, 0);
+		if (_isHome) {
+			_targetLocation = HOME_LONG_ATTACK_POINTS[_lane - 1];
+		}
+		else {
+			_targetLocation = AWAY_LONG_ATTACK_POINTS[_lane - 1];
+		}
+
+		// -- ロングキック --
+		LongKick(_targetLocation);
 	}
 	// ***
 }
@@ -263,7 +298,7 @@ void AC_Opening_Level_Instance::MatchStart()
 		// --
 	}
 
-	EscapePressing(); // test
+	//LongAttack(); // test
 }
 
 // ショートパス
@@ -289,6 +324,19 @@ void AC_Opening_Level_Instance::LongPass(AC_Player* toPlayer)
 
 		// ボールホルダー切り替え
 		SetBallHolder(toPlayer);
+	}
+}
+
+// ロングキック
+void AC_Opening_Level_Instance::LongKick(FVector toLocation)
+{
+	if (ballHolder) {
+		// 処理
+		ballHolder->LongKick(toLocation);
+
+		// ボールホルダーOFF
+		ballHolder->isBallHolder = false;
+		ballHolder = nullptr;
 	}
 }
 
@@ -322,6 +370,14 @@ void AC_Opening_Level_Instance::EscapePressing()
 	if (ballHolder == nullptr) return;
 	
 	GKEscapeToPlayers = {}; // GKプレス回避先リセット
-	isEscapeCommand = true;
+	command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
+}
+
+// ロングアタック
+void AC_Opening_Level_Instance::LongAttack() 
+{
+	if (ballHolder == nullptr) return;
+
+	command = C_Common::LONG_ATTACK_COMMAND_NO;
 }
 

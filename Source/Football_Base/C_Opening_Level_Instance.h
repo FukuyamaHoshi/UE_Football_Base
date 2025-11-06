@@ -44,12 +44,16 @@ private:
 	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
 	void LongPass(AC_Player* toPlayer);
+	// ロングキック
+	void LongKick(FVector toLocation);
 	// シュート
 	void Shoot();
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
 	// プレス回避行動
 	void EscapePressing();
+	// ロングアタック
+	void LongAttack();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -58,8 +62,22 @@ private:
 	TArray<AC_Player*> homePlayers = {}; // HOMEプレイヤー
 	TArray<AC_Player*> awayPlayers = {}; // AWAYプレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
-	bool isEscapeCommand = false; // プレス回避行動コマンド
+	int command = 0; // 現在の戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
+	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
+	{ 
+		FVector(900.0f, -610.0f, 100.0f), 
+		FVector(900.0f, -350.0f, 100.0f), 
+		FVector(900.0f, 0.0f, 100.0f), 
+		FVector(900.0f, 350.0f, 100.0f), 
+		FVector(900.0f, 610.0f, 100.0f) }; // ロングアタックのポイント (HOME)
+	TArray<FVector> AWAY_LONG_ATTACK_POINTS = 
+	{ 
+		FVector(-900.0f, 610.0f, 100.0f), 
+		FVector(-900.0f, 350.0f, 100.0f), 
+		FVector(-900.0f, 0.0f, 100.0f), 
+		FVector(-900.0f, -350.0f, 100.0f), 
+		FVector(-900.0f, -610.0f, 100.0f) }; // ロングアタックのポイント (AWAY)
 };

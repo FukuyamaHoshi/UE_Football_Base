@@ -236,6 +236,28 @@ void AC_Player::LongPass(AC_Player* targetPlayer)
 	}
 }
 
+// ロングキック
+void AC_Player::LongKick(FVector toLocation)
+{
+	// パス方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), toLocation);
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+
+	// プレイヤーアニメーション
+	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
+	if (longPassAnim)
+		_animInstance->Montage_Play(longPassAnim);
+
+	// ボール移動
+	if (ball) {
+		ball->SetLongPass(toLocation);
+	}
+}
+
 // トラップ
 void AC_Player::Trap(AC_Player* fromPlayer)
 {
@@ -290,6 +312,13 @@ void AC_Player::BallKeeping()
 		playerAnimInstance->isKeep = true;
 	}
 	
+	// 前方向へ回転 (*必ず前を向く)
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(1, 0, 0));
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
 	// ボールをプレイヤーの前へ移動
 	FVector _playerFront = GetActorLocation() + (GetActorForwardVector() * 30.0f); // プレイヤーの前の位置
 	_playerFront.Z = C_Common::BALL_BASE_LOCATION_Z; // ** Zの位置を固定 **

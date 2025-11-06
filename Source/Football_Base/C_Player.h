@@ -40,6 +40,8 @@ public:
 	void ShotPass(AC_Player* targetPlayer);
 	// ロングパス
 	void LongPass(AC_Player* targetPlayer);
+	// ロングキック
+	void LongKick(FVector toLocation);
 	// トラップ
 	void Trap(AC_Player* fromPlayer);
 	// シュート
