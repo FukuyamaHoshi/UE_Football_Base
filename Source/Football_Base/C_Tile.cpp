@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "C_Tile.h"
@@ -14,7 +14,7 @@ AC_Tile::AC_Tile()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-	// *** ƒRƒ}ˆÚ“®ƒ}ƒeƒŠƒAƒ‹‚Ì•Ï”‚ÉƒZƒbƒg(•Û‚·‚é‚¾‚¯) ***
+	// *** ã‚³ãƒç§»å‹•ãƒãƒ†ãƒªã‚¢ãƒ«ã®å¤‰æ•°ã«ã‚»ãƒƒãƒˆ(ä¿æŒã™ã‚‹ã ã‘) ***
 	static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
 	if (pieceMoveMaterialAsset.Succeeded())
 	{
@@ -22,7 +22,7 @@ AC_Tile::AC_Tile()
 	}
 	// ***
 
-	// *** ƒpƒXƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚Ì•Ï”‚ÉƒZƒbƒg(•Û‚·‚é‚¾‚¯) ***
+	// *** ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã®å¤‰æ•°ã«ã‚»ãƒƒãƒˆ(ä¿æŒã™ã‚‹ã ã‘) ***
 	static ConstructorHelpers::FObjectFinder<UMaterial> passRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Pass_Range.M_Tile_Pass_Range"));
 	if (passRangeMaterialAsset.Succeeded())
 	{
@@ -30,7 +30,7 @@ AC_Tile::AC_Tile()
 	}
 	// ***
 
-	// *** ƒ}[ƒNƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚Ì•Ï”‚ÉƒZƒbƒg(•Û‚·‚é‚¾‚¯) ***
+	// *** ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã®å¤‰æ•°ã«ã‚»ãƒƒãƒˆ(ä¿æŒã™ã‚‹ã ã‘) ***
 	static ConstructorHelpers::FObjectFinder<UMaterial> markRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Mark_Range.M_Tile_Mark_Range"));
 	if (markRangeMaterialAsset.Succeeded())
 	{
@@ -38,7 +38,7 @@ AC_Tile::AC_Tile()
 	}
 	// ***
 
-	// *** ƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚Ì•Ï”‚ÉƒZƒbƒg(•Û‚·‚é‚¾‚¯) ***
+	// *** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã®å¤‰æ•°ã«ã‚»ãƒƒãƒˆ(ä¿æŒã™ã‚‹ã ã‘) ***
 	// - FW -
 	static ConstructorHelpers::FObjectFinder<UMaterial> FWplayerPlaceRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_FW_Player_Place_Range.M_Tile_FW_Player_Place_Range"));
 	if (FWplayerPlaceRangeMaterialAsset.Succeeded())
@@ -59,7 +59,7 @@ AC_Tile::AC_Tile()
 	}
 	// ***
 	
-	// *** ƒn[ƒtƒŒ[ƒ“ƒ}ƒeƒŠƒAƒ‹‚Ì•Ï”‚ÉƒZƒbƒg(•Û‚·‚é‚¾‚¯) ***
+	// *** ãƒãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ³ãƒãƒ†ãƒªã‚¢ãƒ«ã®å¤‰æ•°ã«ã‚»ãƒƒãƒˆ(ä¿æŒã™ã‚‹ã ã‘) ***
 	static ConstructorHelpers::FObjectFinder<UMaterial> halfLernMaterialAsset(TEXT("/Game/Materials/Tile/Position_Erea/M_Tile_Half_Lern.M_Tile_Half_Lern"));
 	if (halfLernMaterialAsset.Succeeded())
 	{
@@ -72,19 +72,19 @@ void AC_Tile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ** ƒƒbƒVƒ…(main, sub)‚ğæ“¾‚µA•ª‚¯‚é **
-	TArray<UStaticMeshComponent*> Components; // component”z—ñ
-	GetComponents<UStaticMeshComponent>(Components); // stacic component‚ğæ“¾
-	
-	for (UStaticMeshComponent* c : Components) { // MAINƒ^ƒO‚©
-		if (c->ComponentHasTag(FName("MAIN"))) {
-			mainMesh = c;
-		}
-		else {
-			subMesh = c;
-		}
-	}
-	// **
+	//// ** ãƒ¡ãƒƒã‚·ãƒ¥(main, sub)ã‚’å–å¾—ã—ã€åˆ†ã‘ã‚‹ **
+	//TArray<UStaticMeshComponent*> Components; // componenté…åˆ—
+	//GetComponents<UStaticMeshComponent>(Components); // stacic componentã‚’å–å¾—
+	//
+	//for (UStaticMeshComponent* c : Components) { // MAINã‚¿ã‚°ã‹
+	//	if (c->ComponentHasTag(FName("MAIN"))) {
+	//		mainMesh = c;
+	//	}
+	//	else {
+	//		subMesh = c;
+	//	}
+	//}
+	//// **
 }
 
 // Called every frame
@@ -94,66 +94,66 @@ void AC_Tile::Tick(float DeltaTime)
 
 }
 
-// ƒRƒ}ˆÚ“®ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+// ã‚³ãƒç§»å‹•ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 void AC_Tile::SetMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (pieceMoveMaterial != nullptr) mainMesh->SetOverlayMaterial(pieceMoveMaterial);
 }
 
-// ƒƒCƒ“‚ÌƒI[ƒo[ƒŒƒCƒ}ƒeƒŠƒAƒ‹‚ğíœ‚·‚é
+// ãƒ¡ã‚¤ãƒ³ã®ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤ã™ã‚‹
 void AC_Tile::RemoveMainMaterial()
 {
-	if (mainMesh == nullptr) return; // main mesh‚Ìnullƒ`ƒFƒbƒN
+	if (mainMesh == nullptr) return; // main meshã®nullãƒã‚§ãƒƒã‚¯
 
-	// ƒ}ƒeƒŠƒAƒ‹‚ğíœ
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤
 	mainMesh->SetOverlayMaterial(nullptr);
 }
 
-// ƒTƒu‚ÌƒI[ƒo[ƒŒƒCƒ}ƒeƒŠƒAƒ‹‚ğíœ‚·‚é
+// ã‚µãƒ–ã®ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤ã™ã‚‹
 void AC_Tile::RemoveSubMaterial()
 {
-	if (subMesh == nullptr) return; // sub mesh‚Ìnullƒ`ƒFƒbƒN
+	if (subMesh == nullptr) return; // sub meshã®nullãƒã‚§ãƒƒã‚¯
 
-	// ƒ}ƒeƒŠƒAƒ‹‚ğíœ
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤
 	subMesh->SetOverlayMaterial(nullptr);
 }
 
-// ƒpƒXƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 void AC_Tile::SetPassRangeMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (passRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(passRangeMaterial);
 }
 
-// ƒ}[ƒNƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+// ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 void AC_Tile::SetMarkRangeMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (markRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(markRangeMaterial);
 }
 
-// ƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 // - FW -
 void AC_Tile::SetFWPlayerPlaceRangeMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (FWplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(FWplayerPlaceMaterial);
 }
 // - MF -
 void AC_Tile::SetMFPlayerPlaceRangeMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (MFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(MFplayerPlaceMaterial);
 }
 // - DF -
 void AC_Tile::SetDFPlayerPlaceRangeMaterial()
 {
-	// ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	if (DFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(DFplayerPlaceMaterial);
 }
 
-// ƒn[ƒtƒŒ[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+// ãƒãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ³ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 void AC_Tile::SetHalfLernMaterial()
 {
 	if (halfLernMaterial != nullptr) mainMesh->SetOverlayMaterial(halfLernMaterial);

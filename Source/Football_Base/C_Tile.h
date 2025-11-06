@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -20,40 +20,41 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UMaterial* pieceMoveMaterial = nullptr; // ƒRƒ}ˆÚ“®ƒ}ƒeƒŠƒAƒ‹
-	UMaterial* passRangeMaterial = nullptr; // ƒpƒXƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹
-	UMaterial* markRangeMaterial = nullptr; // ƒ}[ƒNƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹
-	UMaterial* FWplayerPlaceMaterial = nullptr; // FWƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹
-	UMaterial* MFplayerPlaceMaterial = nullptr; // MFƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹
-	UMaterial* DFplayerPlaceMaterial = nullptr; // DFƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹
-	UMaterial* halfLernMaterial = nullptr; // ƒn[ƒtƒŒ[ƒ“ƒ}ƒeƒŠƒAƒ‹
-	// ƒƒbƒVƒ…
-	UStaticMeshComponent* mainMesh = nullptr; // main(ƒRƒ}ˆÚ“®AƒpƒXƒŒƒ“ƒWBƒ}[ƒNƒŒƒ“ƒW)
-	UStaticMeshComponent* subMesh = nullptr; // sub(ƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒW)
+	UMaterial* pieceMoveMaterial = nullptr; // ã‚³ãƒç§»å‹•ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* passRangeMaterial = nullptr; // ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* markRangeMaterial = nullptr; // ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* FWplayerPlaceMaterial = nullptr; // FWãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* MFplayerPlaceMaterial = nullptr; // MFãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* DFplayerPlaceMaterial = nullptr; // DFãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«
+	UMaterial* halfLernMaterial = nullptr; // ãƒãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ³ãƒãƒ†ãƒªã‚¢ãƒ«
+	// ãƒ¡ãƒƒã‚·ãƒ¥
+	UStaticMeshComponent* mainMesh = nullptr; // main(ã‚³ãƒç§»å‹•ã€ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ã€‚ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸)
+	UStaticMeshComponent* subMesh = nullptr; // sub(ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸)
 	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	int tileNo = 0; // ƒ^ƒCƒ‹No
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "myVariables")
+	int tileNo = 0; // ã‚¿ã‚¤ãƒ«No
 
-	// ƒRƒ}ˆÚ“®ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ã‚³ãƒç§»å‹•ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	void SetMaterial();
-	// ƒƒCƒ“‚ÌƒI[ƒo[ƒŒƒCƒ}ƒeƒŠƒAƒ‹‚ğíœ‚·‚é
+	// ãƒ¡ã‚¤ãƒ³ã®ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤ã™ã‚‹
 	void RemoveMainMaterial();
-	// ƒTƒu‚ÌƒI[ƒo[ƒŒƒCƒ}ƒeƒŠƒAƒ‹‚ğíœ‚·‚é
+	// ã‚µãƒ–ã®ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’å‰Šé™¤ã™ã‚‹
 	void RemoveSubMaterial();
-	// ƒpƒXƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒ‘ã‚¹ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	void SetPassRangeMaterial();
-	// ƒ}[ƒNƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ¼ã‚¯ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	void SetMarkRangeMaterial();
-	// ƒvƒŒƒCƒ„[”z’uƒŒƒ“ƒWƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é…ç½®ãƒ¬ãƒ³ã‚¸ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	// - FW -
 	void SetFWPlayerPlaceRangeMaterial();
 	// - MF -
 	void SetMFPlayerPlaceRangeMaterial();
 	// - DF -
 	void SetDFPlayerPlaceRangeMaterial();
-	// ƒn[ƒtƒŒ[ƒ“ƒ}ƒeƒŠƒAƒ‹‚ğƒZƒbƒg
+	// ãƒãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ³ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ã‚»ãƒƒãƒˆ
 	void SetHalfLernMaterial();
 };

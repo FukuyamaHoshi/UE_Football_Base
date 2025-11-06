@@ -14,7 +14,8 @@ public:
     ~C_Common();
 
     // ** Global変数 **
-    static constexpr int TILE_NUM_Y = 25; // 横(y)のタイル個数
+    static constexpr int TILE_NUM_Y = 5; // 横(y)のタイル個数
+    static constexpr int TILE_SIZE = 330; // タイルのサイズ
     static constexpr float NEXT_TO_TILE_DISTANCE = 100.0f; // 前後左右のタイル距離
     static constexpr float AROUNT_TILE_RANGE = 150.0f; // 周囲タイルの距離範囲 (前後左右: 100.0f,  斜め: 140.0 ~ 150.0f) *複数になると余計なタイルも取得してしまう
     static constexpr double BASE_LOCATION_Z = 10.0; // コマの標準の位置Z

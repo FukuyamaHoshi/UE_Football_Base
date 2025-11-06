@@ -55,13 +55,19 @@ void AC_Player::BeginPlay()
 	// *** ポジションセット ***
 	SetPosition();
 	// ***
+
+	// *** タイルNoセット ***
+	if (position == C_Common::GK_POSITION) return; // *GKはレーンセットしない
+
+	tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y);
+	// ***
 }
 
 // Called every frame
 void AC_Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	// *** 移動処理 ***
 	if (isMoving) Move();
 	// ***
@@ -366,6 +372,7 @@ void AC_Player::Move() {
 		targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
+		tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y); // タイルNo更新
 
 		return;
 	}
@@ -375,5 +382,47 @@ void AC_Player::Move() {
 
 	// 自身に新しい位置を適用
 	SetActorLocation(_newLocation);
+}
+
+// 位置からタイルＮｏ取得
+// ( unreal座標  x: 縦, y: 横 )
+int AC_Player::GetTileNoFromLocation(float x, float y)
+{
+	// タイルNo
+	int tileNoY = 0; // タイルNo y (横から何個目か)
+	int tileNoX = 0; // タイルNo x (下から何列目か)
+
+	// *** タイルNo y(横から何個目か)を求める ***
+	// -の時の処理
+	bool isPositiveY = true; // xが正の整数か
+	if (y < 0) {
+		y = abs(y); // 絶対値に変換
+		isPositiveY = false; // フラグ変更
+	}
+
+	if (y < (C_Common::TILE_SIZE / 2) )	tileNoY = 3;
+	else if (y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE) tileNoY = (isPositiveY) ? 4 : 2;
+	else tileNoY = (isPositiveY) ? 5 : 1;
+	// ***
+
+	// *** タイルNo x(下から何列目か)を求める ***
+	// -の時の処理
+	bool isPositiveX = true; // xが正の整数か
+	if (x < 0) {
+		x = abs(x); // 絶対値に変換
+		isPositiveX = false; // フラグ変更
+	}
+
+	if (x < C_Common::TILE_SIZE)	tileNoX = (isPositiveX) ? 4 : 3;
+	else if (x < C_Common::TILE_SIZE * 2) tileNoX = (isPositiveX) ? 5 : 2;
+	else tileNoX = (isPositiveX) ? 6 : 1;
+	// ***
+
+	// *** タイルNo取得 ***
+	// ( (タイル縦(x) - 1個) * フィールドの横のタイル個数 ) + タイル横(y)
+	int _tileNo = ((tileNoX - 1) * C_Common::TILE_NUM_Y) + tileNoY;
+
+
+	return _tileNo;
 }
 

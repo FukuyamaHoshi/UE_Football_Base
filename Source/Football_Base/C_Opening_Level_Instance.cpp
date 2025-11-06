@@ -75,6 +75,25 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	}
 	// ***
 	
+	// *** シュート ***
+	if (ballHolder) {
+		// シュートレンジ取得
+		TArray<int> _shortRangeNo = {}; // シュートレンジ(タイルNo)
+		if (ballHolder->ActorHasTag("HOME")) {
+			_shortRangeNo.Append( { 27, 28, 29 } );
+		}
+		else {
+			_shortRangeNo.Append( { 2, 3, 4 } );
+		}
+		
+		// シュート
+		if (_shortRangeNo.Contains(ballHolder->tileNo)) {
+			Shoot();
+
+			return;
+		}
+	}
+	// ***
 
 	// -------------- コマンド処理 ---------------------
 	// *** プレス回避行動 ***

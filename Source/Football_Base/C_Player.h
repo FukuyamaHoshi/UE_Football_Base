@@ -32,6 +32,7 @@ public:
 	float ballKeepingCount = 0.0f; // ボールキープ時間カウンター
 	int position = -1; // ポジション (TAGから取得)
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
+	int tileNo = 0; // 現在のタイルNo
 
 	// メッシュを表示する
 	void DisplayMesh();
@@ -55,6 +56,8 @@ public:
 private:
 	// 移動処理
 	void Move();
+	// 位置からタイルＮｏ取得
+	int GetTileNoFromLocation(float x, float y);
 
 	USkeletalMeshComponent* myMesh = nullptr; // メッシュ
 	AC_Soccer_Ball* ball = nullptr; // ボール
