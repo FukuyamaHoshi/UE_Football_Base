@@ -57,6 +57,8 @@ public:
 	void RegateDrrible();
 	// タックル (Root Motion)
 	void Tackle();
+	// ドリブル (前進)
+	void Drrible();
 
 private:
 	// 移動処理

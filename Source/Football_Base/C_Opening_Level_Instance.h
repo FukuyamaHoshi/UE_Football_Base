@@ -64,6 +64,10 @@ private:
 	bool GetIsFree(AC_Player* targetPlayer);
 	// デゥエル
 	void Duel();
+	// ラインブレイク
+	void LineBreak();
+	// クロス
+	void Cross();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -77,6 +81,8 @@ private:
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
 	bool isDueling = false; // デゥエル中か
+	int deffenceLine = 3; // 現在のディフェンスライン(HOME, AWAY兼用 0-5まで) *暫定処理
+	bool isLineBreak = false; // ラインブレイク
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

@@ -88,20 +88,44 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	
 	// *** シュート ***
 	if (ballHolder) {
-		// シュートレンジ取得
-		TArray<int> _shortRangeNo = {}; // シュートレンジ(タイルNo)
-		if (ballHolder->ActorHasTag("HOME")) {
-			_shortRangeNo.Append( { 27, 28, 29 } );
-		}
-		else {
-			_shortRangeNo.Append( { 2, 3, 4 } );
-		}
-		
-		// シュート
-		if (_shortRangeNo.Contains(ballHolder->tileNo)) {
-			Shoot();
+		if (ballHolder->ballKeepingCount > 0.0f) { // キープしている場合のみ
+			// シュートレンジ取得
+			TArray<int> _shortRangeNo = {}; // シュートレンジ(タイルNo)
+			if (ballHolder->ActorHasTag("HOME")) {
+				_shortRangeNo.Append({ 27, 28, 29 });
+			}
+			else {
+				_shortRangeNo.Append({ 2, 3, 4 });
+			}
 
-			return;
+			// シュート
+			if (_shortRangeNo.Contains(ballHolder->tileNo)) {
+				Shoot();
+
+				return;
+			}
+		}
+	}
+	// ***
+
+	// *** クロス ***
+	if (ballHolder) {
+		if (ballHolder->ballKeepingCount > 0.0f) { // キープしている場合のみ
+			// クロスレンジ取得
+			TArray<int> _crossRangeNo = {}; // クロスレンジ(タイルNo)
+			if (ballHolder->ActorHasTag("HOME")) {
+				_crossRangeNo.Append({ 26, 30 });
+			}
+			else {
+				_crossRangeNo.Append({ 1, 5 });
+			}
+
+			// クロス
+			if (_crossRangeNo.Contains(ballHolder->tileNo)) {
+				Cross();
+
+				return;
+			}
 		}
 	}
 	// ***
@@ -122,6 +146,27 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 				
 				return;
 			}
+		}
+	}
+	// ***
+
+	// *** ラインブレイク　***
+	if (ballHolder) {
+		// *once処理
+		if (isLineBreak) {
+			if (ballHolder->isMoving == false) isLineBreak = false; // フラグ切り替え (移動処理終了後)
+
+			return;
+		}
+		if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
+			int _ballHolderLine = ballHolder->tileNo / C_Common::TILE_NUM_Y; // ボールホルダーライン
+			if (deffenceLine < _ballHolderLine) {
+				isLineBreak = true;
+				LineBreak();
+
+				return;
+			}
+
 		}
 	}
 
@@ -638,4 +683,89 @@ void AC_Opening_Level_Instance::Duel()
 		}
 	}
 	
+}
+
+// ラインブレイク
+void AC_Opening_Level_Instance::LineBreak()
+{
+	// チーム分け
+	TArray<AC_Player*> _offencePlayers = {}; // オフェンスチーム
+	TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+	if (ballHolder->ActorHasTag(FName("HOME"))) {
+		_offencePlayers = homePlayers;
+		_deffencePlayers = awayPlayers;
+	}
+	else {
+		_offencePlayers = awayPlayers;
+		_deffencePlayers = homePlayers;
+	}
+
+	// -- オフェンス (2タイル前進, ボールホルダー: コンドクシオン) --
+	// ボールホルダー
+	ballHolder->Drrible(); // 前進ドリブル
+	
+	// その他オフェンス
+	for (AC_Player* _player : _offencePlayers) {
+		if (_player->position == C_Common::GK_POSITION) continue; // GK(*制限)
+		if (_player == ballHolder) continue; // ボールホルダー(*制限)
+
+		FVector _location = _player->GetActorLocation(); // 移動位置
+		if (_player->ActorHasTag(FName("HOME"))) {
+			_location.X += (C_Common::TILE_SIZE * 2);
+		}
+		else {
+			_location.X -= (C_Common::TILE_SIZE * 2);
+		}
+		_player->MoveTo(_location);
+	}
+	// --
+	
+
+	// -- ディフェンス (2タイル後退) --
+	for (AC_Player* _player : _deffencePlayers) {
+		if (_player->position == C_Common::GK_POSITION) continue; // GK(*制限)
+
+		FVector _location = _player->GetActorLocation(); // 移動位置
+		if (_player->ActorHasTag(FName("HOME"))) {
+			_location.X -= (C_Common::TILE_SIZE * 2);
+		}
+		else {
+			_location.X += (C_Common::TILE_SIZE * 2);
+		}
+		_player->MoveTo(_location);
+	}
+	// --
+}
+
+// クロス
+void AC_Opening_Level_Instance::Cross()
+{
+	if (ballHolder) {
+		// チーム取得
+		TArray<AC_Player*> _myTeamPlayers = {}; // マイチーム
+		if (ballHolder->ActorHasTag(FName("HOME"))) {
+			_myTeamPlayers = homePlayers;
+		}
+		else {
+			_myTeamPlayers = awayPlayers;
+		}
+
+		// ターゲット取得
+		AC_Player* _targetPlayer = nullptr; // ターゲット
+		for (AC_Player* _player : _myTeamPlayers) {
+			if (_player->ActorHasTag("TARGET")) {
+				_targetPlayer = _player;
+
+				break;
+			}
+		}
+		if (_targetPlayer == nullptr) return;
+
+		// アニメーション
+		ballHolder->LongPass(_targetPlayer); // ロングパス
+		_targetPlayer->Trap(ballHolder); // トラップ
+
+		// ボールホルダー切り替え
+		SetBallHolder(_targetPlayer);
+	}
 }

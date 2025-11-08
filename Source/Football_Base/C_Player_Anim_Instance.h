@@ -19,5 +19,6 @@ public:
 	bool isKeep = false;
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool isRun = false;
-	
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool isDrrible = false;
 };

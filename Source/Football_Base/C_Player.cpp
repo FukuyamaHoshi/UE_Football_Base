@@ -109,7 +109,7 @@ void AC_Player::Tick(float DeltaTime)
 	// ***
 
 
-	// *** ボールキープアニメーション ***
+	// *** アニメーションBP 調整 ***
 	if (isBallHolder) { // 〇ボールホルダー時
 		// -- ボールキープ --
 		if (isBallKeeping == false) {
@@ -453,6 +453,9 @@ void AC_Player::Move() {
 			}
 		}
 		isDrribling = false; // *ドリブル終了
+		// ドリブルアニメーション
+		if (playerAnimInstance)
+			playerAnimInstance->isDrrible = false; // 終了
 
 		return;
 	}
@@ -510,5 +513,43 @@ int AC_Player::GetTileNoFromLocation(float x, float y)
 
 
 	return _tileNo;
+}
+
+// ドリブル (前進)
+void AC_Player::Drrible()
+{
+	// 移動位置取得
+	FVector _ToLocation = GetActorLocation();
+	if (ActorHasTag("HOME")) {
+		_ToLocation.X += C_Common::TILE_SIZE;
+	}
+	else {
+		_ToLocation.X -= C_Common::TILE_SIZE;
+	}
+	_ToLocation.Z = C_Common::PLAYER_BASE_LOCATION_Z; // ** Zの位置を固定 **
+	targetLocation = _ToLocation; // 目標位置セット
+	fromLocation = GetActorLocation(); // 動く前の位置セット
+	isMoving = true; // 移動開始
+	isDrribling = true; // ドリブル開始
+
+	// プレイヤーアニメーション
+	if (playerAnimInstance) {
+		playerAnimInstance->isDrrible = true;
+		playerAnimInstance->isKeep = false; // *キープアニメーションOFF (これしないとアニメーション切り替わらない)
+	}
+	isBallKeeping = false; // *キープOFF
+
+	// ONタイルプレイヤー削除
+	for (AC_Tile* _tile : tiles) {
+		if (_tile->tileNo == tileNo) {
+
+			if (_tile->onPlayerNum > 0) _tile->onPlayerNum--; // 減らす
+
+			break;
+		}
+	}
+
+	// ボールキープ時間リセット
+	ballKeepingCount = 0.0f;
 }
 
