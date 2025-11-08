@@ -61,6 +61,11 @@ void AC_Opening_Level_Instance::BeginPlay()
 		tiles.Add(_tile);
 	}
 	// ***
+
+	// *** ボール取得 ***
+	AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
+	ball = Cast<AC_Soccer_Ball>(_b); // キャスト
+	// ***
 }
 
 // Called every frame
@@ -76,6 +81,18 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		Hover();
 	}
 	// ***
+
+	// *** ポストプレイ処理 ***
+	if (postPlayCount > 0) {
+		if (ball) {
+			if (ball->isMoving) return; // ボール移動中
+		}
+		PostPlay();
+
+		return;
+	}
+	// ***
+	
 
 	// *** 裏抜けプレイヤー処理 ***
 	if (getBehindingPlayer) {
@@ -171,6 +188,12 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	}
 
 	// -------------- コマンド処理 ---------------------
+	// *** 制限 ***
+	if (ball) {
+		if (ball->isMoving) return; // ボール移動中
+	}
+	// ***********
+
 	// *** プレス回避行動 ***
 	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
@@ -301,7 +324,6 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 
 	// *** レーンアタック行動 ***
-	// (*ショートパスのみ)
 	if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
 
@@ -314,7 +336,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			_myTeamPlayers = awayPlayers;
 		}
 
-		// -- 前方の味方プレイヤー取得 --
+		// -- レーン前方の味方プレイヤー取得 --
 		int _frontTileNo = (_myTeamPlayers[0]->ActorHasTag("HOME")) ? ballHolder->tileNo + C_Common::TILE_NUM_Y : ballHolder->tileNo - C_Common::TILE_NUM_Y;
 		AC_Player* _frontPlayer = nullptr; // 前方のプレイヤー
 		for (AC_Player* _player : _myTeamPlayers) {
@@ -325,8 +347,40 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			}
 		}
 
-		// -- ショートパス --
-		if (_frontPlayer) ShortPass(_frontPlayer);
+		// -- アクション --
+		if (_frontPlayer)
+		{
+			// 〇ショートパス
+			ShortPass(_frontPlayer);
+		}
+		else {
+			// ●ポストプレー
+			
+			// プレイヤー取得
+			AC_Player* _postPlayer = nullptr; // ポストプレイヤー
+			for (AC_Player* _player : _myTeamPlayers) {
+				if (_player->ActorHasTag("POST")) {
+					_postPlayer = _player;
+
+					break;
+				}
+			}
+			if (_postPlayer == nullptr) return;
+
+			// ボールホルダーと隣以内のレーンか判定
+			int _holderLane = (ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y;
+			int _postLane = (_postPlayer->tileNo - 1) % C_Common::TILE_NUM_Y;
+			if (FMath::Abs(_holderLane - _postLane) > 1) return;
+
+			// ボールホルダーより前にいるか判定
+			int _holderLine = (ballHolder->tileNo - 1) / C_Common::TILE_NUM_Y;
+			int _postLine = (_postPlayer->tileNo - 1) / C_Common::TILE_NUM_Y;
+			if (_holderLine >= _postLine) return;
+
+			// アクション
+			postPlayer = _postPlayer; // 一時保存
+			PostPlay();
+		}
 	}
 	// ***
 }
@@ -601,6 +655,18 @@ void AC_Opening_Level_Instance::LongPass(AC_Player* toPlayer)
 	}
 }
 
+// スペースパス (ショートパス)
+void AC_Opening_Level_Instance::SpacePass(FVector toLocation) {
+	if (ballHolder) {
+		// 処理
+		ballHolder->SpacePass(toLocation);
+
+		// ボールホルダーOFF
+		ballHolder->isBallHolder = false;
+		ballHolder = nullptr;
+	}
+}
+
 // ロングキック
 void AC_Opening_Level_Instance::LongKick(FVector toLocation)
 {
@@ -767,5 +833,45 @@ void AC_Opening_Level_Instance::Cross()
 
 		// ボールホルダー切り替え
 		SetBallHolder(_targetPlayer);
+	}
+}
+
+// ポストプレー
+void AC_Opening_Level_Instance::PostPlay()
+{
+	postPlayCount++; // インクリメント
+
+	if (postPlayCount == 1) {
+		// ⓵ポストプレイヤーにパスアンドゴー
+		// 移動位置取得
+		FVector _ToLocation = ballHolder->GetActorLocation();
+		passAndGoPlayer = ballHolder; // *一時保存
+		if (ballHolder->ActorHasTag("HOME")) {
+			_ToLocation.X += C_Common::TILE_SIZE;
+		}
+		else {
+			_ToLocation.X -= C_Common::TILE_SIZE;
+		}
+
+		if (postPlayer == nullptr) return;
+
+		// アクション
+		ShortPass(postPlayer); // ショートパス
+		passAndGoPlayer->MoveTo(_ToLocation); // 前進
+	}
+	else if (postPlayCount == 2)
+	{
+		// ⓶折り返しのパスを出す
+		FVector _location = postPlayer->GetActorLocation();
+		_location.Y += C_Common::TILE_SIZE;
+		SpacePass(_location); // スペースパス
+
+		SetBallHolder(passAndGoPlayer);
+	}
+	else {
+		// 終了処理
+		postPlayCount = 0;
+		passAndGoPlayer = nullptr;
+		postPlayer = nullptr;
 	}
 }

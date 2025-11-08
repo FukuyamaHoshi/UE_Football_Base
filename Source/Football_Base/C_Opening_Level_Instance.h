@@ -52,6 +52,8 @@ private:
 	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
 	void LongPass(AC_Player* toPlayer);
+	// スペースパス (ショートパス)
+	void SpacePass(FVector toLocation);
 	// ロングキック
 	void LongKick(FVector toLocation);
 	// シュート
@@ -68,6 +70,8 @@ private:
 	void LineBreak();
 	// クロス
 	void Cross();
+	// ポストプレー
+	void PostPlay();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -76,6 +80,7 @@ private:
 	TArray<AC_Player*> homePlayers = {}; // HOMEプレイヤー
 	TArray<AC_Player*> awayPlayers = {}; // AWAYプレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
+	AC_Soccer_Ball* ball = nullptr; // ボール
 	int command = 0; // 現在の戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
@@ -83,6 +88,9 @@ private:
 	bool isDueling = false; // デゥエル中か
 	int deffenceLine = 3; // 現在のディフェンスライン(HOME, AWAY兼用 0-5まで) *暫定処理
 	bool isLineBreak = false; // ラインブレイク
+	int postPlayCount = 0; // ポストプレイ手順回数カウンター
+	AC_Player* passAndGoPlayer = nullptr; // 一時保存 (ポストプレイ)
+	AC_Player* postPlayer = nullptr; // 一時保存 (ポストプレイ)
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

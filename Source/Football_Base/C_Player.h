@@ -43,6 +43,8 @@ public:
 	void ShotPass(AC_Player* targetPlayer);
 	// ロングパス
 	void LongPass(AC_Player* targetPlayer);
+	// スペースパス (ショートパス)
+	void SpacePass(FVector toLocation);
 	// ロングキック
 	void LongKick(FVector toLocation);
 	// トラップ

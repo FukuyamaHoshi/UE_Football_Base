@@ -259,6 +259,27 @@ void AC_Player::LongPass(AC_Player* targetPlayer)
 	}
 }
 
+// スペースパス (ショートパス)
+void AC_Player::SpacePass(FVector toLocation)
+{
+	// パス方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), toLocation);
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	// プレイヤーアニメーション
+	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
+	if (shortPassAnim)
+		_animInstance->Montage_Play(shortPassAnim);
+
+	// ボール移動
+	if (ball) {
+		ball->SetShortPass(toLocation);
+	}
+}
+
 // ロングキック
 void AC_Player::LongKick(FVector toLocation)
 {
