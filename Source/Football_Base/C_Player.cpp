@@ -36,6 +36,8 @@ void AC_Player::BeginPlay()
 	shortPassAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_ShortPass.AM_ShortPass"), NULL, LOAD_None, NULL);
 	longPassAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Long_Pass.AM_Long_Pass"), NULL, LOAD_None, NULL);
 	trapAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Trap.AM_Trap"), NULL, LOAD_None, NULL);
+	regateAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Regate.AM_Regate"), NULL, LOAD_None, NULL);
+	tackleAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Tackle.AM_Tackle"), NULL, LOAD_None, NULL);
 	// ***
 
 	// *** アニメーションインスタンス取得 ***
@@ -56,6 +58,17 @@ void AC_Player::BeginPlay()
 	SetPosition();
 	// ***
 
+	// *** タイルを取得 ***
+	TArray<AActor*> _actorTiles = {}; // タイルアクター配列
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // クラスで探す
+
+	for (AActor* _a : _actorTiles) {
+		AC_Tile* _tile = Cast<AC_Tile>(_a); // キャスト
+		
+		tiles.Add(_tile);
+	}
+	// ***
+	
 	// *** タイルNoセット ***
 	if (position == C_Common::GK_POSITION) return; // *GKはレーンセットしない
 
@@ -69,7 +82,11 @@ void AC_Player::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	// *** 移動処理 ***
-	if (isMoving) Move();
+	if (isMoving) {
+		Move();
+
+		return;
+	}
 	// ***
 
 
@@ -354,6 +371,59 @@ void AC_Player::MoveTo(FVector toLocation)
 	{
 		playerAnimInstance->isRun = true;
 	}
+
+	// ONタイルプレイヤー削除
+	for (AC_Tile* _tile : tiles) {
+		if (_tile->tileNo == tileNo) {
+			
+			if (_tile->onPlayerNum > 0) _tile->onPlayerNum--; // 減らす
+
+			break;
+		}
+	}
+}
+
+// ドリブル (相手を抜く)
+void AC_Player::RegateDrrible()
+{
+	// 移動位置取得
+	FVector _ToLocation = GetActorLocation();
+	if (ActorHasTag("HOME")) {
+		_ToLocation.X += C_Common::TILE_SIZE;
+	}
+	else {
+		_ToLocation.X -= C_Common::TILE_SIZE;
+	}
+	_ToLocation.Z = C_Common::PLAYER_BASE_LOCATION_Z; // ** Zの位置を固定 **
+	targetLocation = _ToLocation; // 目標位置セット
+	fromLocation = GetActorLocation(); // 動く前の位置セット
+	isMoving = true; // 移動開始
+	isDrribling = true; // ドリブル開始
+
+	// プレイヤーアニメーション
+	if (regateAnim && playerAnimInstance)
+		playerAnimInstance->Montage_Play(regateAnim);
+
+	// ONタイルプレイヤー削除
+	for (AC_Tile* _tile : tiles) {
+		if (_tile->tileNo == tileNo) {
+
+			if (_tile->onPlayerNum > 0) _tile->onPlayerNum--; // 減らす
+
+			break;
+		}
+	}
+
+	// ボールキープ時間リセット
+	ballKeepingCount = 0.0f;
+}
+
+// タックル (Root Motion)
+void AC_Player::Tackle()
+{
+	// プレイヤーアニメーション
+	if (tackleAnim && playerAnimInstance)
+		playerAnimInstance->Montage_Play(tackleAnim);
 }
 
 // 移動処理
@@ -367,21 +437,37 @@ void AC_Player::Move() {
 	float _targetDistance = FVector2D::Distance(FVector2D(fromLocation), FVector2D(targetLocation)); // 目的地までの距離
 	float _currentDistance = FVector2D::Distance(FVector2D(_currentLocation), FVector2D(targetLocation)); // 現在の位置から目的地までの距離
 	float _normal = FMath::Abs((_currentDistance / _targetDistance) - 1.0f);
+	
 	if (_normal > 0.93f) {
 		SetActorLocation(targetLocation); // 位置をターゲット位置へ
 		targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
 		tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y); // タイルNo更新
+		// ONタイルプレイヤー追加
+		for (AC_Tile* _tile : tiles) {
+			if (_tile->tileNo == tileNo) {
+				_tile->onPlayerNum++; // 増やす
+
+				break;
+			}
+		}
+		isDrribling = false; // *ドリブル終了
 
 		return;
 	}
 
 	// ターゲットまでの位置取得
-	FVector _newLocation = UKismetMathLibrary::VInterpTo(_currentLocation, targetLocation, time, C_Common::PIECE_SPEED * 0.3);
+	FVector _newPlayerLocation = UKismetMathLibrary::VInterpTo(_currentLocation, targetLocation, time, C_Common::PIECE_SPEED * 0.3);
+
+	// *ドリブル時処理
+	if (isDrribling && ball) {
+		FVector _ballLocation = _newPlayerLocation + (GetActorForwardVector() * 30.0f); // プレイヤーの前の位置;
+		ball->SetActorLocation(_ballLocation);
+	}
 
 	// 自身に新しい位置を適用
-	SetActorLocation(_newLocation);
+	SetActorLocation(_newPlayerLocation);
 }
 
 // 位置からタイルＮｏ取得

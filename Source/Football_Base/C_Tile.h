@@ -20,6 +20,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	// 位置からタイルＮｏ取得
+	int GetTileNoFromLocation(float x, float y);
+
 	UMaterial* pieceMoveMaterial = nullptr; // コマ移動マテリアル
 	UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
 	UMaterial* markRangeMaterial = nullptr; // マークレンジマテリアル
@@ -37,6 +40,7 @@ public:
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "myVariables")
 	int tileNo = 0; // タイルNo
+	int onPlayerNum = 0; // タイル上のプレイヤー人数
 
 	// コマ移動マテリアルをセット
 	void SetMaterial();

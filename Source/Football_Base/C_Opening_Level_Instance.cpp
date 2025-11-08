@@ -50,6 +50,17 @@ void AC_Opening_Level_Instance::BeginPlay()
 		allPlayers.Add(_player); // 追加
 	}
 	// ***
+
+	// *** タイルを取得 ***
+	TArray<AActor*> _actorTiles = {}; // タイルアクター配列
+	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // クラスで探す
+
+	for (AActor* _a : _actorTiles) {
+		AC_Tile* _tile = Cast<AC_Tile>(_a); // キャスト
+
+		tiles.Add(_tile);
+	}
+	// ***
 }
 
 // Called every frame
@@ -95,6 +106,25 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	}
 	// ***
 
+	// *** デゥエル ***
+	if (ballHolder) {
+		// *once処理
+		if (isDueling) {
+			if (ballHolder->isMoving == false) isDueling = false; // フラグ切り替え (移動処理終了後)
+			
+			return;
+		}
+		// デゥエル処理
+		if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+			if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
+				isDueling = true; // デゥエル開始
+				Duel();
+				
+				return;
+			}
+		}
+	}
+
 	// -------------- コマンド処理 ---------------------
 	// *** プレス回避行動 ***
 	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
@@ -125,6 +155,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			for (int _i = C_Common::RSB_POSITION; _i > 0; _i--) { // LSB(1) ← RSB(5)
 				for (AC_Player* _player : _DFPlayers) {
 					
+					if (GetIsFree(_player) == false) continue; // *フリーのプレイヤーのみ
+
 					if (_i == _player->position && GKEscapeToPlayers.Contains(_player) == false) { // ポジション位置 && まだエスケープしてない
 						_targetPlayer = _player;
 						GKEscapeToPlayers.Add(_targetPlayer); // 一時保存
@@ -219,6 +251,37 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 		// -- ロングキック --
 		LongKick(_targetLocation);
+	}
+	// ***
+
+
+	// *** レーンアタック行動 ***
+	// (*ショートパスのみ)
+	if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
+		if (ballHolder == nullptr) return;
+
+		// -- チーム取得 --
+		TArray<AC_Player*> _myTeamPlayers = {}; // マイチーム
+		if (ballHolder->ActorHasTag(FName("HOME"))) {
+			_myTeamPlayers = homePlayers;
+		}
+		else {
+			_myTeamPlayers = awayPlayers;
+		}
+
+		// -- 前方の味方プレイヤー取得 --
+		int _frontTileNo = (_myTeamPlayers[0]->ActorHasTag("HOME")) ? ballHolder->tileNo + C_Common::TILE_NUM_Y : ballHolder->tileNo - C_Common::TILE_NUM_Y;
+		AC_Player* _frontPlayer = nullptr; // 前方のプレイヤー
+		for (AC_Player* _player : _myTeamPlayers) {
+			if (_player->tileNo == _frontTileNo) {
+				_frontPlayer = _player;
+
+				break;
+			}
+		}
+
+		// -- ショートパス --
+		if (_frontPlayer) ShortPass(_frontPlayer);
 	}
 	// ***
 }
@@ -418,29 +481,53 @@ bool AC_Opening_Level_Instance::GetResultFromMouseLocation(FHitResult& hitResult
 void AC_Opening_Level_Instance::MatchStart()
 {
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-	if (_instance) {
-		// -- フェーズ切り替え --
-		_instance->game_phase = C_Common::MATCH_PHASE;
-		// --
+	if (_instance == nullptr) return;
 
-		// -- プレイヤーを表示 --
-		for (AC_Player* _p : allPlayers) {
-			_p->DisplayMesh();
-		}
-		// --
+	// -- フェーズ切り替え --
+	_instance->game_phase = C_Common::MATCH_PHASE;
+	// --
 
-		// -- ボールホルダー決定 --
-		for (AC_Player* _p : allPlayers) {
-			if (_p->ActorHasTag(FName("GK"))) { // GKをボールホルダーへ
-				SetBallHolder(_p);
 
-				break;
-			}
-		}
-		// --
+	// -- プレイヤーを表示 --
+	for (AC_Player* _p : allPlayers) {
+		_p->DisplayMesh();
 	}
+	// --
 
-	//LongAttack(); // test
+
+	// -- ボールホルダー決定 --
+	for (AC_Player* _p : allPlayers) {
+		if (_p->ActorHasTag(FName("GK")) && _p->ActorHasTag(FName("HOME"))) { // GK かつ　HOMWのプレイヤー
+			SetBallHolder(_p);
+
+			break;
+		}
+	}
+	// --
+
+
+	// -- 非保持チームをミドルラインへ移動 --
+	// (*AWAYチーム)
+	for (AC_Player* _p : awayPlayers) { // AWAYチーム
+		if (_p->position == C_Common::GK_POSITION) continue;
+
+		FVector _targetLocation = _p->GetActorLocation();
+		_targetLocation.X -= C_Common::TILE_SIZE * 2;
+		_p->MoveTo(_targetLocation);
+	}
+	// --
+
+	// -- 保持チームを相手のミドルラインへ移動 --
+	// (*HOME)
+	for (AC_Player* _p : homePlayers) { // HOMEチーム
+		if (_p->position == C_Common::GK_POSITION) continue;
+
+		FVector _targetLocation = _p->GetActorLocation();
+		_targetLocation.X += C_Common::TILE_SIZE;
+		_p->MoveTo(_targetLocation);
+	}
+	// --
+
 }
 
 // ショートパス
@@ -511,4 +598,44 @@ void AC_Opening_Level_Instance::SetBallHolder(AC_Player* targetPlayer)
 	}
 	ballHolder = targetPlayer;
 	ballHolder->isBallHolder = true;
+}
+
+// プレイヤーフリー判定
+// ( true: フリー )
+bool AC_Opening_Level_Instance::GetIsFree(AC_Player* targetPlayer)
+{
+	bool _isFree = false;
+
+	for (AC_Tile* _tile : tiles) {
+		if (_tile->tileNo == targetPlayer->tileNo) {
+			if (_tile->onPlayerNum < 2) _isFree = true;
+
+			break;
+		}
+	}
+	return _isFree;
+}
+
+// デゥエル
+void AC_Opening_Level_Instance::Duel()
+{
+	// オフェンス
+	ballHolder->RegateDrrible(); // *レガテドリブル
+
+	// ディフェンス
+	TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+	if (ballHolder->ActorHasTag(FName("HOME"))) {
+		_deffencePlayers = awayPlayers;
+	}
+	else {
+		_deffencePlayers = homePlayers;
+	}
+	for (AC_Player* _player : _deffencePlayers) {
+		if (_player->tileNo == ballHolder->tileNo) {
+			_player->Tackle(); // *タックル
+
+			break;
+		}
+	}
+	
 }

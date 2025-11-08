@@ -60,6 +60,10 @@ private:
 	void GetBehind(AC_Player* runPlayer, FVector toLocation);
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
+	// プレイヤーフリー判定
+	bool GetIsFree(AC_Player* targetPlayer);
+	// デゥエル
+	void Duel();
 
 
 	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
@@ -71,6 +75,8 @@ private:
 	int command = 0; // 現在の戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
+	TArray <AC_Tile*> tiles = {}; // 全てのタイル
+	bool isDueling = false; // デゥエル中か
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

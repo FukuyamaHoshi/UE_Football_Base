@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "C_Soccer_Ball.h"
 #include "C_Player_Anim_Instance.h"
+#include "C_Tile.h"
 #include "C_Player.generated.h"
 
 UCLASS()
@@ -52,6 +53,10 @@ public:
 	void BallKeeping();
 	// 移動(セット)
 	void MoveTo(FVector toLocation);
+	// ドリブル (相手を抜く)
+	void RegateDrrible();
+	// タックル (Root Motion)
+	void Tackle();
 
 private:
 	// 移動処理
@@ -64,11 +69,15 @@ private:
 	UAnimMontage* shortPassAnim = nullptr; // アニメーション(ショートパス)
 	UAnimMontage* trapAnim = nullptr; // アニメーション(トラップ)
 	UAnimMontage* longPassAnim = nullptr; // アニメーション(ロングパス)
+	UAnimMontage* regateAnim = nullptr; // アニメーション(レガテ)
+	UAnimMontage* tackleAnim = nullptr; // アニメーション(タックル)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	bool isBallKeeping = false; // ボールキープ判定
+	TArray <AC_Tile*> tiles = {}; // 全てのタイル
+	bool isDrribling = false; // ドリブル中か
 
 	const FVector HOME_GOAL_LOCATION = FVector(-1200.0f, 0, 0); // ゴール位置(home)
 	const FVector AWAY_GOAL_LOCATION = FVector(1200.0f, 0, 0); // ゴール位置(away)
