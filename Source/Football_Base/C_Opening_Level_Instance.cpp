@@ -66,6 +66,11 @@ void AC_Opening_Level_Instance::BeginPlay()
 	AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
 	ball = Cast<AC_Soccer_Ball>(_b); // キャスト
 	// ***
+
+	// *** マネージャー取得 ***
+	AActor* _m = UGameplayStatics::GetActorOfClass(this, AC_Manager::StaticClass());
+	homeManager = Cast<AC_Manager>(_m); // キャスト
+	// ***
 }
 
 // Called every frame
@@ -459,10 +464,12 @@ void AC_Opening_Level_Instance::PressedW()
 		// コマンド切り替え
 		if (ballHolder) {
 			command = C_Common::LONG_ATTACK_COMMAND_NO;
+			homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 		}
 		else {
 			command = 0;
 		}
+		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 	}
 }
 
@@ -479,10 +486,12 @@ void AC_Opening_Level_Instance::PressedA()
 		// コマンド切り替え
 		if (ballHolder) {
 			command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
+			homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 		}
 		else {
 			command = 0;
 		}
+		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 	}
 }
 
@@ -498,6 +507,7 @@ void AC_Opening_Level_Instance::PressedS()
 	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
 		// コマンド切り替え
 		command = 0;
+		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 	}
 }
 
@@ -518,6 +528,7 @@ void AC_Opening_Level_Instance::PressedD()
 		else {
 			command = 0;
 		}
+		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
 	}
 }
 

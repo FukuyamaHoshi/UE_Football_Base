@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "C_Manager_Anim_Instance.h"
 #include "C_Manager.generated.h"
+
 
 UCLASS()
 class FOOTBALL_BASE_API AC_Manager : public ACharacter
@@ -30,9 +32,16 @@ public:
 	void VisibleOutline();
 	// アウトライン非表示
 	void HiddenOutline();
+	// アニメーション切り替え
+	void ChangeAnim(int command);
 
 private:
 	USkeletalMeshComponent* mySkeltalMesh = nullptr; // メッシュ
 	UMaterial* outLineMaterial = nullptr; // アウトラインマテリアル
+	UC_Manager_Anim_Instance* animInstance = nullptr; // アニメーションインスタンス
+	UAnimMontage* idleAnim = nullptr; // アニメーション(アイドル)
+	UAnimMontage* laneAttackAnim = nullptr; // アニメーション(レーンアタック)
+	UAnimMontage* longAttackAnim = nullptr; // アニメーション(ロングアタック)
+	UAnimMontage* escapePressAnim = nullptr; // アニメーション(プレス回避)
 
 };

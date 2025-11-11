@@ -91,6 +91,7 @@ private:
 	int postPlayCount = 0; // ポストプレイ手順回数カウンター
 	AC_Player* passAndGoPlayer = nullptr; // 一時保存 (ポストプレイ)
 	AC_Player* postPlayer = nullptr; // 一時保存 (ポストプレイ)
+	AC_Manager* homeManager = nullptr; // マネージャー(HOME)
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
