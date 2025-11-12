@@ -32,6 +32,7 @@ private:
     // 現在のエンハンス
     UOverlay* currentEnhance1 = nullptr;
     UOverlay* currentEnhance2 = nullptr;
+    UWidgetSwitcher* currentButtonSwicher = nullptr;
     //UTextBlock* currentText = nullptr;
     //FColor textEnhanceColor = FColor::FromHex(TEXT("1996FFFF"));
 
@@ -50,13 +51,21 @@ protected:
         
         // *** 試合フェーズ ***
         UPROPERTY(meta = (BindWidget))
-        UButton* Long_Attack_Button;
+        UButton* Long_Attack_Not_Press_Button;
         UPROPERTY(meta = (BindWidget))
-        UButton* Lane_Attack_Button;
+        UButton* Lane_Attack_Not_Press_Button;
         UPROPERTY(meta = (BindWidget))
-        UButton* Idle_Button;
+        UButton* Idle_Not_Press_Button;
         UPROPERTY(meta = (BindWidget))
-        UButton* Escape_Pressing_Button;
+        UButton* Escape_Pressing_Not_Press_Button;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Long_Attack_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Lane_Attack_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Idle_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Escape_Pressing_Switcher;
         // エンハンス
         // -- ロングアタック --
         UPROPERTY(meta = (BindWidget))

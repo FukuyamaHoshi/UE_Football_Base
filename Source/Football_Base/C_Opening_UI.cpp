@@ -21,21 +21,21 @@ void UC_Opening_UI::NativeConstruct()
     {
         Quit_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::QuitButtonClicked);
     }
-    if (Long_Attack_Button) // ロングアタックボタン
+    if (Long_Attack_Not_Press_Button) // ロングアタックボタン
     {
-        Long_Attack_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LongAttackButtonClicked);
+        Long_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LongAttackButtonClicked);
     }
-    if (Lane_Attack_Button) // レーンアタックボタン
+    if (Lane_Attack_Not_Press_Button) // レーンアタックボタン
     {
-        Lane_Attack_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LaneAttackButtonClicked);
+        Lane_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LaneAttackButtonClicked);
     }
-    if (Idle_Button) // アイドルボタン
+    if (Idle_Not_Press_Button) // アイドルボタン
     {
-        Idle_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::IdleButtonClicked);
+        Idle_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::IdleButtonClicked);
     }
-    if (Escape_Pressing_Button) // プレス回避ボタン
+    if (Escape_Pressing_Not_Press_Button) // プレス回避ボタン
     {
-        Escape_Pressing_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::EscapePressingButtonClicked);
+        Escape_Pressing_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::EscapePressingButtonClicked);
     }
 }
 
@@ -57,6 +57,9 @@ void UC_Opening_UI::SwitchEnhance(int command)
     if (currentEnhance2) {
         currentEnhance2->SetVisibility(ESlateVisibility::Hidden);
     }
+    if (currentButtonSwicher) {
+        currentButtonSwicher->SetActiveWidgetIndex(0);
+    }
     //if (currentText) {
     //    currentText->SetColorAndOpacity(FColor::White);
     //}
@@ -65,21 +68,25 @@ void UC_Opening_UI::SwitchEnhance(int command)
     if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
         currentEnhance1 = Escape_Press_Enhance_1;
         currentEnhance2 = Escape_Press_Enhance_2;
+        currentButtonSwicher = Escape_Pressing_Switcher;
         //currentText = Escape_Press_Text;
     }
     else if (command == C_Common::LONG_ATTACK_COMMAND_NO) {
         currentEnhance1 = Long_Attack_Enhance_1;
         currentEnhance2 = Long_Attack_Enhance_2;
+        currentButtonSwicher = Long_Attack_Switcher;
         //currentText = Long_Attack_Text;
     }
     else if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
         currentEnhance1 = Lane_Attack_Enhance_1;
         currentEnhance2 = Lane_Attack_Enhance_2;
+        currentButtonSwicher = Lane_Attack_Switcher;
         //currentText = Lane_Attack_Text;
     }
     else {
         currentEnhance1 = Idle_Enhance_1;
         currentEnhance2 = Idle_Enhance_2;
+        currentButtonSwicher = Idle_Switcher;
         //currentText = Idle_Text;
     }
 
@@ -89,6 +96,9 @@ void UC_Opening_UI::SwitchEnhance(int command)
     }
     if (currentEnhance2) {
         currentEnhance2->SetVisibility(ESlateVisibility::Visible);
+    }
+    if (currentButtonSwicher) {
+        currentButtonSwicher->SetActiveWidgetIndex(1);
     }
     //if (currentText) {
     //    currentText->SetColorAndOpacity(textEnhanceColor);
@@ -103,7 +113,10 @@ void UC_Opening_UI::PlayButtonClicked()
     SwitchWidgetPanal(C_Common::MANAGER_SELECT_PHASE);
     // フェーズ変更
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-    if (_instance) _instance->game_phase = C_Common::MANAGER_SELECT_PHASE;
+    if (_instance == nullptr) return;
+
+    _instance->game_phase = C_Common::MANAGER_SELECT_PHASE; // フェーズ変更
+    SwitchEnhance(_instance->command); // ボタンエンハンス設定
 }
 
 // 終了ボタンクリック
