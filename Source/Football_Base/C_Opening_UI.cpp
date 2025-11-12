@@ -21,7 +21,78 @@ void UC_Opening_UI::NativeConstruct()
     {
         Quit_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::QuitButtonClicked);
     }
+    if (Long_Attack_Button) // ロングアタックボタン
+    {
+        Long_Attack_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LongAttackButtonClicked);
+    }
+    if (Lane_Attack_Button) // レーンアタックボタン
+    {
+        Lane_Attack_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LaneAttackButtonClicked);
+    }
+    if (Idle_Button) // アイドルボタン
+    {
+        Idle_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::IdleButtonClicked);
+    }
+    if (Escape_Pressing_Button) // プレス回避ボタン
+    {
+        Escape_Pressing_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::EscapePressingButtonClicked);
+    }
+}
 
+// ウィジェットパネル変更
+void UC_Opening_UI::SwitchWidgetPanal(int panalNum)
+{
+    if (UI_Switcher == nullptr) return;
+
+    UI_Switcher->SetActiveWidgetIndex(panalNum);
+}
+
+// エンハンスの表示・非表示
+void UC_Opening_UI::SwitchEnhance(int command)
+{
+    // エンハンス非表示
+    if (currentEnhance1) {
+        currentEnhance1->SetVisibility(ESlateVisibility::Hidden);
+    }
+    if (currentEnhance2) {
+        currentEnhance2->SetVisibility(ESlateVisibility::Hidden);
+    }
+    //if (currentText) {
+    //    currentText->SetColorAndOpacity(FColor::White);
+    //}
+
+    // エンハンスの取得
+    if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
+        currentEnhance1 = Escape_Press_Enhance_1;
+        currentEnhance2 = Escape_Press_Enhance_2;
+        //currentText = Escape_Press_Text;
+    }
+    else if (command == C_Common::LONG_ATTACK_COMMAND_NO) {
+        currentEnhance1 = Long_Attack_Enhance_1;
+        currentEnhance2 = Long_Attack_Enhance_2;
+        //currentText = Long_Attack_Text;
+    }
+    else if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
+        currentEnhance1 = Lane_Attack_Enhance_1;
+        currentEnhance2 = Lane_Attack_Enhance_2;
+        //currentText = Lane_Attack_Text;
+    }
+    else {
+        currentEnhance1 = Idle_Enhance_1;
+        currentEnhance2 = Idle_Enhance_2;
+        //currentText = Idle_Text;
+    }
+
+    // エンハンス表示
+    if (currentEnhance1) {
+        currentEnhance1->SetVisibility(ESlateVisibility::Visible);
+    }
+    if (currentEnhance2) {
+        currentEnhance2->SetVisibility(ESlateVisibility::Visible);
+    }
+    //if (currentText) {
+    //    currentText->SetColorAndOpacity(textEnhanceColor);
+    //}
 }
 
 // ゲームスタートボタンクリック
@@ -29,7 +100,7 @@ void UC_Opening_UI::PlayButtonClicked()
 {
     // ●マネージャー選択フェーズへ
     // UI変更
-    UI_Switcher->SetActiveWidgetIndex(C_Common::MANAGER_SELECT_PHASE);
+    SwitchWidgetPanal(C_Common::MANAGER_SELECT_PHASE);
     // フェーズ変更
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
     if (_instance) _instance->game_phase = C_Common::MANAGER_SELECT_PHASE;
@@ -39,4 +110,48 @@ void UC_Opening_UI::PlayButtonClicked()
 void UC_Opening_UI::QuitButtonClicked()
 {
     UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(), EQuitPreference::Quit, false); // ゲーム終了
+}
+
+// ロングアタックボタンクリック
+void UC_Opening_UI::LongAttackButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::LONG_ATTACK_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// レーンアタックボタンクリック
+void UC_Opening_UI::LaneAttackButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::LANE_ATTACK_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// アイドルボタンクリック
+void UC_Opening_UI::IdleButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = 0;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// プレス回避ボタンクリック
+void UC_Opening_UI::EscapePressingButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
 }

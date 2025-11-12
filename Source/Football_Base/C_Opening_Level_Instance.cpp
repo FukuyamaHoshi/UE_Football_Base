@@ -7,7 +7,6 @@
 #include <Engine/DecalActor.h>
 #include "My_Game_Instance.h"
 #include "C_Common.h"
-#include "C_Opening_UI.h"
 
 // Sets default values
 AC_Opening_Level_Instance::AC_Opening_Level_Instance()
@@ -15,6 +14,12 @@ AC_Opening_Level_Instance::AC_Opening_Level_Instance()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// *** オープニングUIサブクラス取得 ***
+	ConstructorHelpers::FClassFinder<UC_Opening_UI> _openingUIFinder(TEXT("/Game/UI/WBP_Opening"));
+	if (_openingUIFinder.Class) {
+		openingUISubClass = _openingUIFinder.Class;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -23,6 +28,14 @@ void AC_Opening_Level_Instance::BeginPlay()
 	Super::BeginPlay();
 
 	//UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
+
+	// *** ウィジェット表示 ***
+	openingUI = CreateWidget<UC_Opening_UI>(GetWorld(), openingUISubClass);
+	if (openingUI)
+	{
+		openingUI->AddToViewport(); // Adds the widget to the screen
+	}
+	// ***
 
 	SetupInput(); // 入力設定
 
@@ -78,14 +91,26 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// *** ホバー時処理 ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 	
+	// *** ホバー時処理 ***
 	if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
 		Hover();
 	}
 	// ***
+
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+	
+	// *** コマンド変更監視 ***
+	if (_instance->command != currentCommand) { // コマンド変更がされた時
+		currentCommand = _instance->command; // コマンド一時保存
+
+		// -- コマンド開始時処理 --
+		if (homeManager) homeManager->ChangeAnim(currentCommand); // アニメーション切り替え(マネージャー)
+	}
+	// ***
+
 
 	// *** ポストプレイ処理 ***
 	if (postPlayCount > 0) {
@@ -200,7 +225,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	// ***********
 
 	// *** プレス回避行動 ***
-	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
+	if (currentCommand == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
 		if (ballHolder->ballKeepingCount < ESCAPE_INTERVAL) return; // インターバル設定
 
@@ -266,7 +291,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 	
 	// *** ロングアタック行動 ***
-	if (command == C_Common::LONG_ATTACK_COMMAND_NO) {
+	if (currentCommand == C_Common::LONG_ATTACK_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
 		if (ballHolder->position >= C_Common::LH_POSITION) return; // DFのプレイヤーのみ発動
 
@@ -329,7 +354,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 
 	// *** レーンアタック行動 ***
-	if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
+	if (currentCommand == C_Common::LANE_ATTACK_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
 
 		// -- チーム取得 --
@@ -454,82 +479,41 @@ void AC_Opening_Level_Instance::PressedLeft()
 // Wキー(プレス)イベント
 void AC_Opening_Level_Instance::PressedW()
 {
-	UKismetSystemLibrary::PrintString(this, "W", true, true, FColor::Blue, 2.0f, TEXT("None"));
-
-	// *** ロングアタックコマンド ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
-		// コマンド切り替え
-		if (ballHolder) {
-			command = C_Common::LONG_ATTACK_COMMAND_NO;
-			homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-		}
-		else {
-			command = 0;
-		}
-		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-	}
+	_instance->command = C_Common::LONG_ATTACK_COMMAND_NO; // ロングアタック変更
 }
 
 // Aキー(プレス)イベント
 void AC_Opening_Level_Instance::PressedA()
 {
-	UKismetSystemLibrary::PrintString(this, "A", true, true, FColor::Blue, 2.0f, TEXT("None"));
-
-	// *** プレス回避コマンド ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
-		// コマンド切り替え
-		if (ballHolder) {
-			command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
-			homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-		}
-		else {
-			command = 0;
-		}
-		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-	}
+	_instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO; // プレス回避変更
 }
 
 // Sキー(プレス)イベント
 void AC_Opening_Level_Instance::PressedS()
 {
-	UKismetSystemLibrary::PrintString(this, "S", true, true, FColor::Blue, 2.0f, TEXT("None"));
-
-	// *** アイドルコマンド ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
-		// コマンド切り替え
-		command = 0;
-		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-	}
+	_instance->command = 0; // アイドル変更
 }
 
 // Dキー(プレス)イベント
 void AC_Opening_Level_Instance::PressedD()
 {
-	UKismetSystemLibrary::PrintString(this, "D", true, true, FColor::Blue, 2.0f, TEXT("None"));
-
-	// *** レーンアタックコマンド ***
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	if (_instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合フェーズのみ
-		// コマンド切り替え
-		if (ballHolder) {
-			command = C_Common::LANE_ATTACK_COMMAND_NO;
-		}
-		else {
-			command = 0;
-		}
-		homeManager->ChangeAnim(command); // アニメーション切り替え(マネージャー)
-	}
+	_instance->command = C_Common::LANE_ATTACK_COMMAND_NO; // レーン攻撃変更
 }
 
 // ホバー処理
@@ -595,6 +579,10 @@ void AC_Opening_Level_Instance::MatchStart()
 
 	// -- フェーズ切り替え --
 	_instance->game_phase = C_Common::MATCH_PHASE;
+	// --
+
+	// -- ウィジェット切り替え --
+	openingUI->SwitchWidgetPanal(C_Common::MATCH_PHASE);
 	// --
 
 

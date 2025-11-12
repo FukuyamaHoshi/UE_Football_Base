@@ -7,6 +7,7 @@
 #include "C_Manager.h"
 #include "C_Player.h"
 #include "C_Soccer_Ball.h"
+#include "C_Opening_UI.h"
 #include "C_Opening_Level_Instance.generated.h"
 
 UCLASS()
@@ -81,7 +82,7 @@ private:
 	TArray<AC_Player*> awayPlayers = {}; // AWAYプレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
 	AC_Soccer_Ball* ball = nullptr; // ボール
-	int command = 0; // 現在の戦術コマンド
+	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
@@ -92,6 +93,8 @@ private:
 	AC_Player* passAndGoPlayer = nullptr; // 一時保存 (ポストプレイ)
 	AC_Player* postPlayer = nullptr; // 一時保存 (ポストプレイ)
 	AC_Manager* homeManager = nullptr; // マネージャー(HOME)
+	UC_Opening_UI* openingUI = nullptr; // オープニングUI (インスタンス)
+	TSubclassOf<UUserWidget> openingUISubClass = nullptr; // オープニングUI (サブクラス) *これはウィジェット表示のためのクラス
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
