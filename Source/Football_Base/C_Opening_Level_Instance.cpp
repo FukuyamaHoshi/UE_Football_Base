@@ -4,7 +4,6 @@
 #include "C_Opening_Level_Instance.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
-#include <Engine/DecalActor.h>
 #include "My_Game_Instance.h"
 #include "C_Common.h"
 
@@ -41,7 +40,7 @@ void AC_Opening_Level_Instance::BeginPlay()
 
 	// *** デカール取得 ***
 	// (コンストラクタ以外のマテリアルはLoadObject使用)
-	playerSelectedDecal = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
+	managerSelectedDecalMaterial = LoadObject<UMaterial>(NULL, TEXT("/Game/Materials/M_Decal_Selected_Player.M_Decal_Selected_Player"), NULL, LOAD_None, NULL);
 	// ***
 
 	// *** 全てのプレイヤーを取得 ***
@@ -95,13 +94,59 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	if (_instance == nullptr)  return;
 	
 	// *** ホバー時処理 ***
-	if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // マネージャー選択フェーズのみ
+	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::MANAGER_SELECT_AFTER_PHASE) { // マネージャー選択(前・後)フェーズのみ
 		Hover();
 	}
 	// ***
 
+	if (ball == nullptr) return; // ボール取得失敗
 	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+	// *** 試合終了時 ***
+	if (isGoal && ball->isMoving == false) {
+		
+		if (isOnceGoal) return; // 一度のみの処理
+		isOnceGoal = true; // フラグON
+		
+		// -- ゴール・被ゴールチーム取得 --
+		float _ballX = ball->GetActorLocation().X;
+		bool _isHomeGoal = (_ballX > 0) ? true : false; // どのチームのゴールか (ボール位置から)
+		TArray<AC_Player*> _scoreTeam = {}; // ゴールチーム
+		TArray<AC_Player*> _notScoreTeam = {}; // 被ゴールチーム
+		if (_isHomeGoal) {
+			_scoreTeam = homePlayers; // ゴールチーム
+			_notScoreTeam = awayPlayers; // 被ゴールチーム
+		}
+		else {
+			_scoreTeam = awayPlayers; // ゴールチーム
+			_notScoreTeam = homePlayers; // 被ゴールチーム
+		}
+
+		// -- ゴールアニメーション --
+		// ●ゴールチーム
+		for (AC_Player* _player : _scoreTeam) {
+			_player->CheerMotion();
+		}
+		// ●被ゴールチーム
+		for (AC_Player* _player : _notScoreTeam) {
+			_player->SadMotion();
+		}
+		// ●HOMEマネージャー
+		if (homeManager) homeManager->CheerAnim();
+
+		return;
+	}
+	// ***
 	
+	// *** 試合開始時 ***
+	if (isOnceMatchStart)
+	{
+		isOnceMatchStart = false;
+		MatchStart();
+	}
+	// ***
+
+
 	// *** コマンド変更監視 ***
 	if (_instance->command != currentCommand) { // コマンド変更がされた時
 		currentCommand = _instance->command; // コマンド一時保存
@@ -219,10 +264,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 	// -------------- コマンド処理 ---------------------
 	// *** 制限 ***
-	if (ball) {
-		if (ball->isMoving) return; // ボール移動中
-	}
+	if (ball->isMoving) return; // ボール移動中
 	// ***********
+
 
 	// *** プレス回避行動 ***
 	if (currentCommand == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
@@ -440,7 +484,7 @@ void AC_Opening_Level_Instance::PressedLeft()
 {
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance) {
-		if (_instance->game_phase == C_Common::MANAGER_SELECT_PHASE) { // *(制限)マネージャー選択フェーズのみ
+		if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::MANAGER_SELECT_AFTER_PHASE) { // *(制限)マネージャー選択(前・後)フェーズのみ
 			
 			// マウス位置情報取得処理
 			TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
@@ -452,26 +496,29 @@ void AC_Opening_Level_Instance::PressedLeft()
 
 
 			// ●デカール表示
-			if (playerSelectedDecal) // マテリアルが取得できている
+			if (managerSelectedDecalMaterial) // マテリアルが取得できている
 			{
 				FVector _location = hitResult.GetActor()->GetActorLocation();
 				_location.Z = 0; // 高さ調整
 				FRotator _rotation = GetActorRotation();
 				FVector _size = FVector(0.4f, 0.4f, 0.4f);
-				ADecalActor* _decalActor = GetWorld()->SpawnActor<ADecalActor>(
+				managerSelectedDecalActor = GetWorld()->SpawnActor<ADecalActor>( // アクタースポーン
 					_location,
 					_rotation
 				);
 				// マテリアル表示
-				if (_decalActor)
+				if (managerSelectedDecalActor)
 				{
-					_decalActor->SetDecalMaterial(playerSelectedDecal); // マテリアルセット
-					_decalActor->SetActorScale3D(_size); // サイズセット
+					managerSelectedDecalActor->SetDecalMaterial(managerSelectedDecalMaterial); // マテリアルセット
+					managerSelectedDecalActor->SetActorScale3D(_size); // サイズセット
 				}
 			}
-
-			// ●試合開始処理
-			MatchStart();
+			
+			// ●フェーズ変更 (マネージャー選択後フェーズへ)
+			if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
+				_instance->game_phase = C_Common::MANAGER_SELECT_AFTER_PHASE; // フェーズ
+				openingUI->SwitchWidgetPanal(C_Common::MANAGER_SELECT_AFTER_PHASE); // パネル
+			}
 		}
 	}
 }
@@ -577,12 +624,9 @@ void AC_Opening_Level_Instance::MatchStart()
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr) return;
 
-	// -- フェーズ切り替え --
-	_instance->game_phase = C_Common::MATCH_PHASE;
-	// --
-
-	// -- ウィジェット切り替え --
-	openingUI->SwitchWidgetPanal(C_Common::MATCH_PHASE);
+	// -- デカール・アウトライン削除 --
+	if (managerSelectedDecalActor) managerSelectedDecalActor->Destroy();
+	if (currentHoverManager) currentHoverManager->HiddenOutline();
 	// --
 
 
@@ -625,7 +669,6 @@ void AC_Opening_Level_Instance::MatchStart()
 		_p->MoveTo(_targetLocation);
 	}
 	// --
-
 }
 
 // ショートパス
@@ -689,6 +732,9 @@ void AC_Opening_Level_Instance::Shoot()
 		// ボールホルダーOFF
 		ballHolder->isBallHolder = false;
 		ballHolder = nullptr;
+		
+		// ゴールフラグ
+		isGoal = true;
 	}
 }
 

@@ -38,6 +38,10 @@ void AC_Player::BeginPlay()
 	trapAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Trap.AM_Trap"), NULL, LOAD_None, NULL);
 	regateAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Regate.AM_Regate"), NULL, LOAD_None, NULL);
 	tackleAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Tackle.AM_Tackle"), NULL, LOAD_None, NULL);
+	sad1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Sad_1.AM_Sad_1"), NULL, LOAD_None, NULL);
+	sad2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Sad_2.AM_Sad_2"), NULL, LOAD_None, NULL);
+	cheer1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_1.AM_Cheer_1"), NULL, LOAD_None, NULL);
+	cheer2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_2.AM_Cheer_2"), NULL, LOAD_None, NULL);
 	// ***
 
 	// *** アニメーションインスタンス取得 ***
@@ -572,5 +576,31 @@ void AC_Player::Drrible()
 
 	// ボールキープ時間リセット
 	ballKeepingCount = 0.0f;
+}
+
+// 喜びアニメーション
+void AC_Player::CheerMotion()
+{
+	bool _b = FMath::RandBool(); // ランダム
+
+	if (_b) {
+		if (cheer1Anim && playerAnimInstance) playerAnimInstance->Montage_Play(cheer1Anim);
+	}
+	else {
+		if (cheer2Anim && playerAnimInstance) playerAnimInstance->Montage_Play(cheer2Anim);
+	}
+}
+
+// 悲しみアニメーション
+void AC_Player::SadMotion()
+{
+	bool _b = FMath::RandBool(); // ランダム
+
+	if (_b) {
+		if (sad1Anim && playerAnimInstance) playerAnimInstance->Montage_Play(sad1Anim);
+	}
+	else {
+		if (sad2Anim && playerAnimInstance) playerAnimInstance->Montage_Play(sad2Anim);
+	}
 }
 

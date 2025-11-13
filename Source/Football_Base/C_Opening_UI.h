@@ -97,12 +97,15 @@ protected:
         UTextBlock* Lane_Attack_Text;
         // ***
 
+        // プレイボタンクリック
         UFUNCTION()
-        // ゲームスタートボタンクリック
         void PlayButtonClicked();
-        UFUNCTION()
         // 終了ボタンクリック
+        UFUNCTION()
         void QuitButtonClicked();
+        // 試合開始ボタンクリック
+        UFUNCTION()
+        void MatchStartButtonClicked();
 
         // *** 試合フェーズ ***
         UFUNCTION()

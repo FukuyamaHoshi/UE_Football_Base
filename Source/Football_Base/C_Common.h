@@ -110,10 +110,13 @@ public:
     // ゲームフェーズ (ゲーム中の場面) *マッチフェーズでない
     // ---------------------
     // 0: オープニング
-    // 1: マネージャー選択
+    // 1: マネージャー選択(前)
+    // 2: マネージャー選択(後)
+    // 2: 試合
     // ---------------------
-    static constexpr int MANAGER_SELECT_PHASE = 1; // マネージャー選択
-    static constexpr int MATCH_PHASE = 2; // 試合中
+    static constexpr int MANAGER_SELECT_BEFORE_PHASE = 1; // マネージャー選択(前)
+    static constexpr int MANAGER_SELECT_AFTER_PHASE = 2; // マネージャー選択(後)
+    static constexpr int MATCH_PHASE = 3; // 試合中
     
     
     // ***** ゲーム内時間ごとの名称 *****************

@@ -45,6 +45,8 @@ void AC_Manager::BeginPlay()
 	laneAttackAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Thomas/AM_Thomas_Lane_Attack.AM_Thomas_Lane_Attack"), NULL, LOAD_None, NULL);
 	longAttackAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Thomas/AM_Thomas_Long_Attack.AM_Thomas_Long_Attack"), NULL, LOAD_None, NULL);
 	escapePressAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Thomas/AM_Thomas_Escape_Press.AM_Thomas_Escape_Press"), NULL, LOAD_None, NULL);
+	cheer1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Thomas/AM_Cheer_1.AM_Cheer_1"), NULL, LOAD_None, NULL);
+	cheer2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Thomas/AM_Cheer_2.AM_Cheer_2"), NULL, LOAD_None, NULL);
 	// ***
 }
 
@@ -75,7 +77,7 @@ void AC_Manager::HiddenOutline()
 	if (mySkeltalMesh) mySkeltalMesh->SetOverlayMaterial(nullptr);
 }
 
-// アニメーション切り替え
+// コマンドアニメーション切り替え
 void AC_Manager::ChangeAnim(int command)
 {
 	if (animInstance == nullptr) return;
@@ -96,5 +98,18 @@ void AC_Manager::ChangeAnim(int command)
 	}
 	else { // アイドル
 		if (idleAnim) animInstance->Montage_Play(idleAnim);
+	}
+}
+
+// 喜びアニメーション
+void AC_Manager::CheerAnim()
+{
+	bool _b = FMath::RandBool(); // ランダム
+
+	if (_b) {
+		if (cheer1Anim && animInstance) animInstance->Montage_Play(cheer1Anim);
+	}
+	else {
+		if (cheer2Anim && animInstance) animInstance->Montage_Play(cheer2Anim);
 	}
 }

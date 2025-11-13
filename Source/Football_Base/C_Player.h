@@ -61,6 +61,10 @@ public:
 	void Tackle();
 	// ドリブル (前進)
 	void Drrible();
+	// 喜びアニメーション
+	void CheerMotion();
+	// 悲しみアニメーション
+	void SadMotion();
 
 private:
 	// 移動処理
@@ -75,6 +79,10 @@ private:
 	UAnimMontage* longPassAnim = nullptr; // アニメーション(ロングパス)
 	UAnimMontage* regateAnim = nullptr; // アニメーション(レガテ)
 	UAnimMontage* tackleAnim = nullptr; // アニメーション(タックル)
+	UAnimMontage* sad1Anim = nullptr; // アニメーション(被ゴール1)
+	UAnimMontage* sad2Anim = nullptr; // アニメーション(被ゴール2)
+	UAnimMontage* cheer1Anim = nullptr; // アニメーション(ゴール1)
+	UAnimMontage* cheer2Anim = nullptr; // アニメーション(ゴール2)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)

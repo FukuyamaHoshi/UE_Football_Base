@@ -32,8 +32,10 @@ public:
 	void VisibleOutline();
 	// アウトライン非表示
 	void HiddenOutline();
-	// アニメーション切り替え
+	// コマンドアニメーション切り替え
 	void ChangeAnim(int command);
+	// 喜びアニメーション
+	void CheerAnim();
 
 private:
 	USkeletalMeshComponent* mySkeltalMesh = nullptr; // メッシュ
@@ -43,5 +45,7 @@ private:
 	UAnimMontage* laneAttackAnim = nullptr; // アニメーション(レーンアタック)
 	UAnimMontage* longAttackAnim = nullptr; // アニメーション(ロングアタック)
 	UAnimMontage* escapePressAnim = nullptr; // アニメーション(プレス回避)
+	UAnimMontage* cheer1Anim = nullptr; // アニメーション(喜び)
+	UAnimMontage* cheer2Anim = nullptr; // アニメーション(喜び2)
 
 };

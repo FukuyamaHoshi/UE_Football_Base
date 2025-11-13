@@ -21,6 +21,10 @@ void UC_Opening_UI::NativeConstruct()
     {
         Quit_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::QuitButtonClicked);
     }
+    if (Match_Start_Button) // 試合開始ボタン
+    {
+        Match_Start_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::MatchStartButtonClicked);
+    }
     if (Long_Attack_Not_Press_Button) // ロングアタックボタン
     {
         Long_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LongAttackButtonClicked);
@@ -105,24 +109,36 @@ void UC_Opening_UI::SwitchEnhance(int command)
     //}
 }
 
-// ゲームスタートボタンクリック
+// プレイボタンクリック
 void UC_Opening_UI::PlayButtonClicked()
 {
     // ●マネージャー選択フェーズへ
     // UI変更
-    SwitchWidgetPanal(C_Common::MANAGER_SELECT_PHASE);
+    SwitchWidgetPanal(C_Common::MANAGER_SELECT_BEFORE_PHASE);
     // フェーズ変更
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
     if (_instance == nullptr) return;
 
-    _instance->game_phase = C_Common::MANAGER_SELECT_PHASE; // フェーズ変更
-    SwitchEnhance(_instance->command); // ボタンエンハンス設定
+    _instance->game_phase = C_Common::MANAGER_SELECT_BEFORE_PHASE; // フェーズ変更
+    
 }
 
 // 終了ボタンクリック
 void UC_Opening_UI::QuitButtonClicked()
 {
     UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(), EQuitPreference::Quit, false); // ゲーム終了
+}
+
+// 試合開始ボタンクリック
+void UC_Opening_UI::MatchStartButtonClicked()
+{
+    // フェーズ変更
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr) return;
+
+    SwitchWidgetPanal(C_Common::MATCH_PHASE); // UI変更
+    _instance->game_phase = C_Common::MATCH_PHASE; // フェーズ変更
+    SwitchEnhance(_instance->command); // ボタンエンハンス設定
 }
 
 // ロングアタックボタンクリック

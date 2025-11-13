@@ -8,6 +8,7 @@
 #include "C_Player.h"
 #include "C_Soccer_Ball.h"
 #include "C_Opening_UI.h"
+#include <Engine/DecalActor.h>
 #include "C_Opening_Level_Instance.generated.h"
 
 UCLASS()
@@ -75,7 +76,8 @@ private:
 	void PostPlay();
 
 
-	UMaterial* playerSelectedDecal = nullptr; // プレイヤー選択デカール
+	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
+	ADecalActor* managerSelectedDecalActor = nullptr; // マネージャー選択デカール (アクター)
 	AC_Manager* currentHoverManager = nullptr; // 現在ホバー中のマネージャー
 	TArray<AC_Player*> allPlayers = {}; // 全てのプレイヤー
 	TArray<AC_Player*> homePlayers = {}; // HOMEプレイヤー
@@ -95,6 +97,9 @@ private:
 	AC_Manager* homeManager = nullptr; // マネージャー(HOME)
 	UC_Opening_UI* openingUI = nullptr; // オープニングUI (インスタンス)
 	TSubclassOf<UUserWidget> openingUISubClass = nullptr; // オープニングUI (サブクラス) *これはウィジェット表示のためのクラス
+	bool isOnceMatchStart = true; // 試合開始時に一度のみ実行する判定
+	bool isGoal = false; // ゴール判定
+	bool isOnceGoal = false; // ゴール時に一度のみする
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
