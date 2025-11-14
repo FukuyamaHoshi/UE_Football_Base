@@ -655,7 +655,7 @@ void AC_Opening_Level_Instance::MatchStart()
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X -= C_Common::TILE_SIZE * 2;
-		_p->MoveTo(_targetLocation);
+		_p->RunTo(_targetLocation);
 	}
 	// --
 
@@ -666,7 +666,7 @@ void AC_Opening_Level_Instance::MatchStart()
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X += C_Common::TILE_SIZE;
-		_p->MoveTo(_targetLocation);
+		_p->RunTo(_targetLocation);
 	}
 	// --
 }
@@ -741,7 +741,7 @@ void AC_Opening_Level_Instance::Shoot()
 // 裏抜け (走る)
 void AC_Opening_Level_Instance::GetBehind(AC_Player* runPlayer, FVector toLocation)
 {
-	runPlayer->MoveTo(toLocation);
+	runPlayer->RunTo(toLocation);
 	getBehindingPlayer = runPlayer;
 }
 
@@ -827,7 +827,7 @@ void AC_Opening_Level_Instance::LineBreak()
 		else {
 			_location.X -= (C_Common::TILE_SIZE * 2);
 		}
-		_player->MoveTo(_location);
+		_player->RunTo(_location);
 	}
 	// --
 	
@@ -843,7 +843,7 @@ void AC_Opening_Level_Instance::LineBreak()
 		else {
 			_location.X += (C_Common::TILE_SIZE * 2);
 		}
-		_player->MoveTo(_location);
+		_player->RunTo(_location);
 	}
 	// --
 }
@@ -902,7 +902,7 @@ void AC_Opening_Level_Instance::PostPlay()
 
 		// アクション
 		ShortPass(postPlayer); // ショートパス
-		passAndGoPlayer->MoveTo(_ToLocation); // 前進
+		passAndGoPlayer->RunTo(_ToLocation); // 前進
 	}
 	else if (postPlayCount == 2)
 	{

@@ -87,7 +87,7 @@ void AC_Player::Tick(float DeltaTime)
 	
 	// *** 移動処理 ***
 	if (isMoving) {
-		Move();
+		Move(DeltaTime);
 
 		return;
 	}
@@ -375,8 +375,8 @@ void AC_Player::BallKeeping()
 	}
 }
 
-// 移動 (セット)
-void AC_Player::MoveTo(FVector toLocation)
+// 走る (セット)
+void AC_Player::RunTo(FVector toLocation)
 {
 	// ターゲット方向へ回転
 	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), toLocation);
@@ -425,6 +425,9 @@ void AC_Player::RegateDrrible()
 	isMoving = true; // 移動開始
 	isDrribling = true; // ドリブル開始
 
+	// アニメーション時間取得
+	if (regateAnim) moveTotalTime = regateAnim->GetPlayLength(); // 移動時間 (指定)
+
 	// プレイヤーアニメーション
 	if (regateAnim && playerAnimInstance)
 		playerAnimInstance->Montage_Play(regateAnim);
@@ -452,20 +455,32 @@ void AC_Player::Tackle()
 }
 
 // 移動処理
-void AC_Player::Move() {
-	// 引数セット
-	FVector _currentLocation = GetActorLocation(); // 現在の位置を取得
-	float time = GetWorld()->GetDeltaSeconds(); // 前のフレームからの経過時間を取得
+void AC_Player::Move(float dTime) {
+	
+	// *** 移動処理 ***
+	if (moveTotalTime == 0.0f) moveTotalTime = 1.0f; // 移動時間指定
+	movingCount += dTime; // 経過時間
+	float _alpha = FMath::Clamp(movingCount / moveTotalTime, 0.0f, 1.0f); // 0から1にクランプ
+
+	FVector _newPlayerLocation = FMath::Lerp(fromLocation, targetLocation, _alpha);
+	SetActorLocation(_newPlayerLocation); // 移動
+	// ***
+	
+
+	// *** ドリブル時処理 ***
+	if (isDrribling && ball) {
+		//FVector _ballLocation = _newPlayerLocation + (GetActorForwardVector() * 20.0f); // プレイヤーの前の位置;
+		ball->SetActorLocation(_newPlayerLocation);
+	}
+	// ***
+
 
 	// ** 移動終了処理 **
-	// 現在の距離を正規化
-	float _targetDistance = FVector2D::Distance(FVector2D(fromLocation), FVector2D(targetLocation)); // 目的地までの距離
-	float _currentDistance = FVector2D::Distance(FVector2D(_currentLocation), FVector2D(targetLocation)); // 現在の位置から目的地までの距離
-	float _normal = FMath::Abs((_currentDistance / _targetDistance) - 1.0f);
-	
-	if (_normal > 0.93f) {
-		SetActorLocation(targetLocation); // 位置をターゲット位置へ
+	if (_alpha >= 1.0f)
+	{
 		targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
+		moveTotalTime = 0.0f; // 移動時間(指定)リセット
+		movingCount = 0.0f; // 移動カウントリセット
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
 		tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y); // タイルNo更新
@@ -477,25 +492,17 @@ void AC_Player::Move() {
 				break;
 			}
 		}
+
+		// -- ドリブル時 --
 		isDrribling = false; // *ドリブル終了
 		// ドリブルアニメーション
 		if (playerAnimInstance)
 			playerAnimInstance->isDrrible = false; // 終了
+		// --
 
 		return;
 	}
-
-	// ターゲットまでの位置取得
-	FVector _newPlayerLocation = UKismetMathLibrary::VInterpTo(_currentLocation, targetLocation, time, C_Common::PIECE_SPEED * 0.3);
-
-	// *ドリブル時処理
-	if (isDrribling && ball) {
-		FVector _ballLocation = _newPlayerLocation + (GetActorForwardVector() * 30.0f); // プレイヤーの前の位置;
-		ball->SetActorLocation(_ballLocation);
-	}
-
-	// 自身に新しい位置を適用
-	SetActorLocation(_newPlayerLocation);
+	// ***
 }
 
 // 位置からタイルＮｏ取得

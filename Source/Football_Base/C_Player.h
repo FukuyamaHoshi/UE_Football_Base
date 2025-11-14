@@ -53,8 +53,8 @@ public:
 	void Shoot();
 	// ボール保持
 	void BallKeeping();
-	// 移動(セット)
-	void MoveTo(FVector toLocation);
+	// 走る(セット)
+	void RunTo(FVector toLocation);
 	// ドリブル (相手を抜く)
 	void RegateDrrible();
 	// タックル (Root Motion)
@@ -68,7 +68,7 @@ public:
 
 private:
 	// 移動処理
-	void Move();
+	void Move(float dTime);
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation(float x, float y);
 
@@ -90,6 +90,8 @@ private:
 	bool isBallKeeping = false; // ボールキープ判定
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
 	bool isDrribling = false; // ドリブル中か
+	float movingCount = 0.0f; // 移動経過時間
+	float moveTotalTime = 0.0f; // 移動時間(指定)
 
 	const FVector HOME_GOAL_LOCATION = FVector(-1200.0f, 0, 0); // ゴール位置(home)
 	const FVector AWAY_GOAL_LOCATION = FVector(1200.0f, 0, 0); // ゴール位置(away)
