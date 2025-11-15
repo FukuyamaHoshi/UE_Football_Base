@@ -102,6 +102,10 @@ private:
 	bool isOnceMatchStart = true; // 試合開始時に一度のみ実行する判定
 	bool isGoal = false; // ゴール判定
 	bool isOnceGoal = false; // ゴール時に一度のみする
+	bool isPoketman = false; // ポケットマン処理開始
+	AC_Player* currentPoketman = nullptr; // 現在処理中のポケットマン
+	int poketmanPlayCount = 0; // ポケットマン手順回数カウンター
+	FVector poketmanFromLocation = FVector(0, 0, 0); // ポケットマン移動前の位置
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

@@ -78,6 +78,8 @@ public:
 	void PostmanAppeal(AC_Player* ballHolder);
 	// ランナーアピール
 	void RunnerAppeal();
+	// ポケットマンアピール
+	void PoketmanAppeal(AC_Player* ballHolder);
 
 
 private:
@@ -101,6 +103,7 @@ private:
 	UAnimMontage* targetmanAppealAnim = nullptr; // アニメーション(ターゲットマンアピール)
 	UAnimMontage* postmanAppealAnim = nullptr; // アニメーション(ポストマンアピール)
 	UAnimMontage* runnerAppealAnim = nullptr; // アニメーション(ランナーアピール)
+	UAnimMontage* poketmanAppealAnim = nullptr; // アニメーション(ポケットマンアピール)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)

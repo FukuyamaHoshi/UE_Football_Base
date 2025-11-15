@@ -47,6 +47,7 @@ void AC_Player::BeginPlay()
 	targetmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Target.AM_Free_Target"), NULL, LOAD_None, NULL);
 	postmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Post.AM_Free_Post"), NULL, LOAD_None, NULL);
 	runnerAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Runner.AM_Free_Runner"), NULL, LOAD_None, NULL);
+	poketmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Poket.AM_Free_Poket"), NULL, LOAD_None, NULL);
 	// ***
 
 	// *** アニメーションインスタンス取得 ***
@@ -688,5 +689,18 @@ void AC_Player::RunnerAppeal()
 	SetActorRotation(_q);
 
 	if (runnerAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(runnerAppealAnim);
+}
+
+// ポケットマンアピール
+void AC_Player::PoketmanAppeal(AC_Player* ballHolder)
+{
+	// ボールホルダー方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ballHolder->GetActorLocation());
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	if (poketmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(poketmanAppealAnim);
 }
 

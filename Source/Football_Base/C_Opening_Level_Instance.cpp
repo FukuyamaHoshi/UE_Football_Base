@@ -168,6 +168,53 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	// ***
 	
 
+	// *** ポケットマン処理 ***
+	if (isPoketman) {
+		if (currentPoketman->isMoving) return; // ポケットマン移動中
+		if (ball) {
+			if (ball->isMoving) return; // ボール移動中
+		}
+
+		// -- 実行処理 --
+		poketmanPlayCount++; // インクリメント
+
+		if (poketmanPlayCount == 1) {
+			// < パスポイントへ移動 >
+			FVector _location = FVector(-577.0f, 0, 100.0f); // (*仮) CBの位置
+			poketmanFromLocation = currentPoketman->GetActorLocation(); // 移動前の位置
+			currentPoketman->RunTo(_location);
+		}
+		else if (poketmanPlayCount == 2) {
+			// < パスを受ける >
+			ShortPass(currentPoketman);
+		}
+		else {
+			// 終了
+			isPoketman = false;
+		}
+
+		return;
+	}
+	// --
+
+	// -- 元の位置に移動・リセット --
+	if (poketmanPlayCount > 0) {
+		if (currentPoketman != ballHolder) { // ボールホルダーでない
+			if (ball->isMoving == false) { // ボール移動中以外
+
+				// < 元の位置に移動 >
+				currentPoketman->RunTo(poketmanFromLocation);
+
+				// リセット
+				poketmanPlayCount = 0;
+				currentPoketman = nullptr;
+				poketmanFromLocation = FVector(0, 0, 0);
+			}
+		}
+	}
+	// ***
+
+
 	// *** 裏抜けプレイヤー処理 ***
 	if (getBehindingPlayer) {
 		if (getBehindingPlayer->isMoving) return;
@@ -299,6 +346,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 				if (_p->ActorHasTag("TARGET")) _p->TargetmanAppeal(ballHolder); // ●ターゲットマン
 				if (_p->ActorHasTag("POST")) _p->PostmanAppeal(ballHolder); // ●ポストマン
 				if (_p->ActorHasTag("RUNNER")) _p->RunnerAppeal(); // ●ランナー
+				if (_p->ActorHasTag("POKET")) _p->PoketmanAppeal(ballHolder); // ●ポケットマン
 			}
 		}
 	}
@@ -314,6 +362,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		if (ballHolder == nullptr) return;
 		if (ballHolder->ballKeepingCount < ESCAPE_INTERVAL) return; // インターバル設定
 
+
 		// -- ボール保持チーム取得 --
 		TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
 		if (ballHolder->ActorHasTag(FName("HOME"))) {
@@ -322,25 +371,42 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		else {
 			_myTeamPlayers = awayPlayers;
 		}
-		// -- DFラインのプレイヤー取得 --
+
+		// -- DFラインのプレイヤー、ポケットマン取得 --
 		TArray<AC_Player*> _DFPlayers = {}; // DFプレイヤー
 		for (AC_Player* _p : _myTeamPlayers) {
 			if (_p->position <= C_Common::RSB_POSITION) {
 				_DFPlayers.Add(_p);
 			}
+			if (_p->ActorHasTag("POKET") && _p->position <= C_Common::RH_POSITION) { // ポケットマン (DF, MFのみ)
+				_p->position = C_Common::CB_POSITION; // *CBへポジション変更
+				_DFPlayers.Add(_p);
+			}
 		}
-		
+
 		// -- パス先のプレイヤー取得 --
 		AC_Player* _targetPlayer = nullptr; // パス先のプレイヤー
 		bool _isBreak = false; // *2重loop対応
 		if (ballHolder->position == C_Common::GK_POSITION) {
-			// ●ボール保持者がGK ( 左右へ展開 )
+			// ●ボール保持者がGK
+			// < 左右へ展開 >
 			for (int _i = C_Common::RSB_POSITION; _i > 0; _i--) { // LSB(1) ← RSB(5)
 				for (AC_Player* _player : _DFPlayers) {
+					if (GKEscapeToPlayers.Contains(_player)) continue; // *(制限)エスケープ済みのプレイヤー
 					
-					if (GetIsFree(_player) == false) continue; // *フリーのプレイヤーのみ
+					// -- ポケットマン (フリーでなくても可) --
+					if ((_i == _player->position && _player->ActorHasTag("POKET"))) {
+						_targetPlayer = _player;
+						GKEscapeToPlayers.Add(_targetPlayer); // 一時保存
+						_isBreak = true; // *2重loop対応
 
-					if (_i == _player->position && GKEscapeToPlayers.Contains(_player) == false) { // ポジション位置 && まだエスケープしてない
+						break;
+					}
+
+					if (GetIsFree(_player) == false) continue; // *(制限)フリーでない
+
+					// -- フリーのプレイヤー --
+					if (_i == _player->position) { // ポジション位置
 						_targetPlayer = _player;
 						GKEscapeToPlayers.Add(_targetPlayer); // 一時保存
 						_isBreak = true; // *2重loop対応
@@ -354,8 +420,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		}
 		else {
 			// 〇ボール保持者がGK以外
+			// < GKへパス >
 			for (AC_Player* _p : _myTeamPlayers) {
-				if ((_p->position == C_Common::GK_POSITION)) { // 必ずGKにパス
+				if ((_p->position == C_Common::GK_POSITION)) {
 					_targetPlayer = _p;
 
 					break;
@@ -365,6 +432,14 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		
 		if (_targetPlayer == nullptr) { // *プレイヤーが取得できなかった場合
 			GKEscapeToPlayers = {}; // 配列リセット
+
+			return;
+		}
+
+		// -- ポケットマン処理開始 --
+		if (_targetPlayer->ActorHasTag("POKET")) {
+			isPoketman = true;
+			currentPoketman = _targetPlayer;
 
 			return;
 		}
