@@ -6,6 +6,7 @@
 #include <Kismet/KismetMathLibrary.h>
 #include "C_Player_Anim_Instance.h"
 #include "C_Common.h"
+#include "My_Game_Instance.h"
 
 // Sets default values
 AC_Player::AC_Player()
@@ -42,6 +43,10 @@ void AC_Player::BeginPlay()
 	sad2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Sad_2.AM_Sad_2"), NULL, LOAD_None, NULL);
 	cheer1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_1.AM_Cheer_1"), NULL, LOAD_None, NULL);
 	cheer2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_2.AM_Cheer_2"), NULL, LOAD_None, NULL);
+	freeAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free.AM_Free"), NULL, LOAD_None, NULL);
+	targetmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Target.AM_Free_Target"), NULL, LOAD_None, NULL);
+	postmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Post.AM_Free_Post"), NULL, LOAD_None, NULL);
+	runnerAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Runner.AM_Free_Runner"), NULL, LOAD_None, NULL);
 	// ***
 
 	// *** アニメーションインスタンス取得 ***
@@ -144,7 +149,6 @@ void AC_Player::Tick(float DeltaTime)
 	else {
 		ballKeepingCount = 0.0f; // リセット
 	}
-
 	// ***
 }
 
@@ -394,7 +398,9 @@ void AC_Player::RunTo(FVector toLocation)
 	// アニメーション
 	if (playerAnimInstance)
 	{
-		playerAnimInstance->isRun = true;
+		// 第1引数はブレンドアウト時間 (任意)、第2引数は停止するモンタージュ (nullptrで全て対象)
+		playerAnimInstance->Montage_Stop(0.25f, nullptr); // アニメーションモンタージュ停止 (0.25秒かけてブレンドアウト)
+		playerAnimInstance->isRun = true; // ABP開始
 	}
 
 	// ONタイルプレイヤー削除
@@ -452,6 +458,27 @@ void AC_Player::Tackle()
 	// プレイヤーアニメーション
 	if (tackleAnim && playerAnimInstance)
 		playerAnimInstance->Montage_Play(tackleAnim);
+	
+	// ディフェンス姿勢解除
+	RemoveDefensiveStance();
+}
+
+// ディフェンス姿勢
+void AC_Player::SetDefensiveStance()
+{
+	// プレイヤーアニメーション
+	if (playerAnimInstance) {
+		playerAnimInstance->isDefensiveStance = true;
+	}
+}
+
+// 解除ディフェンス姿勢
+void AC_Player::RemoveDefensiveStance()
+{
+	// プレイヤーアニメーション
+	if (playerAnimInstance) {
+		playerAnimInstance->isDefensiveStance = false;
+	}
 }
 
 // 移動処理
@@ -609,5 +636,57 @@ void AC_Player::SadMotion()
 	else {
 		if (sad2Anim && playerAnimInstance) playerAnimInstance->Montage_Play(sad2Anim);
 	}
+}
+
+// フリーアピール
+void AC_Player::FreeAppeal(AC_Player* ballHolder)
+{
+	// ボールホルダー方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ballHolder->GetActorLocation());
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	if (freeAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(freeAppealAnim);
+}
+
+// ターゲットマンアピール
+void AC_Player::TargetmanAppeal(AC_Player* ballHolder)
+{
+	// ボールホルダー方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ballHolder->GetActorLocation());
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	if (targetmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(targetmanAppealAnim);
+}
+
+// ポストマンアピール
+void AC_Player::PostmanAppeal(AC_Player* ballHolder)
+{
+	// ボールホルダー方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), ballHolder->GetActorLocation());
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	if (postmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(postmanAppealAnim);
+}
+
+// ランナーアピール
+void AC_Player::RunnerAppeal()
+{
+	// ボールホルダー方向へ回転
+	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
+	FQuat _q = _rotation.Quaternion(); // 変換
+	_q.X = 0; // *Z軸のみ回転させる
+	_q.Y = 0; // *Z軸のみ回転させる
+	SetActorRotation(_q);
+
+	if (runnerAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(runnerAppealAnim);
 }
 

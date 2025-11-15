@@ -9,6 +9,7 @@
 #include "C_Soccer_Ball.h"
 #include "C_Opening_UI.h"
 #include <Engine/DecalActor.h>
+#include "C_Common.h"
 #include "C_Opening_Level_Instance.generated.h"
 
 UCLASS()
@@ -73,7 +74,7 @@ private:
 	// クロス
 	void Cross();
 	// ポストプレー
-	void PostPlay();
+	void PostPlay(bool isLong = false);
 
 
 	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
@@ -83,6 +84,7 @@ private:
 	TArray<AC_Player*> homePlayers = {}; // HOMEプレイヤー
 	TArray<AC_Player*> awayPlayers = {}; // AWAYプレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
+	AC_Player* preBallHolder = nullptr; // 前回のボールホルダー
 	AC_Soccer_Ball* ball = nullptr; // ボール
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
@@ -104,16 +106,16 @@ private:
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
 	{ 
-		FVector(900.0f, -610.0f, 100.0f), 
-		FVector(900.0f, -350.0f, 100.0f), 
-		FVector(900.0f, 0.0f, 100.0f), 
-		FVector(900.0f, 350.0f, 100.0f), 
-		FVector(900.0f, 610.0f, 100.0f) }; // ロングアタックのポイント (HOME)
+		FVector(825.0f, -660.0f, C_Common::BALL_BASE_LOCATION_Z), 
+		FVector(825.0f, -330.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(825.0f, 0.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(825.0f, 330.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(825.0f, 660.0f, C_Common::BALL_BASE_LOCATION_Z) }; // ロングアタックのポイント (HOME)
 	TArray<FVector> AWAY_LONG_ATTACK_POINTS = 
 	{ 
-		FVector(-900.0f, 610.0f, 100.0f), 
-		FVector(-900.0f, 350.0f, 100.0f), 
-		FVector(-900.0f, 0.0f, 100.0f), 
-		FVector(-900.0f, -350.0f, 100.0f), 
-		FVector(-900.0f, -610.0f, 100.0f) }; // ロングアタックのポイント (AWAY)
+		FVector(-825.0f, 660.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(-825.0f, 330.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(-825.0f, 0.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(-825.0f, -330.0f, C_Common::BALL_BASE_LOCATION_Z),
+		FVector(-825.0f, -660.0f, C_Common::BALL_BASE_LOCATION_Z) }; // ロングアタックのポイント (AWAY)
 };

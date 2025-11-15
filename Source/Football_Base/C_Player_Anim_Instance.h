@@ -21,4 +21,6 @@ public:
 	bool isRun = false;
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	bool isDrrible = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool isDefensiveStance = false;
 };

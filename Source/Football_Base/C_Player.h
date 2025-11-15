@@ -9,6 +9,7 @@
 #include "C_Tile.h"
 #include "C_Player.generated.h"
 
+
 UCLASS()
 class FOOTBALL_BASE_API AC_Player : public ACharacter
 {
@@ -59,12 +60,25 @@ public:
 	void RegateDrrible();
 	// タックル (Root Motion)
 	void Tackle();
+	// セットディフェンス姿勢
+	void SetDefensiveStance();
+	// 解除ディフェンス姿勢
+	void RemoveDefensiveStance();
 	// ドリブル (前進)
 	void Drrible();
 	// 喜びアニメーション
 	void CheerMotion();
 	// 悲しみアニメーション
 	void SadMotion();
+	// フリーアピール
+	void FreeAppeal(AC_Player* ballHolder);
+	// ターゲットアピール
+	void TargetmanAppeal(AC_Player* ballHolder);
+	// ポストマンアピール
+	void PostmanAppeal(AC_Player* ballHolder);
+	// ランナーアピール
+	void RunnerAppeal();
+
 
 private:
 	// 移動処理
@@ -83,6 +97,10 @@ private:
 	UAnimMontage* sad2Anim = nullptr; // アニメーション(被ゴール2)
 	UAnimMontage* cheer1Anim = nullptr; // アニメーション(ゴール1)
 	UAnimMontage* cheer2Anim = nullptr; // アニメーション(ゴール2)
+	UAnimMontage* freeAppealAnim = nullptr; // アニメーション(フリーアピール)
+	UAnimMontage* targetmanAppealAnim = nullptr; // アニメーション(ターゲットマンアピール)
+	UAnimMontage* postmanAppealAnim = nullptr; // アニメーション(ポストマンアピール)
+	UAnimMontage* runnerAppealAnim = nullptr; // アニメーション(ランナーアピール)
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)

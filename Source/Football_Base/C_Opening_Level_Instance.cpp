@@ -5,7 +5,6 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
 #include "My_Game_Instance.h"
-#include "C_Common.h"
 
 // Sets default values
 AC_Opening_Level_Instance::AC_Opening_Level_Instance()
@@ -232,6 +231,22 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		}
 		// デゥエル処理
 		if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+			// -- ディフェンス姿勢 --
+			TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+			if (ballHolder->ActorHasTag(FName("HOME"))) {
+				_deffencePlayers = awayPlayers;
+			}
+			else {
+				_deffencePlayers = homePlayers;
+			}
+			for (AC_Player* _player : _deffencePlayers) {
+				if (_player->tileNo == ballHolder->tileNo) {
+					_player->SetDefensiveStance(); // ディフェンス姿勢動作
+
+					break;
+				}
+			}
+			// -- デゥエル --
 			if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
 				isDueling = true; // デゥエル開始
 				Duel();
@@ -259,6 +274,32 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 				return;
 			}
 
+		}
+	}
+
+	// *** アピール ***
+	if (ballHolder) {
+		if (ballHolder != preBallHolder) { // ボールホルダーが変更した時のみ
+			preBallHolder = ballHolder; // *変更時一回の処理
+			// -- ボール保持チーム取得 --
+			TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
+			if (ballHolder->ActorHasTag(FName("HOME"))) {
+				_myTeamPlayers = homePlayers;
+			}
+			else {
+				_myTeamPlayers = awayPlayers;
+			}
+			
+			// -- アクション ---
+			for (AC_Player* _p : _myTeamPlayers) {
+				if (_p->isMoving) continue; // 移動中はなし
+				if (_p == ballHolder) continue; // ボールホルダーなし
+
+				if (GetIsFree(_p)) _p->FreeAppeal(ballHolder); // ●フリー
+				if (_p->ActorHasTag("TARGET")) _p->TargetmanAppeal(ballHolder); // ●ターゲットマン
+				if (_p->ActorHasTag("POST")) _p->PostmanAppeal(ballHolder); // ●ポストマン
+				if (_p->ActorHasTag("RUNNER")) _p->RunnerAppeal(); // ●ランナー
+			}
 		}
 	}
 
@@ -337,7 +378,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	// *** ロングアタック行動 ***
 	if (currentCommand == C_Common::LONG_ATTACK_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
-		if (ballHolder->position >= C_Common::LH_POSITION) return; // DFのプレイヤーのみ発動
+		if (ballHolder->position >= C_Common::LH_POSITION) return; // DFラインのプレイヤーのみ発動 (仮)
 
 		// -- チーム取得 --
 		bool _isHome = false; // Homeか
@@ -355,8 +396,6 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		for (AC_Player* _p : _myTeamPlayers) {
 			if ((_p->position >= C_Common::LWG_POSITION)) {
 				_myFWPlayers.Add(_p);
-
-				break;
 			}
 		}
 
@@ -369,7 +408,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			_kickerLane = ballHolder->position;
 		}
 
-		// -- 走るプレイヤー取得 --
+		// -- ダイレクトアタック(走る)プレイヤー取得 --
 		AC_Player* _runPlayer = nullptr;
 		for (AC_Player* _p : _myFWPlayers) {
 			if ((_p->position % 5 == _kickerLane)) { // キッカーと同レーンのFW
@@ -377,22 +416,47 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 				break;
 			}
+			if (_p->ActorHasTag("RUNNER")) { // FWのランナー
+				_runPlayer = _p;
+
+				break;
+			}
 		}
 		
-		// -- ポイントの取得 (キッカーと同じレーン) --
-		FVector _targetLocation = FVector(0, 0, 0);
-		if (_isHome) {
-			_targetLocation = HOME_LONG_ATTACK_POINTS[_kickerLane - 1];
+		// -- ⓵ダイレクトアタック --
+		if (_runPlayer) {
+			// ●ポイントの取得 (キッカーと同じレーン)
+			FVector _targetLocation = FVector(0, 0, 0);
+			if (_isHome) {
+				_targetLocation = HOME_LONG_ATTACK_POINTS[_kickerLane - 1];
+			}
+			else {
+				_targetLocation = AWAY_LONG_ATTACK_POINTS[_kickerLane - 1];
+			}
+
+			// ●裏抜け
+			if (_runPlayer) GetBehind(_runPlayer, _targetLocation);
+
+			// ●ロングキック
+			LongKick(_targetLocation);
 		}
-		else {
-			_targetLocation = AWAY_LONG_ATTACK_POINTS[_kickerLane - 1];
+		
+		// -- ポストプレイヤー取得 --
+		AC_Player* _postPlayer = nullptr;
+		for (AC_Player* _p : _myFWPlayers) {
+			if (_p->ActorHasTag("POST")) { // FWのポストプレイヤー
+				_postPlayer = _p;
+
+				break;
+			}
 		}
 
-		// -- 裏抜け --
-		if (_runPlayer) GetBehind(_runPlayer, _targetLocation);
-
-		// -- ロングキック --
-		LongKick(_targetLocation);
+		// -- ⓶ポストプレー --
+		if (_postPlayer) {
+			// アクション
+			postPlayer = _postPlayer; // 一時保存
+			PostPlay(true);
+		}
 	}
 	// ***
 
@@ -453,7 +517,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 			// アクション
 			postPlayer = _postPlayer; // 一時保存
-			PostPlay();
+			PostPlay(false);
 		}
 	}
 	// ***
@@ -882,36 +946,103 @@ void AC_Opening_Level_Instance::Cross()
 }
 
 // ポストプレー
-void AC_Opening_Level_Instance::PostPlay()
+void AC_Opening_Level_Instance::PostPlay(bool isLong)
 {
 	postPlayCount++; // インクリメント
 
 	if (postPlayCount == 1) {
-		// ⓵ポストプレイヤーにパスアンドゴー
-		// 移動位置取得
-		FVector _ToLocation = ballHolder->GetActorLocation();
-		passAndGoPlayer = ballHolder; // *一時保存
-		if (ballHolder->ActorHasTag("HOME")) {
-			_ToLocation.X += C_Common::TILE_SIZE;
+
+		// -- ショート (パスアンドゴー) --
+		if (isLong == false) {
+			// 移動位置取得
+			FVector _ToLocation = ballHolder->GetActorLocation();
+			passAndGoPlayer = ballHolder; // *一時保存
+			int _preMoveTileNo = ballHolder->tileNo; // 移動前のタイルNo (*ディフェンス姿勢解除時に使用)
+			if (ballHolder->ActorHasTag("HOME")) {
+				_ToLocation.X += C_Common::TILE_SIZE;
+			}
+			else {
+				_ToLocation.X -= C_Common::TILE_SIZE;
+			}
+
+			if (postPlayer == nullptr) return;
+
+			// オフェンスアクション
+			ShortPass(postPlayer); // ショートパス
+			passAndGoPlayer->RunTo(_ToLocation); // 前進
+
+			// ディフェンス姿勢解除
+			TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+			if (ballHolder->ActorHasTag(FName("HOME"))) {
+				_deffencePlayers = awayPlayers;
+			}
+			else {
+				_deffencePlayers = homePlayers;
+			}
+			for (AC_Player* _player : _deffencePlayers) {
+				if (_player->tileNo == _preMoveTileNo) {
+					_player->RemoveDefensiveStance(); // ディフェンス姿勢解除
+
+					break;
+				}
+			}
+
 		}
+		
+		// -- ロング(ロングパス) --
 		else {
-			_ToLocation.X -= C_Common::TILE_SIZE;
+			LongPass(postPlayer);
 		}
-
-		if (postPlayer == nullptr) return;
-
-		// アクション
-		ShortPass(postPlayer); // ショートパス
-		passAndGoPlayer->RunTo(_ToLocation); // 前進
 	}
+
 	else if (postPlayCount == 2)
 	{
-		// ⓶折り返しのパスを出す
-		FVector _location = postPlayer->GetActorLocation();
-		_location.Y += C_Common::TILE_SIZE;
-		SpacePass(_location); // スペースパス
+		// -- ショート (折り返し 右横) --
+		if (passAndGoPlayer) {
+			FVector _location = postPlayer->GetActorLocation();
+			_location.Y += C_Common::TILE_SIZE;
+			
+			SpacePass(_location); // スペースパス
+			SetBallHolder(passAndGoPlayer); // ボールホルダー
+		}
 
-		SetBallHolder(passAndGoPlayer);
+		// -- ロング (折り返し 後ろ) --
+		else {
+			// チーム・背後タイルNo取得
+			TArray<AC_Player*> _myTeamPlayers = {}; // マイチーム
+			int _backTimeNo = 0; // ポストプレイヤー背後のタイルNo
+			if (ballHolder->ActorHasTag(FName("HOME"))) {
+				_myTeamPlayers = homePlayers;
+				_backTimeNo = postPlayer->tileNo - C_Common::TILE_NUM_Y;
+			}
+			else {
+				_myTeamPlayers = awayPlayers;
+				_backTimeNo = postPlayer->tileNo + C_Common::TILE_NUM_Y;
+			}
+			
+			// パスターゲット取得
+			AC_Player* _passToPlayer = nullptr;
+			for (AC_Player* _player : _myTeamPlayers) {
+				if (_player->tileNo == _backTimeNo)
+				{
+					_passToPlayer = _player;
+					break;
+				}
+			}
+			if (_passToPlayer == nullptr) return;
+			
+			// ショートパス
+			ShortPass(_passToPlayer);
+		}
+	}
+	else if (postPlayCount == 3) {
+		
+		if (passAndGoPlayer) return; // ショート処理なし
+
+		// -- ロング (ポストプレイヤーを移動 左へ) --
+		FVector _location = postPlayer->GetActorLocation();
+		_location.Y -= C_Common::TILE_SIZE;
+		postPlayer->RunTo(_location);
 	}
 	else {
 		// 終了処理
