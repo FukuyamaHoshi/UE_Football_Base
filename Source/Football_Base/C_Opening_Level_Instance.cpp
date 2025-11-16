@@ -273,32 +273,34 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		// *once処理
 		if (isDueling) {
 			if (ballHolder->isMoving == false) isDueling = false; // フラグ切り替え (移動処理終了後)
-			
+
 			return;
 		}
-		// デゥエル処理
-		if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
-			// -- ディフェンス姿勢 --
-			TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
-			if (ballHolder->ActorHasTag(FName("HOME"))) {
-				_deffencePlayers = awayPlayers;
-			}
-			else {
-				_deffencePlayers = homePlayers;
-			}
-			for (AC_Player* _player : _deffencePlayers) {
-				if (_player->tileNo == ballHolder->tileNo) {
-					_player->SetDefensiveStance(); // ディフェンス姿勢動作
-
-					break;
+		if (currentCommand != C_Common::ESCAPE_PRESSING_COMMAND_NO) { // *プレス回避以外
+			// デゥエル処理
+			if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+				// -- ディフェンス姿勢セット --
+				TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+				if (ballHolder->ActorHasTag(FName("HOME"))) {
+					_deffencePlayers = awayPlayers;
 				}
-			}
-			// -- デゥエル --
-			if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
-				isDueling = true; // デゥエル開始
-				Duel();
-				
-				return;
+				else {
+					_deffencePlayers = homePlayers;
+				}
+				for (AC_Player* _player : _deffencePlayers) {
+					if (_player->tileNo == ballHolder->tileNo) {
+						_player->SetDefensiveStance(); // ディフェンス姿勢動作
+
+						break;
+					}
+				}
+				// -- デゥエル --
+				if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
+					isDueling = true; // デゥエル開始
+					Duel();
+
+					return;
+				}
 			}
 		}
 	}
@@ -356,7 +358,12 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	if (ball->isMoving) return; // ボール移動中
 	// ***********
 
+	// -- AWAY (敵AI) --
+	AwayTeamMovement();
+	// ---
 
+
+	// -- HOME --
 	// *** プレス回避行動 ***
 	if (currentCommand == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
 		if (ballHolder == nullptr) return;
@@ -1124,5 +1131,38 @@ void AC_Opening_Level_Instance::PostPlay(bool isLong)
 		postPlayCount = 0;
 		passAndGoPlayer = nullptr;
 		postPlayer = nullptr;
+	}
+}
+
+// AWAYチームの動き (敵AI)
+void AC_Opening_Level_Instance::AwayTeamMovement()
+{
+	if (ballHolder == nullptr) return;
+
+	// *** ハイプレス ***
+	// | ボールホルダー前にいるプレイヤーが前進する |
+	if (awayCommand == C_Common::HIGH_PRESS_COMMAND_NO) {
+		if (ballHolder->position == C_Common::GK_POSITION) return; // GKは処理なし
+
+		// -- プレイヤー取得 --
+		int _frontTile = ballHolder->tileNo + C_Common::TILE_NUM_Y; // ボールホルダー前タイル
+		AC_Player* _targetPlayer = nullptr;
+		
+		for (AC_Player* _player : awayPlayers) {
+			if (_player->tileNo == _frontTile) {
+				_targetPlayer = _player;
+
+				break;
+			}
+		}
+		if (_targetPlayer == nullptr) return;
+		
+		// -- 前進する --
+		if (_targetPlayer->isMoving) return; // *(制限) ターゲットが既に移動している
+
+		FVector _frontLocation = _targetPlayer->GetActorLocation();
+		_frontLocation.X -= C_Common::TILE_SIZE;
+		
+		_targetPlayer->RunTo(_frontLocation); // 移動
 	}
 }

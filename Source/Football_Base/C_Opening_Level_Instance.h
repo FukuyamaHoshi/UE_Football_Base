@@ -75,6 +75,8 @@ private:
 	void Cross();
 	// ポストプレー
 	void PostPlay(bool isLong = false);
+	// AWAYチームの動き (敵AI)
+	void AwayTeamMovement();
 
 
 	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
@@ -87,6 +89,7 @@ private:
 	AC_Player* preBallHolder = nullptr; // 前回のボールホルダー
 	AC_Soccer_Ball* ball = nullptr; // ボール
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
+	int awayCommand = 0; // AWAYチームの戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル

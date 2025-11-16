@@ -91,6 +91,7 @@ public:
     static constexpr int ESCAPE_PRESSING_COMMAND_NO = 1; // プレス回避
     static constexpr int LONG_ATTACK_COMMAND_NO = 2; // ロングアタック
     static constexpr int LANE_ATTACK_COMMAND_NO = 3; // レーンアタック
+    static constexpr int HIGH_PRESS_COMMAND_NO = 4; // ハイプレス
 
     // 戦術コマンドテキスト取得
     static TArray<FString> GetTacticsCommandTexts(int tacticsCommandNo);
