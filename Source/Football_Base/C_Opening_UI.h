@@ -21,9 +21,12 @@ class FOOTBALL_BASE_API UC_Opening_UI : public UUserWidget
 
 public:
     virtual void NativeConstruct() override; // コンストラクタ override
+    virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override; // Tick
 
     // ウィジェットパネル変更
     void SwitchWidgetPanal(int panalNum);
+    // ボタン変更
+    void SwitchButtonPanal(int panalNum);
     
 private:
     // エンハンスの表示・非表示
@@ -35,6 +38,11 @@ private:
     UWidgetSwitcher* currentButtonSwicher = nullptr;
     //UTextBlock* currentText = nullptr;
     //FColor textEnhanceColor = FColor::FromHex(TEXT("1996FFFF"));
+    int draftPhase = 0; // フェーズを一時保存 (変更時に)
+
+    const FLinearColor PLAYER_SELECT_PLACE_COLOR = FLinearColor(FColor::FromHex("22C832FF")); // Stateテキストの色(緑)
+    const FLinearColor MATCH_READY_STATE_COLOR = FLinearColor(FColor::FromHex("FFDA00FF")); // Stateテキストの色(黄色)
+    const FLinearColor MATCH_STATE_COLOR = FLinearColor(FColor::FromHex("D31F27FF")); // Stateテキストの色(赤)
 
 protected:
         // ボタン
@@ -43,6 +51,8 @@ protected:
         // Widgetスイッチャー
         UPROPERTY(meta = (BindWidget))
         UWidgetSwitcher* UI_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Button_Switcher;
         UPROPERTY(meta = (BindWidget))
         UButton* Quit_Button;
     
@@ -95,6 +105,16 @@ protected:
         UOverlay* Lane_Attack_Enhance_2;
         UPROPERTY(meta = (BindWidget))
         UTextBlock* Lane_Attack_Text;
+        // ***
+        
+        // *** カウントダウン ***
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* Count_Text;
+        // ***
+
+         // *** ラウンドの状態 ***
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* Round_State_Text;
         // ***
 
         // プレイボタンクリック

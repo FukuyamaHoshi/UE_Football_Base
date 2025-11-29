@@ -43,12 +43,57 @@ void UC_Opening_UI::NativeConstruct()
     }
 }
 
+void UC_Opening_UI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+    Super::NativeTick(MyGeometry, InDeltaTime);
+    
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    
+    // *** フェーズ変更時、一度のみ処理 ***
+    if (_instance->game_phase != draftPhase) {
+        if (_instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+            Round_State_Text->SetText(FText::FromString(TEXT("準備中")));
+            Round_State_Text->SetColorAndOpacity(PLAYER_SELECT_PLACE_COLOR);
+        }
+        if (_instance->game_phase == C_Common::MATCH_READY_PHASE) {
+            Round_State_Text->SetText(FText::FromString(TEXT("スタンバイ")));
+            Round_State_Text->SetColorAndOpacity(MATCH_READY_STATE_COLOR);
+        }
+        if (_instance->game_phase == C_Common::MATCH_PHASE) {
+            Round_State_Text->SetText(FText::FromString(TEXT("試合中")));
+            Round_State_Text->SetColorAndOpacity(MATCH_STATE_COLOR);
+        }
+        
+        draftPhase = _instance->game_phase;
+    }
+    // ***
+
+    // *** タイマー ***
+    if (_instance->game_phase == C_Common::MATCH_READY_PHASE || _instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合準備・試合フェーズのみ
+
+        _instance->phase_count -= InDeltaTime; // カウントダウン
+        if (_instance->phase_count < 0) return;
+
+        Count_Text->SetText(FText::FromString(FString::FromInt(_instance->phase_count))); // テキスト更新
+    }
+    // ***
+}
+
 // ウィジェットパネル変更
 void UC_Opening_UI::SwitchWidgetPanal(int panalNum)
 {
     if (UI_Switcher == nullptr) return;
 
     UI_Switcher->SetActiveWidgetIndex(panalNum);
+}
+
+// ボタンパネル変更
+void UC_Opening_UI::SwitchButtonPanal(int panalNum)
+{
+    if (Button_Switcher == nullptr) return;
+
+    Button_Switcher->SetActiveWidgetIndex(panalNum);
 }
 
 // エンハンスの表示・非表示
@@ -136,9 +181,10 @@ void UC_Opening_UI::MatchStartButtonClicked()
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
     if (_instance == nullptr) return;
 
-    SwitchWidgetPanal(C_Common::MATCH_PHASE); // UI変更
-    _instance->game_phase = C_Common::MATCH_PHASE; // フェーズ変更
+    SwitchButtonPanal(1); // ボタン変更(保持コマンド)
+    _instance->game_phase = C_Common::MATCH_READY_PHASE; // (試合準備)フェーズ変更
     SwitchEnhance(_instance->command); // ボタンエンハンス設定
+    _instance->phase_count = C_Common::MATCH_READY_TIME; // 試合準備フェーズカウントセット
 }
 
 // ロングアタックボタンクリック

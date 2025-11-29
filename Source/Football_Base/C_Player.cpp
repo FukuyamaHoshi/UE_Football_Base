@@ -7,6 +7,7 @@
 #include "C_Player_Anim_Instance.h"
 #include "C_Common.h"
 #include "My_Game_Instance.h"
+#include "GameFramework/CharacterMovementComponent.h" // キャラクター移動コンポーネントをインクルード
 
 // Sets default values
 AC_Player::AC_Player()
@@ -702,5 +703,27 @@ void AC_Player::PoketmanAppeal(AC_Player* ballHolder)
 	SetActorRotation(_q);
 
 	if (poketmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(poketmanAppealAnim);
+}
+
+// アニメーション停止 (アイドル状態へ)
+void AC_Player::StopAnim() 
+{
+	if (playerAnimInstance == nullptr) return;
+
+	// -- モンタージュ --
+	// 第1引数はブレンドアウト時間 (任意)、第2引数は停止するモンタージュ (nullptrで全て対象)
+	playerAnimInstance->Montage_Stop(0.25f, nullptr); // アニメーションモンタージュ停止 (0.25秒かけてブレンドアウト)
+	
+	// -- ルートモーション --
+	UCharacterMovementComponent* _movementComponent = GetCharacterMovement(); // コンポーネント
+	if (_movementComponent) {
+		_movementComponent->StopMovementImmediately();
+	}
+
+	// -- Anim BluePrint --
+	playerAnimInstance->isKeep = false;
+	playerAnimInstance->isRun = false;
+	playerAnimInstance->isDrrible = false;
+	playerAnimInstance->isDefensiveStance = false;
 }
 

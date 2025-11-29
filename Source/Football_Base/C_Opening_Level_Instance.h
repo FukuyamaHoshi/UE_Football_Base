@@ -88,8 +88,9 @@ private:
 	AC_Player* ballHolder = nullptr; // ボールホルダー
 	AC_Player* preBallHolder = nullptr; // 前回のボールホルダー
 	AC_Soccer_Ball* ball = nullptr; // ボール
+	TArray<FVector> playerInitialLocation = {}; // 全てのプレイヤーの初回位置
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
-	int awayCommand = 0; // AWAYチームの戦術コマンド
+	int awayCommand = 4; // AWAYチームの戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
@@ -105,6 +106,7 @@ private:
 	bool isOnceMatchStart = true; // 試合開始時に一度のみ実行する判定
 	bool isGoal = false; // ゴール判定
 	bool isOnceGoal = false; // ゴール時に一度のみする
+	float goalCount = 0; // ゴール時カウンター
 	bool isPoketman = false; // ポケットマン処理開始
 	AC_Player* currentPoketman = nullptr; // 現在処理中のポケットマン
 	int poketmanPlayCount = 0; // ポケットマン手順回数カウンター

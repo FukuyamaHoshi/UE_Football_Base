@@ -5,6 +5,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
 #include "My_Game_Instance.h"
+#include <Kismet/KismetMathLibrary.h>
 
 // Sets default values
 AC_Opening_Level_Instance::AC_Opening_Level_Instance()
@@ -92,22 +93,130 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 	
-	// *** ホバー時処理 ***
-	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::MANAGER_SELECT_AFTER_PHASE) { // マネージャー選択(前・後)フェーズのみ
+	// *** マネージャー選択、プレイヤー選択・配置フェーズ ***
+	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+		// -- ホバー許可 --
 		Hover();
+
+
+		return;
 	}
 	// ***
 
-	if (ball == nullptr) return; // ボール取得失敗
-	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	// *** 試合終了時 ***
+	// *** 試合準備フェーズ ***
+	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) {
+		// -- 試合開始 --
+		if (isOnceMatchStart)
+		{
+			isOnceMatchStart = false;
+			MatchStart();
+		}
+
+		// -- フェーズ切替 --
+		if (_instance->phase_count < 1.0f) {
+			_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
+			_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
+
+		}
+
+		return;
+	}
+	// ***
+
+
+	// *** 試合フェーズ ***
+	if (ball == nullptr) return; // ボール取得失敗
+	if (_instance->game_phase != C_Common::MATCH_PHASE) return;
+
+	
+	// *** 試合終了時 (試合時間終了) ***
+	if (_instance->phase_count < 1) {
+		// -- プレイヤー選択・配置フェーズへ --
+		_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ
+		openingUI->SwitchButtonPanal(0); // ボタンパネル
+
+		// -- フラグリセット --
+		isGoal = false;
+		goalCount = 0;
+		isOnceGoal = false;
+		isOnceMatchStart = true;
+
+		// -- プレイヤーアニメーション停止 --
+		for (AC_Player* _player : allPlayers) {
+			_player->StopAnim();
+		}
+
+		// -- プレイヤーを元の位置へ --
+		for (int _i = 0; _i < playerInitialLocation.Num(); _i++) {
+			// ●位置
+			allPlayers[_i]->SetActorLocation(playerInitialLocation[_i]);
+			// ●向き
+			FRotator _rotation = FRotator(0, 0, 0);
+			// ゴール方向へ回転
+			if (allPlayers[_i]->ActorHasTag("HOME")) {
+				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
+			}
+			else {
+				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
+			}
+			FQuat _q = _rotation.Quaternion(); // 変換
+			_q.X = 0; // *Z軸のみ回転させる
+			_q.Y = 0; // *Z軸のみ回転させる
+			allPlayers[_i]->SetActorRotation(_q);
+		}
+
+
+		return;
+	}
+	// ***
+
+
+	// *** ゴール時 ***
 	if (isGoal && ball->isMoving == false) {
-		
+		goalCount += DeltaTime;
+
+		// -- 試合再開処理 --
+		if (goalCount > 3.0f) {
+			// ●フラグリセット
+			isGoal = false;
+			goalCount = 0;
+			isOnceGoal = false;
+			// ●プレイヤーアニメーション停止
+			for (AC_Player* _player : allPlayers) {
+				_player->StopAnim();
+			}
+			// ●プレイヤーを元の位置へ
+			for (int _i = 0; _i < playerInitialLocation.Num(); _i++) {
+				// ●位置
+				allPlayers[_i]->SetActorLocation(playerInitialLocation[_i]);
+				// ●向き
+				FRotator _rotation = FRotator(0,0,0);
+				// ゴール方向へ回転
+				if (allPlayers[_i]->ActorHasTag("HOME")) {
+					_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
+				}
+				else {
+					_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
+				}
+				FQuat _q = _rotation.Quaternion(); // 変換
+				_q.X = 0; // *Z軸のみ回転させる
+				_q.Y = 0; // *Z軸のみ回転させる
+				allPlayers[_i]->SetActorRotation(_q);
+			}
+			// ●試合開始処理
+			MatchStart();
+			
+
+			return;
+		}
+
+
+		// -- ゴールアニメーション処理 --
 		if (isOnceGoal) return; // 一度のみの処理
 		isOnceGoal = true; // フラグON
 		
-		// -- ゴール・被ゴールチーム取得 --
+		// ●ゴール・被ゴールチーム取得
 		float _ballX = ball->GetActorLocation().X;
 		bool _isHomeGoal = (_ballX > 0) ? true : false; // どのチームのゴールか (ボール位置から)
 		TArray<AC_Player*> _scoreTeam = {}; // ゴールチーム
@@ -120,28 +229,20 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			_scoreTeam = awayPlayers; // ゴールチーム
 			_notScoreTeam = homePlayers; // 被ゴールチーム
 		}
-
-		// -- ゴールアニメーション --
-		// ●ゴールチーム
+		// ●アニメーション
+		// - ゴールチーム -
 		for (AC_Player* _player : _scoreTeam) {
 			_player->CheerMotion();
 		}
-		// ●被ゴールチーム
+		// - 被ゴールチーム -
 		for (AC_Player* _player : _notScoreTeam) {
 			_player->SadMotion();
 		}
-		// ●HOMEマネージャー
+		// - HOMEマネージャー -
 		if (homeManager) homeManager->CheerAnim();
 
+
 		return;
-	}
-	// ***
-	
-	// *** 試合開始時 ***
-	if (isOnceMatchStart)
-	{
-		isOnceMatchStart = false;
-		MatchStart();
 	}
 	// ***
 
@@ -624,13 +725,14 @@ void AC_Opening_Level_Instance::SetupInput()
 }
 
 // 左クリック(プレス)イベント
-// ●(プレイヤー選択)デカール表示
+// ●マネージャー選択
 // ●試合開始処理
 void AC_Opening_Level_Instance::PressedLeft()
 {
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance) {
-		if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::MANAGER_SELECT_AFTER_PHASE) { // *(制限)マネージャー選択(前・後)フェーズのみ
+		// *(制限)マネージャー選択・プレイヤー選択・配置フェーズのみ
+		if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
 			
 			// マウス位置情報取得処理
 			TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
@@ -660,10 +762,10 @@ void AC_Opening_Level_Instance::PressedLeft()
 				}
 			}
 			
-			// ●フェーズ変更 (マネージャー選択後フェーズへ)
+			// ●フェーズ変更 (プレイヤー選択・配置フェーズへ)
 			if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
-				_instance->game_phase = C_Common::MANAGER_SELECT_AFTER_PHASE; // フェーズ
-				openingUI->SwitchWidgetPanal(C_Common::MANAGER_SELECT_AFTER_PHASE); // パネル
+				_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ
+				openingUI->SwitchWidgetPanal(2); // パネル (マッチパネルへ)
 			}
 		}
 	}
@@ -676,7 +778,7 @@ void AC_Opening_Level_Instance::PressedW()
 	if (_instance == nullptr)  return;
 	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	_instance->command = C_Common::LONG_ATTACK_COMMAND_NO; // ロングアタック変更
+	//_instance->command = C_Common::LONG_ATTACK_COMMAND_NO; // ロングアタック変更
 }
 
 // Aキー(プレス)イベント
@@ -686,7 +788,7 @@ void AC_Opening_Level_Instance::PressedA()
 	if (_instance == nullptr)  return;
 	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	_instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO; // プレス回避変更
+	//_instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO; // プレス回避変更
 }
 
 // Sキー(プレス)イベント
@@ -696,7 +798,7 @@ void AC_Opening_Level_Instance::PressedS()
 	if (_instance == nullptr)  return;
 	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	_instance->command = 0; // アイドル変更
+	//_instance->command = 0; // アイドル変更
 }
 
 // Dキー(プレス)イベント
@@ -706,7 +808,7 @@ void AC_Opening_Level_Instance::PressedD()
 	if (_instance == nullptr)  return;
 	if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-	_instance->command = C_Common::LANE_ATTACK_COMMAND_NO; // レーン攻撃変更
+	//_instance->command = C_Common::LANE_ATTACK_COMMAND_NO; // レーン攻撃変更
 }
 
 // ホバー処理
@@ -785,11 +887,18 @@ void AC_Opening_Level_Instance::MatchStart()
 
 	// -- ボールホルダー決定 --
 	for (AC_Player* _p : allPlayers) {
-		if (_p->ActorHasTag(FName("GK")) && _p->ActorHasTag(FName("HOME"))) { // GK かつ　HOMWのプレイヤー
+		if (_p->ActorHasTag(FName("GK")) && _p->ActorHasTag(FName("HOME"))) { // GK かつ　HOMEのプレイヤー
 			SetBallHolder(_p);
 
 			break;
 		}
+	}
+	// --
+
+	// -- プレイヤー位置取得 --
+	playerInitialLocation.Empty(); // 空に
+	for (AC_Player* _p : allPlayers) {
+		playerInitialLocation.Add(_p->GetActorLocation());
 	}
 	// --
 

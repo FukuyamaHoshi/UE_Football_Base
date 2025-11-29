@@ -115,9 +115,14 @@ public:
     // 2: マネージャー選択(後)
     // 2: 試合
     // ---------------------
-    static constexpr int MANAGER_SELECT_BEFORE_PHASE = 1; // マネージャー選択(前)
-    static constexpr int MANAGER_SELECT_AFTER_PHASE = 2; // マネージャー選択(後)
+    static constexpr int MANAGER_SELECT_BEFORE_PHASE = 1; // マネージャー選択
+    static constexpr int PLAYER_SELECT_PLACE_PHASE = 2; // プレイヤー選択・配置
     static constexpr int MATCH_PHASE = 3; // 試合中
+    static constexpr int MATCH_READY_PHASE = 4; // 試合準備
+
+    // フェーズ時間
+    static constexpr float MATCH_READY_TIME = 3.0f; // 試合準備
+    static constexpr float MATCH_TIME = 30.0f; // 試合中
     
     
     // ***** ゲーム内時間ごとの名称 *****************

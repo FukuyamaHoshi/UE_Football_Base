@@ -80,6 +80,8 @@ public:
 	void RunnerAppeal();
 	// ポケットマンアピール
 	void PoketmanAppeal(AC_Player* ballHolder);
+	// アニメーション停止 (アイドル状態へ)
+	void StopAnim();
 
 
 private:

@@ -37,4 +37,5 @@ public:
 	// 2: 試合
 	int game_phase = 0;
 	int command = 0; // コマンド
+	float phase_count = 0; // フェーズカウントダウンタイマー
 };
