@@ -15,13 +15,13 @@ AC_Tile::AC_Tile()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-	//// *** コマ移動マテリアルの変数にセット(保持するだけ) ***
-	//static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
-	//if (pieceMoveMaterialAsset.Succeeded())
-	//{
-	//	pieceMoveMaterial = pieceMoveMaterialAsset.Object;
-	//}
-	//// ***
+	// *** コマ移動マテリアルの変数にセット(保持するだけ) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
+	if (pieceMoveMaterialAsset.Succeeded())
+	{
+		pieceMoveMaterial = pieceMoveMaterialAsset.Object;
+	}
+	// ***
 
 	//// *** パスレンジマテリアルの変数にセット(保持するだけ) ***
 	//static ConstructorHelpers::FObjectFinder<UMaterial> passRangeMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Pass_Range.M_Tile_Pass_Range"));
@@ -73,23 +73,11 @@ void AC_Tile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//// ** メッシュ(main, sub)を取得し、分ける **
-	//TArray<UStaticMeshComponent*> Components; // component配列
-	//GetComponents<UStaticMeshComponent>(Components); // stacic componentを取得
-	//
-	//for (UStaticMeshComponent* c : Components) { // MAINタグか
-	//	if (c->ComponentHasTag(FName("MAIN"))) {
-	//		mainMesh = c;
-	//	}
-	//	else {
-	//		subMesh = c;
-	//	}
-	//}
-	//// **
+	// ** メッシュを取得 **
+	mesh = FindComponentByClass<UStaticMeshComponent>();
 
 	// *** タイルNO取得 ***
 	tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y);
-	// ***
 }
 
 // Called every frame
@@ -144,40 +132,41 @@ int AC_Tile::GetTileNoFromLocation(float x, float y)
 // コマ移動マテリアルをセット
 void AC_Tile::SetMaterial()
 {
-	// マテリアルをセット
-	if (pieceMoveMaterial != nullptr) mainMesh->SetOverlayMaterial(pieceMoveMaterial);
+	if (mesh == nullptr) return; // mesh確認
+	if (pieceMoveMaterial == nullptr) return; // マテリアル確認
+	
+	if (pieceMoveMaterial != nullptr) mesh->SetOverlayMaterial(pieceMoveMaterial);
 }
 
 // メインのオーバーレイマテリアルを削除する
 void AC_Tile::RemoveMainMaterial()
 {
-	if (mainMesh == nullptr) return; // main meshのnullチェック
+	if (mesh == nullptr) return; // mesh確認
 
-	// マテリアルを削除
-	mainMesh->SetOverlayMaterial(nullptr);
+	mesh->SetOverlayMaterial(nullptr);
 }
 
 // サブのオーバーレイマテリアルを削除する
 void AC_Tile::RemoveSubMaterial()
 {
-	if (subMesh == nullptr) return; // sub meshのnullチェック
+	//if (subMesh == nullptr) return; // sub meshのnullチェック
 
 	// マテリアルを削除
-	subMesh->SetOverlayMaterial(nullptr);
+	//subMesh->SetOverlayMaterial(nullptr);
 }
 
 // パスレンジマテリアルをセット
 void AC_Tile::SetPassRangeMaterial()
 {
 	// マテリアルをセット
-	if (passRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(passRangeMaterial);
+	//if (passRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(passRangeMaterial);
 }
 
 // マークレンジマテリアルをセット
 void AC_Tile::SetMarkRangeMaterial()
 {
 	// マテリアルをセット
-	if (markRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(markRangeMaterial);
+	//if (markRangeMaterial != nullptr) mainMesh->SetOverlayMaterial(markRangeMaterial);
 }
 
 // プレイヤー配置レンジマテリアルをセット
@@ -185,23 +174,23 @@ void AC_Tile::SetMarkRangeMaterial()
 void AC_Tile::SetFWPlayerPlaceRangeMaterial()
 {
 	// マテリアルをセット
-	if (FWplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(FWplayerPlaceMaterial);
+	//if (FWplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(FWplayerPlaceMaterial);
 }
 // - MF -
 void AC_Tile::SetMFPlayerPlaceRangeMaterial()
 {
 	// マテリアルをセット
-	if (MFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(MFplayerPlaceMaterial);
+	//if (MFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(MFplayerPlaceMaterial);
 }
 // - DF -
 void AC_Tile::SetDFPlayerPlaceRangeMaterial()
 {
 	// マテリアルをセット
-	if (DFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(DFplayerPlaceMaterial);
+	//if (DFplayerPlaceMaterial != nullptr) subMesh->SetOverlayMaterial(DFplayerPlaceMaterial);
 }
 
 // ハーフレーンマテリアルをセット
 void AC_Tile::SetHalfLernMaterial()
 {
-	if (halfLernMaterial != nullptr) mainMesh->SetOverlayMaterial(halfLernMaterial);
+	//if (halfLernMaterial != nullptr) mainMesh->SetOverlayMaterial(halfLernMaterial);
 }

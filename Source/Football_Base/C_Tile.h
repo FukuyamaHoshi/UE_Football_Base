@@ -24,15 +24,15 @@ private:
 	int GetTileNoFromLocation(float x, float y);
 
 	UMaterial* pieceMoveMaterial = nullptr; // コマ移動マテリアル
-	UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
-	UMaterial* markRangeMaterial = nullptr; // マークレンジマテリアル
-	UMaterial* FWplayerPlaceMaterial = nullptr; // FWプレイヤー配置レンジマテリアル
-	UMaterial* MFplayerPlaceMaterial = nullptr; // MFプレイヤー配置レンジマテリアル
-	UMaterial* DFplayerPlaceMaterial = nullptr; // DFプレイヤー配置レンジマテリアル
-	UMaterial* halfLernMaterial = nullptr; // ハーフレーンマテリアル
+	//UMaterial* passRangeMaterial = nullptr; // パスレンジマテリアル
+	//UMaterial* markRangeMaterial = nullptr; // マークレンジマテリアル
+	//UMaterial* FWplayerPlaceMaterial = nullptr; // FWプレイヤー配置レンジマテリアル
+	//UMaterial* MFplayerPlaceMaterial = nullptr; // MFプレイヤー配置レンジマテリアル
+	//UMaterial* DFplayerPlaceMaterial = nullptr; // DFプレイヤー配置レンジマテリアル
+	//UMaterial* halfLernMaterial = nullptr; // ハーフレーンマテリアル
 	// メッシュ
-	UStaticMeshComponent* mainMesh = nullptr; // main(コマ移動、パスレンジ。マークレンジ)
-	UStaticMeshComponent* subMesh = nullptr; // sub(プレイヤー配置レンジ)
+	UStaticMeshComponent* mesh = nullptr;
+	//UStaticMeshComponent* subMesh = nullptr; // sub(プレイヤー配置レンジ)
 	
 public:	
 	// Called every frame

@@ -34,8 +34,14 @@ private:
 	// 入力設定
 	void SetupInput();
 	// 左クリック(プレス)イベント
-	// | プレイヤー選択 |
+	// | マネージャー選択 |
 	void PressedLeft();
+	// 左クリック(リリース)イベント
+	void ReleasedLeft();
+	// 左クリック (プレイヤー選択)
+	void PressedLeftForPlayerSelect();
+	// プレイヤーをマウスに追従させる (プレイヤー選択)
+	void FollowPlayerToMouse();
 	// Wキー(プレス)イベント
 	void PressedW();
 	// Aキー(プレス)イベント
@@ -88,6 +94,9 @@ private:
 	AC_Player* ballHolder = nullptr; // ボールホルダー
 	AC_Player* preBallHolder = nullptr; // 前回のボールホルダー
 	AC_Soccer_Ball* ball = nullptr; // ボール
+	AC_Player* selectedPlayer = nullptr; // 選択中のプレイヤー (プレイヤー選択フェーズ)
+	bool isPlayerGrap = false; // 選択中か (プレイヤー選択フェーズ)
+	AC_Tile* selectedTile = nullptr; // 選択中のタイル (プレイヤー選択フェーズ)
 	TArray<FVector> playerInitialLocation = {}; // 全てのプレイヤーの初回位置
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
 	int awayCommand = 4; // AWAYチームの戦術コマンド

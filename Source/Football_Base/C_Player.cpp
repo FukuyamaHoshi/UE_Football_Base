@@ -27,7 +27,7 @@ void AC_Player::BeginPlay()
 	myMesh = Cast<USkeletalMeshComponent>(_actorMesh); // キャスト
 	// **
 	
-	myMesh->SetVisibility(false); // メッシュ非表示
+	//myMesh->SetVisibility(false); // メッシュ非表示
 
 	// *** ボール取得 ***
 	AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
@@ -69,7 +69,7 @@ void AC_Player::BeginPlay()
 	SetPosition();
 	// ***
 
-	// *** タイルを取得 ***
+	// *** 全てのタイルを取得 ***
 	TArray<AActor*> _actorTiles = {}; // タイルアクター配列
 	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // クラスで探す
 
@@ -81,10 +81,7 @@ void AC_Player::BeginPlay()
 	// ***
 	
 	// *** タイルNoセット ***
-	if (position == C_Common::GK_POSITION) return; // *GKはレーンセットしない
-
-	tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y);
-	// ***
+	tileNo = GetTileNoFromLocation();
 }
 
 // Called every frame
@@ -167,55 +164,59 @@ void AC_Player::DisplayMesh()
 	myMesh->SetVisibility(true);
 }
 
-// セットポジション (Tagから変数にポジションを設置する)
-void AC_Player::SetPosition() {
-	// ポジションセット
-	if (ActorHasTag("GK")) {
+// セットポジション (位置からポジション取得)
+void AC_Player::SetPosition() 
+{	
+	// -- タイルNo取得 --
+	int _tileNo = GetTileNoFromLocation();
+
+	// -- ポジションセット --
+	if (_tileNo == 0) {
 		position = C_Common::GK_POSITION;
 	}
-	else if (ActorHasTag("LSB")) {
+	else if (_tileNo == 1 || _tileNo == 30) {
 		position = C_Common::LSB_POSITION;
 	}
-	else if (ActorHasTag("LCB")) {
+	else if (_tileNo == 2 || _tileNo == 29) {
 		position = C_Common::LCB_POSITION;
 	}
-	else if (ActorHasTag("CB")) {
+	else if (_tileNo == 3 || _tileNo == 28) {
 		position = C_Common::CB_POSITION;
 	}
-	else if (ActorHasTag("RCB")) {
+	else if (_tileNo == 4 || _tileNo == 27) {
 		position = C_Common::RCB_POSITION;
 	}
-	else if (ActorHasTag("RSB")) {
+	else if (_tileNo == 5 || _tileNo == 26) {
 		position = C_Common::RSB_POSITION;
 	}
-	else if (ActorHasTag("LH")) {
+	else if (_tileNo == 6 || _tileNo == 25) {
 		position = C_Common::LH_POSITION;
 	}
-	else if (ActorHasTag("LIH")) {
+	else if (_tileNo == 7 || _tileNo == 24) {
 		position = C_Common::LIH_POSITION;
 	}
-	else if (ActorHasTag("CH")) {
+	else if (_tileNo == 8 || _tileNo == 23) {
 		position = C_Common::CH_POSITION;
 	}
-	else if (ActorHasTag("RIH")) {
+	else if (_tileNo == 9 || _tileNo == 22) {
 		position = C_Common::RIH_POSITION;
 	}
-	else if (ActorHasTag("RH")) {
+	else if (_tileNo == 10 || _tileNo == 21) {
 		position = C_Common::RH_POSITION;
 	}
-	else if (ActorHasTag("LWG")) {
+	else if (_tileNo == 11 || _tileNo == 20) {
 		position = C_Common::LWG_POSITION;
 	}
-	else if (ActorHasTag("LST")) {
+	else if (_tileNo == 12 || _tileNo == 19) {
 		position = C_Common::LST_POSITION;
 	}
-	else if (ActorHasTag("CF")) {
+	else if (_tileNo == 13 || _tileNo == 18) {
 		position = C_Common::CF_POSITION;
 	}
-	else if (ActorHasTag("RST")) {
+	else if (_tileNo == 14 || _tileNo == 17) {
 		position = C_Common::RST_POSITION;
 	}
-	else if (ActorHasTag("RWG")) {
+	else if (_tileNo == 15 || _tileNo == 16) {
 		position = C_Common::RWG_POSITION;
 	}
 	else {
@@ -512,7 +513,7 @@ void AC_Player::Move(float dTime) {
 		movingCount = 0.0f; // 移動カウントリセット
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
-		tileNo = GetTileNoFromLocation(GetActorLocation().X, GetActorLocation().Y); // タイルNo更新
+		tileNo = GetTileNoFromLocation(); // タイルNo更新
 		// ONタイルプレイヤー追加
 		for (AC_Tile* _tile : tiles) {
 			if (_tile->tileNo == tileNo) {
@@ -534,43 +535,45 @@ void AC_Player::Move(float dTime) {
 	// ***
 }
 
-// 位置からタイルＮｏ取得
-// ( unreal座標  x: 縦, y: 横 )
-int AC_Player::GetTileNoFromLocation(float x, float y)
+// プレイヤー位置のタイルＮｏ取得
+int AC_Player::GetTileNoFromLocation()
 {
+	int _tileNo = 0;
+
+	// プレイヤー位置
+	FVector _location = GetActorLocation();
+	double _x = _location.X;
+	double _y = _location.Y;
 	// タイルNo
-	int tileNoY = 0; // タイルNo y (横から何個目か)
-	int tileNoX = 0; // タイルNo x (下から何列目か)
+	int _tileNoY = 0; // タイルNo y (横から何個目か)
+	int _tileNoX = 0; // タイルNo x (下から何列目か)
 
-	// *** タイルNo y(横から何個目か)を求める ***
+	// -- タイルNo y(横から何個目か)を求める --
 	// -の時の処理
-	bool isPositiveY = true; // xが正の整数か
-	if (y < 0) {
-		y = abs(y); // 絶対値に変換
-		isPositiveY = false; // フラグ変更
+	bool _isPositiveY = true; // xが正の整数か
+	if (_y < 0) {
+		_y = abs(_y); // 絶対値に変換
+		_isPositiveY = false; // フラグ変更
 	}
+	if (_y < (C_Common::TILE_SIZE / 2))	_tileNoY = 3;
+	else if (_y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE) _tileNoY = (_isPositiveY) ? 4 : 2;
+	else _tileNoY = (_isPositiveY) ? 5 : 1;
 
-	if (y < (C_Common::TILE_SIZE / 2) )	tileNoY = 3;
-	else if (y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE) tileNoY = (isPositiveY) ? 4 : 2;
-	else tileNoY = (isPositiveY) ? 5 : 1;
-	// ***
-
-	// *** タイルNo x(下から何列目か)を求める ***
+	// -- タイルNo x(下から何列目か)を求める --
 	// -の時の処理
-	bool isPositiveX = true; // xが正の整数か
-	if (x < 0) {
-		x = abs(x); // 絶対値に変換
-		isPositiveX = false; // フラグ変更
+	bool _isPositiveX = true; // xが正の整数か
+	if (_x < 0) {
+		_x = abs(_x); // 絶対値に変換
+		_isPositiveX = false; // フラグ変更
 	}
+	if (_x < C_Common::TILE_SIZE)	_tileNoX = (_isPositiveX) ? 4 : 3;
+	else if (_x < C_Common::TILE_SIZE * 2) _tileNoX = (_isPositiveX) ? 5 : 2;
+	else if (_x < C_Common::TILE_SIZE * 3)_tileNoX = (_isPositiveX) ? 6 : 1;
+	else return _tileNo; // 縦が3タイル以上 (タイルNo.0)
 
-	if (x < C_Common::TILE_SIZE)	tileNoX = (isPositiveX) ? 4 : 3;
-	else if (x < C_Common::TILE_SIZE * 2) tileNoX = (isPositiveX) ? 5 : 2;
-	else tileNoX = (isPositiveX) ? 6 : 1;
-	// ***
-
-	// *** タイルNo取得 ***
+	// -- タイルNo取得 --
 	// ( (タイル縦(x) - 1個) * フィールドの横のタイル個数 ) + タイル横(y)
-	int _tileNo = ((tileNoX - 1) * C_Common::TILE_NUM_Y) + tileNoY;
+	_tileNo = ((_tileNoX - 1) * C_Common::TILE_NUM_Y) + _tileNoY;
 
 
 	return _tileNo;

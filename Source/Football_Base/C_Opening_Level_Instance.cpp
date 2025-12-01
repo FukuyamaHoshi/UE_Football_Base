@@ -93,11 +93,23 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 	
-	// *** マネージャー選択、プレイヤー選択・配置フェーズ ***
-	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+	// *** マネージャー選択フェーズ ***
+	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
 		// -- ホバー許可 --
 		Hover();
 
+
+		return;
+	}
+	// ***
+
+
+	// *** プレイヤー選択フェーズ ***
+	if (_instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+		// -- マウス追従 (選択時) --
+		if (isPlayerGrap) {
+			FollowPlayerToMouse();
+		}
 
 		return;
 	}
@@ -714,6 +726,8 @@ void AC_Opening_Level_Instance::SetupInput()
 	EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	// 左クリックのプレスをバインド
 	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AC_Opening_Level_Instance::PressedLeft);
+	// 左クリックのリリースをバインド
+	InputComponent->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AC_Opening_Level_Instance::ReleasedLeft);
 	// Wキープレスをバインド
 	InputComponent->BindKey(EKeys::W, IE_Pressed, this, &AC_Opening_Level_Instance::PressedW);
 	// Aキープレスをバインド
@@ -725,14 +739,13 @@ void AC_Opening_Level_Instance::SetupInput()
 }
 
 // 左クリック(プレス)イベント
-// ●マネージャー選択
-// ●試合開始処理
 void AC_Opening_Level_Instance::PressedLeft()
 {
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance) {
-		// *(制限)マネージャー選択・プレイヤー選択・配置フェーズのみ
-		if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE || _instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+
+		// *** マネージャー選択フェーズ ***
+		if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
 			
 			// マウス位置情報取得処理
 			TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
@@ -740,8 +753,9 @@ void AC_Opening_Level_Instance::PressedLeft()
 			FHitResult hitResult; // オブジェクト情報
 			bool _isPhysicsBodyExist = GetResultFromMouseLocation(hitResult, _objectTypes);
 			
-			if (_isPhysicsBodyExist == false) return; // PhisicsBody(マネージャーメッシュ)以外
-
+			// *制限*
+			if (_isPhysicsBodyExist == false) return; // PhisicsBody確認
+			if (hitResult.GetActor()->ActorHasTag("MANAGER") == false) return; // マネージャー確認
 
 			// ●デカール表示
 			if (managerSelectedDecalMaterial) // マテリアルが取得できている
@@ -768,7 +782,110 @@ void AC_Opening_Level_Instance::PressedLeft()
 				openingUI->SwitchWidgetPanal(2); // パネル (マッチパネルへ)
 			}
 		}
+		// ***
+
+
+		// *** プレイヤー選択・配置フェーズ ***
+		if (_instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE)
+		{
+			// -- プレイヤー選択 --
+			PressedLeftForPlayerSelect();
+		}
+		// ***
 	}
+}
+
+// 左クリック(リリース)イベント
+void AC_Opening_Level_Instance::ReleasedLeft()
+{
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr) return;
+	// *制限*
+	if (_instance->game_phase != C_Common::PLAYER_SELECT_PLACE_PHASE) return; // プレイヤー選択フェーズ確認
+	if (isPlayerGrap == false) return; // プレイヤー選択中か確認
+	if (selectedPlayer == nullptr) return; // プレイヤー取得できているか確認
+
+	// -- プレイヤーをタイルに移動 --
+	// プレイヤータイルNo更新
+	int _tileNo = selectedPlayer->GetTileNoFromLocation();
+	// タイル取得
+	AC_Tile* _tile = nullptr;
+	for (AC_Tile* _t : tiles) {
+		if (_t->tileNo == _tileNo) {
+			_tile = _t;
+
+			break;
+		}
+	}
+	// タイル位置取得
+	if (_tile == nullptr) return;
+	FVector _location = _tile->GetActorLocation();
+	// プレイヤー位置更新
+	_location.Z = C_Common::PLAYER_BASE_LOCATION_Z;
+	_location.X -= 82;
+	selectedPlayer->SetActorLocation(_location);
+	// 変数リセット
+	isPlayerGrap = false; // フラグ切り替え
+	selectedPlayer = nullptr;
+
+	// -- マテリアル削除 --
+	if (selectedTile) selectedTile->RemoveMainMaterial();
+}
+
+// プレイヤー選択
+void AC_Opening_Level_Instance::PressedLeftForPlayerSelect()
+{
+	// ●マウス位置(クリック時)の情報を取得
+	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody)); // プレイヤー: PhysicsBody
+	FHitResult hitResult; // オブジェクト情報
+	// マウス位置情報取得処理
+	bool _isPhysicsBodyExist = GetResultFromMouseLocation(hitResult, _objectTypes);
+
+	// * 制限 *
+	if (_isPhysicsBodyExist == false) return;
+	if (hitResult.GetActor()->ActorHasTag("HOME") == false) return; // HOMEプレイヤーのみ
+
+	// ●プレイヤーを取得・フラグON
+	selectedPlayer = Cast<AC_Player>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
+	isPlayerGrap = true; // フラグON
+}
+
+// プレイヤーをマウスに追従させる (プレイヤー選択時)
+void AC_Opening_Level_Instance::FollowPlayerToMouse()
+{
+	// -- プレイヤーをマウスに追従 --
+	// マウス位置取得
+	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
+	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic)); // Blocking Volume
+	FHitResult hitResult; // オブジェクト情報
+	bool _isVolumeExist = GetResultFromMouseLocation(hitResult, _objectTypes); // マウス位置情報取得処理
+	// * 制限 *
+	if (_isVolumeExist == false) return; // Blocking Volume確認
+	if (selectedPlayer == nullptr) return; // プレイヤー確認
+	// プレイヤー位置セット
+	FVector _location = hitResult.Location;
+	_location.Z = C_Common::PLAYER_BASE_LOCATION_Z; // ベース位置設定
+	selectedPlayer->SetActorLocation(_location); // 追従処理
+
+
+	// -- タイルを光らせる --
+	// ホバー中のタイル取得
+	int _tileNo = selectedPlayer->GetTileNoFromLocation();
+	AC_Tile* _tile = nullptr;
+	for (AC_Tile* _t : tiles) {
+		if (_t->tileNo == _tileNo) {
+			_tile = _t;
+
+			break;
+		}
+	}
+	// マテリアル切替
+	if (_tile == nullptr) return;
+	if (_tile == selectedTile) return; // *重複マテリアルセットを防ぐ
+	if (selectedTile) selectedTile->RemoveMainMaterial(); // (前回の)削除
+	selectedTile = _tile;
+	selectedTile->SetMaterial(); // セット
 }
 
 // Wキー(プレス)イベント
@@ -822,7 +939,8 @@ void AC_Opening_Level_Instance::Hover()
 	// マウス位置情報取得処理
 	bool _isPhysicsBodyExist = GetResultFromMouseLocation(hitResult, _objectTypes);
 	
-	if (_isPhysicsBodyExist == false) { // PhisicsBody(マネージャーメッシュ)以外
+	// *制限*
+	if (_isPhysicsBodyExist == false) { // PhisicsBody確認
 		// 〇アウトライン非表示
 		if (currentHoverManager) {  // *既にアウトライン表示されている
 			currentHoverManager->HiddenOutline();
@@ -831,6 +949,8 @@ void AC_Opening_Level_Instance::Hover()
 
 		return;
 	}
+	if (hitResult.GetActor()->ActorHasTag("MANAGER") == false) return; // マネージャー確認
+
 
 	// ●アウトライン表示
 	AC_Manager* _manager = Cast<AC_Manager>(hitResult.GetActor()); // マネージャー取得
@@ -879,9 +999,9 @@ void AC_Opening_Level_Instance::MatchStart()
 
 
 	// -- プレイヤーを表示 --
-	for (AC_Player* _p : allPlayers) {
+	/*for (AC_Player* _p : allPlayers) {
 		_p->DisplayMesh();
-	}
+	}*/
 	// --
 
 

@@ -38,7 +38,7 @@ public:
 
 	// メッシュを表示する
 	void DisplayMesh();
-	// セットポジション (Tagから変数にポジションを設置する)
+	// セットポジション (位置からポジション取得)
 	void SetPosition();
 	// ショートパス
 	void ShotPass(AC_Player* targetPlayer);
@@ -82,13 +82,13 @@ public:
 	void PoketmanAppeal(AC_Player* ballHolder);
 	// アニメーション停止 (アイドル状態へ)
 	void StopAnim();
-
+	// 位置からタイルＮｏ取得
+	int GetTileNoFromLocation();
 
 private:
 	// 移動処理
 	void Move(float dTime);
-	// 位置からタイルＮｏ取得
-	int GetTileNoFromLocation(float x, float y);
+
 
 	USkeletalMeshComponent* myMesh = nullptr; // メッシュ
 	AC_Soccer_Ball* ball = nullptr; // ボール
