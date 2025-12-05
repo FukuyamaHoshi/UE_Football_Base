@@ -41,6 +41,26 @@ void UC_Opening_UI::NativeConstruct()
     {
         Escape_Pressing_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::EscapePressingButtonClicked);
     }
+    if (Player_Select_Button_0) // プレイヤー選択ボタン
+    {
+        Player_Select_Button_0->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton0Clicked);
+    }
+    if (Player_Select_Button_1) // プレイヤー選択ボタン
+    {
+        Player_Select_Button_1->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton1Clicked);
+    }
+    if (Player_Select_Button_2) // プレイヤー選択ボタン
+    {
+        Player_Select_Button_2->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton2Clicked);
+    }
+    if (Player_Select_Button_3) // プレイヤー選択ボタン
+    {
+        Player_Select_Button_3->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton3Clicked);
+    }
+    if (Player_Select_Button_4) // プレイヤー選択ボタン
+    {
+        Player_Select_Button_4->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton4Clicked);
+    }
 }
 
 void UC_Opening_UI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -229,4 +249,54 @@ void UC_Opening_UI::EscapePressingButtonClicked()
 
     _instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
     SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// プレイヤー選択ボタン (0) クリック
+void UC_Opening_UI::PlayerSelectButton0Clicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+
+    Player_Status_Box_0->SetVisibility(ESlateVisibility::Hidden); // 削除
+    _instance->pool_selected_player_type = 1; // プレイヤータイプ
+}
+
+// プレイヤー選択ボタン (1) クリック
+void UC_Opening_UI::PlayerSelectButton1Clicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+
+    Player_Status_Box_1->SetVisibility(ESlateVisibility::Hidden);
+    _instance->pool_selected_player_type = 0; // プレイヤータイプ
+}
+
+// プレイヤー選択ボタン (2) クリック
+void UC_Opening_UI::PlayerSelectButton2Clicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+
+    Player_Status_Box_2->SetVisibility(ESlateVisibility::Hidden);
+    _instance->pool_selected_player_type = 2; // プレイヤータイプ
+}
+
+// プレイヤー選択ボタン (3) クリック
+void UC_Opening_UI::PlayerSelectButton3Clicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+
+    Player_Status_Box_3->SetVisibility(ESlateVisibility::Hidden);
+    _instance->pool_selected_player_type = 0; // プレイヤータイプ
+}
+
+// プレイヤー選択ボタン (4) クリック
+void UC_Opening_UI::PlayerSelectButton4Clicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+
+    Player_Status_Box_4->SetVisibility(ESlateVisibility::Hidden);
+    _instance->pool_selected_player_type = 0; // プレイヤータイプ
 }

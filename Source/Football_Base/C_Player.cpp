@@ -15,6 +15,23 @@ AC_Player::AC_Player()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// *** マテリアル取得(ノーマルプレイヤー) ***
+	static ConstructorHelpers::FObjectFinder<UMaterial> _normalPlayerMaterialAsset(TEXT("/Game/Models/Player_Origin/Material/M_Red_Player.M_Red_Player"));
+	if (_normalPlayerMaterialAsset.Succeeded())
+	{
+		normalPlayerMaterial = _normalPlayerMaterialAsset.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterial> _targetmanPlayerMaterialAsset(TEXT("/Game/Models/Player_Origin/Material/M_Target_Man.M_Target_Man"));
+	if (_targetmanPlayerMaterialAsset.Succeeded())
+	{
+		targetmanPlayerMaterial = _targetmanPlayerMaterialAsset.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UMaterial> _runnerPlayerMaterialAsset(TEXT("/Game/Models/Player_Origin/Material/M_Runner.M_Runner"));
+	if (_runnerPlayerMaterialAsset.Succeeded())
+	{
+		runnerPlayerMaterial = _runnerPlayerMaterialAsset.Object;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -65,10 +82,6 @@ void AC_Player::BeginPlay()
 	}
 	// ***
 
-	// *** ポジションセット ***
-	SetPosition();
-	// ***
-
 	// *** 全てのタイルを取得 ***
 	TArray<AActor*> _actorTiles = {}; // タイルアクター配列
 	UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // クラスで探す
@@ -82,6 +95,11 @@ void AC_Player::BeginPlay()
 	
 	// *** タイルNoセット ***
 	tileNo = GetTileNoFromLocation();
+	// ***
+
+	// *** ポジションセット ***
+	SetPosition();
+	// ***
 }
 
 // Called every frame
@@ -557,7 +575,8 @@ int AC_Player::GetTileNoFromLocation()
 	}
 	if (_y < (C_Common::TILE_SIZE / 2))	_tileNoY = 3;
 	else if (_y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE) _tileNoY = (_isPositiveY) ? 4 : 2;
-	else _tileNoY = (_isPositiveY) ? 5 : 1;
+	else if (_y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE * 2) _tileNoY = (_isPositiveY) ? 5 : 1;
+	else return _tileNo; // 横が2.5タイル以上 (タイルNo.0)
 
 	// -- タイルNo x(下から何列目か)を求める --
 	// -の時の処理
@@ -577,6 +596,17 @@ int AC_Player::GetTileNoFromLocation()
 
 
 	return _tileNo;
+}
+
+
+// スポーンプレイヤーのマテリアルセット
+void AC_Player::SetSpwanPlayerMaterial(int playerType)
+{
+	if (myMesh == nullptr) return;
+
+	if (normalPlayerMaterial && playerType == 0)myMesh->SetMaterial(0, normalPlayerMaterial); // ノーマル
+	if (targetmanPlayerMaterial && playerType == 1)myMesh->SetMaterial(0, targetmanPlayerMaterial); // ターゲットマン
+	if (runnerPlayerMaterial && playerType == 2)myMesh->SetMaterial(0, runnerPlayerMaterial); // ランナー
 }
 
 // ドリブル (前進)

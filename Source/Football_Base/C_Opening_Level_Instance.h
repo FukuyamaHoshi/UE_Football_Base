@@ -83,6 +83,8 @@ private:
 	void PostPlay(bool isLong = false);
 	// AWAYチームの動き (敵AI)
 	void AwayTeamMovement();
+	// プレイヤースポーン (プールから選ばれた)
+	void SpawnPlayerInPool(int playerType);
 
 
 	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
@@ -120,6 +122,8 @@ private:
 	AC_Player* currentPoketman = nullptr; // 現在処理中のポケットマン
 	int poketmanPlayCount = 0; // ポケットマン手順回数カウンター
 	FVector poketmanFromLocation = FVector(0, 0, 0); // ポケットマン移動前の位置
+	TSubclassOf<AC_Player> playerSubClass = nullptr; // プレイヤー (サブクラス) *プレイヤーSpawn時使用
+	TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
@@ -136,4 +140,11 @@ private:
 		FVector(-825.0f, 0.0f, C_Common::BALL_BASE_LOCATION_Z),
 		FVector(-825.0f, -330.0f, C_Common::BALL_BASE_LOCATION_Z),
 		FVector(-825.0f, -660.0f, C_Common::BALL_BASE_LOCATION_Z) }; // ロングアタックのポイント (AWAY)
+	TArray<FVector> SUB_LOCATION =
+	{
+		FVector(-650, 1000, C_Common::PLAYER_BASE_LOCATION_Z),
+		FVector(-800, 1000, C_Common::PLAYER_BASE_LOCATION_Z),
+		FVector(-950, 1000, C_Common::PLAYER_BASE_LOCATION_Z) }; // サブプレイヤー位置
+		
+
 };

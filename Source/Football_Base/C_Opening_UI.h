@@ -8,6 +8,7 @@
 #include <Components/WidgetSwitcher.h>
 #include <Components/Overlay.h>
 #include <Components/TextBlock.h>
+#include <Components/VerticalBox.h>
 #include "C_Opening_UI.generated.h"
 
 
@@ -106,6 +107,31 @@ protected:
         UPROPERTY(meta = (BindWidget))
         UTextBlock* Lane_Attack_Text;
         // ***
+
+        // *** プレイヤー選択フェーズ ***
+        // -- ボタン ---
+        UPROPERTY(meta = (BindWidget))
+        UButton* Player_Select_Button_0;
+        UPROPERTY(meta = (BindWidget))
+        UButton* Player_Select_Button_1;
+        UPROPERTY(meta = (BindWidget))
+        UButton* Player_Select_Button_2;
+        UPROPERTY(meta = (BindWidget))
+        UButton* Player_Select_Button_3;
+        UPROPERTY(meta = (BindWidget))
+        UButton* Player_Select_Button_4;
+        // -- ステータスボックス --
+        UPROPERTY(meta = (BindWidget))
+        UVerticalBox* Player_Status_Box_0;
+        UPROPERTY(meta = (BindWidget))
+        UVerticalBox* Player_Status_Box_1;
+        UPROPERTY(meta = (BindWidget))
+        UVerticalBox* Player_Status_Box_2;
+        UPROPERTY(meta = (BindWidget))
+        UVerticalBox* Player_Status_Box_3;
+        UPROPERTY(meta = (BindWidget))
+        UVerticalBox* Player_Status_Box_4;
+        // ***
         
         // *** カウントダウン ***
         UPROPERTY(meta = (BindWidget))
@@ -140,5 +166,23 @@ protected:
         UFUNCTION()
         // プレス回避ボタンクリック
         void EscapePressingButtonClicked();
+        // ***
+
+        // *** プレイヤー選択フェーズ ***
+        UFUNCTION()
+        // プレイヤー選択ボタン (0) クリック
+        void PlayerSelectButton0Clicked();
+        UFUNCTION()
+        // プレイヤー選択ボタン (1) クリック
+        void PlayerSelectButton1Clicked();
+        UFUNCTION()
+        // プレイヤー選択ボタン (2) クリック
+        void PlayerSelectButton2Clicked();
+        UFUNCTION()
+        // プレイヤー選択ボタン (3) クリック
+        void PlayerSelectButton3Clicked();
+        UFUNCTION()
+        // プレイヤー選択ボタン (4) クリック
+        void PlayerSelectButton4Clicked();
         // ***
 };

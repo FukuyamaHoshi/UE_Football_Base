@@ -16,7 +16,7 @@ AC_Tile::AC_Tile()
 
 
 	// *** コマ移動マテリアルの変数にセット(保持するだけ) ***
-	static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Emphasis.M_Tile_Emphasis"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> pieceMoveMaterialAsset(TEXT("/Game/Materials/Tile/M_Tile_Dark.M_Tile_Dark"));
 	if (pieceMoveMaterialAsset.Succeeded())
 	{
 		pieceMoveMaterial = pieceMoveMaterialAsset.Object;

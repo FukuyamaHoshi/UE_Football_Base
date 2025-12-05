@@ -19,6 +19,13 @@ AC_Opening_Level_Instance::AC_Opening_Level_Instance()
 		openingUISubClass = _openingUIFinder.Class;
 	}
 	// ***
+
+	// *** プレイヤーBP取得 ***
+	ConstructorHelpers::FClassFinder<AC_Player> _playerBPFinder(TEXT("/Game/Blue_Print/BP_Player"));
+	if (_playerBPFinder.Class) {
+		playerSubClass = _playerBPFinder.Class;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -109,6 +116,12 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		// -- マウス追従 (選択時) --
 		if (isPlayerGrap) {
 			FollowPlayerToMouse();
+		}
+		// -- スポーンプレイヤー (プールから選択された) --
+		if (_instance->pool_selected_player_type >= 0) {
+			SpawnPlayerInPool(_instance->pool_selected_player_type);
+
+			_instance->pool_selected_player_type = -1; // リセット
 		}
 
 		return;
@@ -807,25 +820,71 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 
 	// -- プレイヤーをタイルに移動 --
 	// プレイヤータイルNo更新
-	int _tileNo = selectedPlayer->GetTileNoFromLocation();
+	int _fromTileNo = selectedPlayer->tileNo; // 移動前タイルNo
+	int _toTileNo = selectedPlayer->GetTileNoFromLocation(); // 移動先のタイルNo
 	// タイル取得
 	AC_Tile* _tile = nullptr;
 	for (AC_Tile* _t : tiles) {
-		if (_t->tileNo == _tileNo) {
+		if (_t->tileNo == _toTileNo) {
 			_tile = _t;
 
 			break;
 		}
 	}
-	// タイル位置取得
-	if (_tile == nullptr) return;
-	FVector _location = _tile->GetActorLocation();
-	// プレイヤー位置更新
-	_location.Z = C_Common::PLAYER_BASE_LOCATION_Z;
-	_location.X -= 82;
-	selectedPlayer->SetActorLocation(_location);
+	// 移動
+	if (_tile) {
+		// < タイル位置へ (選択されたプレイヤー) >
+		FVector _location = _tile->GetActorLocation(); // 位置
+		_location.Z = C_Common::PLAYER_BASE_LOCATION_Z;
+		_location.X -= 82;
+		selectedPlayer->SetActorLocation(_location);
+		
+		// < プレイヤー入れ替え処理 (移動先タイルにいたプレイヤー移動) >
+		// 移動先タイルにプレイヤーがいるか確認
+		AC_Player* _toExistPlayer = nullptr; // 移動先すでにいるプレイヤー
+		for (AC_Player* _p : homePlayers) {
+			if (_p->tileNo == _toTileNo) {
+				_toExistPlayer = _p;
+
+				break;
+			}
+		}
+		// プレイヤーがいれば選択プレイヤーの元の位置へ
+		if (_toExistPlayer) {
+			AC_Tile* _fromTile = nullptr;
+			for (AC_Tile* _t : tiles) { // 元の位置タイル取得
+				if (_t->tileNo == _fromTileNo) {
+					_fromTile = _t;
+
+					break;
+				}
+			}
+			// 移動処理
+			if (_fromTile) {
+				// ●タイルへ
+				FVector _fromTileLocation = _fromTile->GetActorLocation(); // 位置
+				_fromTileLocation.Z = C_Common::PLAYER_BASE_LOCATION_Z;
+				_fromTileLocation.X -= 82;
+				_toExistPlayer->SetActorLocation(_fromTileLocation);
+				_toExistPlayer->tileNo = _fromTileNo; // タイルNo更新
+			}
+			else {
+				// ●サブへ
+				subPlayers.Add(_toExistPlayer); // 配列追加
+				FVector _subLocation = SUB_LOCATION[subPlayers.Num() - 1]; // 位置
+				_toExistPlayer->SetActorLocation(_subLocation);
+			}
+		}
+	}
+	else {
+		// < サブ位置へ >
+		subPlayers.Add(selectedPlayer); // 配列追加
+		FVector _location = SUB_LOCATION[subPlayers.Num() - 1]; // 位置
+		selectedPlayer->SetActorLocation(_location);
+	}
 	// 変数リセット
 	isPlayerGrap = false; // フラグ切り替え
+	selectedPlayer->tileNo = _toTileNo; // タイルNo更新
 	selectedPlayer = nullptr;
 
 	// -- マテリアル削除 --
@@ -835,7 +894,7 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 // プレイヤー選択
 void AC_Opening_Level_Instance::PressedLeftForPlayerSelect()
 {
-	// ●マウス位置(クリック時)の情報を取得
+	// -- マウス位置(クリック時)の情報を取得 --
 	TArray<TEnumAsByte<EObjectTypeQuery>> _objectTypes = {}; // 取得するオブジェクトタイプ
 	_objectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody)); // プレイヤー: PhysicsBody
 	FHitResult hitResult; // オブジェクト情報
@@ -846,8 +905,10 @@ void AC_Opening_Level_Instance::PressedLeftForPlayerSelect()
 	if (_isPhysicsBodyExist == false) return;
 	if (hitResult.GetActor()->ActorHasTag("HOME") == false) return; // HOMEプレイヤーのみ
 
-	// ●プレイヤーを取得・フラグON
+	// -- プレイヤーを取得 --
 	selectedPlayer = Cast<AC_Player>(hitResult.GetActor()); // プレイヤー取得 (キャスト)
+	if (subPlayers.Contains(selectedPlayer)) subPlayers.Remove(selectedPlayer); // 配列削除 (*サブ対応)
+	
 	isPlayerGrap = true; // フラグON
 }
 
@@ -1393,5 +1454,29 @@ void AC_Opening_Level_Instance::AwayTeamMovement()
 		_frontLocation.X -= C_Common::TILE_SIZE;
 		
 		_targetPlayer->RunTo(_frontLocation); // 移動
+	}
+}
+
+// プレイヤースポーン (プールから選ばれた)
+void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
+{
+	if (playerSubClass == nullptr) return;
+	// -- スポーン --
+	FVector _spawnLocation = FVector(-1300, 1000, C_Common::PLAYER_BASE_LOCATION_Z);
+	FRotator _rotation = FRotator::ZeroRotator;
+	AC_Player* _player = GetWorld()->SpawnActor<AC_Player>( // アクタースポーン
+		playerSubClass,
+		_spawnLocation,
+		_rotation
+	);
+	
+	if (_player) {
+		// -- セット --
+		_player->Tags.Add(FName("HOME")); // tagセット
+		_player->SetSpwanPlayerMaterial(playerType); // マテリアルセット
+
+		// -- 出現アニメーション --
+		subPlayers.Add(_player); // サブへ
+		_player->RunTo(SUB_LOCATION[subPlayers.Num() - 1]);
 	}
 }

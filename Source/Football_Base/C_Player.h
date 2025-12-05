@@ -84,6 +84,8 @@ public:
 	void StopAnim();
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation();
+	// スポーンプレイヤーのマテリアルセット
+	void SetSpwanPlayerMaterial(int playerType);
 
 private:
 	// 移動処理
@@ -91,6 +93,9 @@ private:
 
 
 	USkeletalMeshComponent* myMesh = nullptr; // メッシュ
+	UMaterial* normalPlayerMaterial = nullptr; // マテリアル(ノーマル)
+	UMaterial* targetmanPlayerMaterial = nullptr; // マテリアル(ターゲットマン)
+	UMaterial* runnerPlayerMaterial = nullptr; // マテリアル(ランナー)
 	AC_Soccer_Ball* ball = nullptr; // ボール
 	UAnimMontage* shortPassAnim = nullptr; // アニメーション(ショートパス)
 	UAnimMontage* trapAnim = nullptr; // アニメーション(トラップ)

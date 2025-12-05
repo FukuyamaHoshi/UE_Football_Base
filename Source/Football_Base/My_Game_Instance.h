@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "C_Player.h"
 #include "Engine/GameInstance.h"
 #include "My_Game_Instance.generated.h"
 
@@ -26,7 +27,7 @@ public:
 	};
 	TArray<FTeamBoxElem> team_box_elems = {}; // チームボックス情報(Route画面)
 	TArray<int> players_tactics_command_nums = { 1, 2 }; // プレイヤーの戦術コマンドNos (***仮の初期コマンドセット)
-	// プレイヤーステータス
+	// チームステータス (仮)
 	int player_side_break_abilty = 1; // サイド突破力
 	int player_physical_abilty = 1; // 走力
 	int player_press_resistance_abilty = 1; // プレス耐性
@@ -38,4 +39,9 @@ public:
 	int game_phase = 0;
 	int command = 0; // コマンド
 	float phase_count = 0; // フェーズカウントダウンタイマー
+	// プールから選択されたプレイヤータイプ(プレイヤー選択フェーズ)
+	// 0: ノーマル
+	// 1: ターゲットマン
+	// 2: ランナー
+	int pool_selected_player_type = -1;
 };
