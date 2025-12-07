@@ -271,7 +271,6 @@ void UC_Opening_UI::MatchStartButtonClicked()
     _instance->game_phase = C_Common::MATCH_READY_PHASE; // (試合準備)フェーズ変更
     SwitchEnhance(_instance->command); // ボタンエンハンス設定
     _instance->phase_count = C_Common::MATCH_READY_TIME; // 試合準備フェーズカウントセット
-    SetVisibleHasLabel(true); // ボール保持・非保持ラベル表示
     
 }
 

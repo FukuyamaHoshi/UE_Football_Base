@@ -143,6 +143,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
 			_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
 
+			openingUI->SetVisibleHasLabel(true); // ボール保持・非保持ラベル表示
 		}
 
 		return;
