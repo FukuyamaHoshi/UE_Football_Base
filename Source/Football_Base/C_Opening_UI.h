@@ -28,10 +28,14 @@ public:
     void SwitchWidgetPanal(int panalNum);
     // ボタン変更
     void SwitchButtonPanal(int panalNum);
+    // 保持・非保持ラベル変更
+    void SwitchHasLabelPanal(int panalNum);
+    // 保持・非保持ラベル表示・非表示切替
+    void SetVisibleHasLabel(bool isVisibleLabel);
     
 private:
     // エンハンスの表示・非表示
-    void SwitchEnhance(int command);
+    void SwitchEnhance(int command, bool isHasBall = true);
 
     // 現在のエンハンス
     UOverlay* currentEnhance1 = nullptr;
@@ -61,6 +65,7 @@ protected:
         UButton* Match_Start_Button;
         
         // *** 試合フェーズ ***
+        // -- 保持コマンド --
         UPROPERTY(meta = (BindWidget))
         UButton* Long_Attack_Not_Press_Button;
         UPROPERTY(meta = (BindWidget))
@@ -77,6 +82,24 @@ protected:
         UWidgetSwitcher* Idle_Switcher;
         UPROPERTY(meta = (BindWidget))
         UWidgetSwitcher* Escape_Pressing_Switcher;
+        // -- 非保持コマンド --
+        UPROPERTY(meta = (BindWidget))
+        UButton* Side_Press_Not_Press_Button;
+        UPROPERTY(meta = (BindWidget))
+        UButton* High_Press_Not_Press_Button;
+        UPROPERTY(meta = (BindWidget))
+        UButton* No_Command_Not_Press_Button;
+        UPROPERTY(meta = (BindWidget))
+        UButton* Low_Block_Not_Press_Button;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Side_Press_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* High_Press_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* No_Command_Switcher;
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Low_Block_Switcher;
+        
         // エンハンス
         // -- ロングアタック --
         UPROPERTY(meta = (BindWidget))
@@ -106,6 +129,37 @@ protected:
         UOverlay* Lane_Attack_Enhance_2;
         UPROPERTY(meta = (BindWidget))
         UTextBlock* Lane_Attack_Text;
+        // -- サイド圧縮 --
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* Side_Press_Enhance_1;
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* Side_Press_Enhance_2;
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* Side_Press_Text;
+        // -- ハイプレス --
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* High_Press_Enhance_1;
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* High_Press_Enhance_2;
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* High_Press_Text;
+        // -- ノーコマンド --
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* No_Command_Enhance_1;
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* No_Command_Enhance_2;
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* No_Command_Text;
+        // -- ローブロック --
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* Low_Block_Enhance_1;
+        UPROPERTY(meta = (BindWidget))
+        UOverlay* Low_Block_Enhance_2;
+        UPROPERTY(meta = (BindWidget))
+        UTextBlock* Low_Block_Text;
+        // -- 保持・非保持ラベルSwicher --
+        UPROPERTY(meta = (BindWidget))
+        UWidgetSwitcher* Is_Has_Label_Swicher;
         // ***
 
         // *** プレイヤー選択フェーズ ***
@@ -154,18 +208,32 @@ protected:
         void MatchStartButtonClicked();
 
         // *** 試合フェーズ ***
+        // -- 保持コマンド --
         UFUNCTION()
         // ロングアタックボタンクリック
         void LongAttackButtonClicked();
         UFUNCTION()
-        // レーンアタックボタンクリック
-        void LaneAttackButtonClicked();
+        // テクニカルアタックボタンクリック
+        void TacnicalAttackButtonClicked();
         UFUNCTION()
         // アイドルボタンクリック
         void IdleButtonClicked();
         UFUNCTION()
-        // プレス回避ボタンクリック
+        // ポゼッションボタンクリック
         void EscapePressingButtonClicked();
+        // -- 非保持コマンド --
+        UFUNCTION()
+        // サイド圧縮ボタンクリック
+        void SidePressButtonClicked();
+        UFUNCTION()
+        // ハイプレスボタンクリック
+        void HighPressButtonClicked();
+        UFUNCTION()
+        // ノーコマンドボタンクリック
+        void NoCommandButtonClicked();
+        UFUNCTION()
+        // ローブロックボタンクリック
+        void LowBlockButtonClicked();
         // ***
 
         // *** プレイヤー選択フェーズ ***

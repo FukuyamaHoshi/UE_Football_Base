@@ -84,14 +84,16 @@ public:
     static constexpr int SIDE_ATTACK_COMMAND_NO = 1; // サイドアタック
     static constexpr int HIGH_LINE_COMMAND_NO = 2; // ハイライン
     static constexpr int LINE_BREAK_COMMAND_NO = 3; // ラインブレイク
-    static constexpr int LOW_BLOCK_COMMAND_NO = 4; // ローブロック
+   // static constexpr int LOW_BLOCK_COMMAND_NO = 4; // ローブロック
     static constexpr int GK_BUILD_UP_COMMAND_NO = 5; // GKビルドアップ
     static constexpr int SIDE_COMPLESSION_COMMAND_NO = 6; // サイド圧縮
     // -- newコマンド --
-    static constexpr int ESCAPE_PRESSING_COMMAND_NO = 1; // プレス回避
+    static constexpr int POSSETION_COMMAND_NO = 1; // ポゼッション
     static constexpr int LONG_ATTACK_COMMAND_NO = 2; // ロングアタック
-    static constexpr int LANE_ATTACK_COMMAND_NO = 3; // レーンアタック
-    static constexpr int HIGH_PRESS_COMMAND_NO = 4; // ハイプレス
+    static constexpr int TECNICAL_ATTACK_COMMAND_NO = 3; // テクニカルアタック
+    static constexpr int LOW_BLOCK_COMMAND_NO = 4; // ローブロック
+    static constexpr int SIDE_PRESS_COMMAND_NO = 5; // サイドプレス
+    static constexpr int HIGH_PRESS_COMMAND_NO = 6; // ハイプレス
 
     // 戦術コマンドテキスト取得
     static TArray<FString> GetTacticsCommandTexts(int tacticsCommandNo);

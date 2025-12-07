@@ -87,13 +87,13 @@ void AC_Manager::ChangeAnim(int command)
 
 
 	// モンタージュ切り替え
-	if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) { // プレス回避
+	if (command == C_Common::POSSETION_COMMAND_NO || C_Common::LOW_BLOCK_COMMAND_NO) { // ポゼッション or ローブロック
 		if (escapePressAnim) animInstance->Montage_Play(escapePressAnim);
 	}
-	else if (command == C_Common::LONG_ATTACK_COMMAND_NO) { // ロングアタック
+	else if (command == C_Common::LONG_ATTACK_COMMAND_NO || C_Common::SIDE_PRESS_COMMAND_NO) { // ロングアタック or サイド圧縮
 		if (longAttackAnim) animInstance->Montage_Play(longAttackAnim);
 	}
-	else if (command == C_Common::LANE_ATTACK_COMMAND_NO) { // レーンアタック
+	else if (command == C_Common::TECNICAL_ATTACK_COMMAND_NO || C_Common::HIGH_PRESS_COMMAND_NO) { // テクニカルアタック or ハイプレス
 		if (laneAttackAnim) animInstance->Montage_Play(laneAttackAnim);
 	}
 	else { // アイドル

@@ -386,7 +386,13 @@ void AC_Player::BallKeeping()
 	}
 	
 	// 前方向へ回転 (*必ず前を向く)
-	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(1, 0, 0));
+	FRotator _rotation = FRotator::ZeroRotator;
+	if (ActorHasTag("HOME")) {
+		_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(1, 0, 0));
+	}
+	else {
+		_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-1, 0, 0));
+	}
 	FQuat _q = _rotation.Quaternion(); // 変換
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる

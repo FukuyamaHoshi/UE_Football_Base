@@ -25,13 +25,14 @@ void UC_Opening_UI::NativeConstruct()
     {
         Match_Start_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::MatchStartButtonClicked);
     }
+    // -- 保持コマンド --
     if (Long_Attack_Not_Press_Button) // ロングアタックボタン
     {
         Long_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LongAttackButtonClicked);
     }
     if (Lane_Attack_Not_Press_Button) // レーンアタックボタン
     {
-        Lane_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LaneAttackButtonClicked);
+        Lane_Attack_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::TacnicalAttackButtonClicked);
     }
     if (Idle_Not_Press_Button) // アイドルボタン
     {
@@ -41,6 +42,24 @@ void UC_Opening_UI::NativeConstruct()
     {
         Escape_Pressing_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::EscapePressingButtonClicked);
     }
+    // -- 非保持コマンド --
+    if (Side_Press_Not_Press_Button) // サイド圧縮ボタン
+    {
+        Side_Press_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::SidePressButtonClicked);
+    }
+    if (High_Press_Not_Press_Button) // ハイプレスボタン
+    {
+        High_Press_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::HighPressButtonClicked);
+    }
+    if (No_Command_Not_Press_Button) // ノーコマンドボタン
+    {
+        No_Command_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::NoCommandButtonClicked);
+    }
+    if (Low_Block_Not_Press_Button) // ローブロックボタン
+    {
+        Low_Block_Not_Press_Button->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::LowBlockButtonClicked);
+    }
+    // -- プレイヤー選択(プール) --
     if (Player_Select_Button_0) // プレイヤー選択ボタン
     {
         Player_Select_Button_0->OnClicked.AddUniqueDynamic(this, &UC_Opening_UI::PlayerSelectButton0Clicked);
@@ -116,8 +135,27 @@ void UC_Opening_UI::SwitchButtonPanal(int panalNum)
     Button_Switcher->SetActiveWidgetIndex(panalNum);
 }
 
+// 保持・非保持ラベル変更
+void UC_Opening_UI::SwitchHasLabelPanal(int panalNum)
+{
+    if (Is_Has_Label_Swicher == nullptr) return;
+
+    Is_Has_Label_Swicher->SetActiveWidgetIndex(panalNum);
+}
+
+// 保持・非保持ラベル表示・非表示切替
+void UC_Opening_UI::SetVisibleHasLabel(bool isVisibleLabel)
+{
+    if (isVisibleLabel) {
+        Is_Has_Label_Swicher->SetVisibility(ESlateVisibility::Visible);
+    }
+    else {
+        Is_Has_Label_Swicher->SetVisibility(ESlateVisibility::Hidden);
+    }
+}
+
 // エンハンスの表示・非表示
-void UC_Opening_UI::SwitchEnhance(int command)
+void UC_Opening_UI::SwitchEnhance(int command, bool isHasBall)
 {
     // エンハンス非表示
     if (currentEnhance1) {
@@ -134,7 +172,7 @@ void UC_Opening_UI::SwitchEnhance(int command)
     //}
 
     // エンハンスの取得
-    if (command == C_Common::ESCAPE_PRESSING_COMMAND_NO) {
+    if (command == C_Common::POSSETION_COMMAND_NO) {
         currentEnhance1 = Escape_Press_Enhance_1;
         currentEnhance2 = Escape_Press_Enhance_2;
         currentButtonSwicher = Escape_Pressing_Switcher;
@@ -146,17 +184,45 @@ void UC_Opening_UI::SwitchEnhance(int command)
         currentButtonSwicher = Long_Attack_Switcher;
         //currentText = Long_Attack_Text;
     }
-    else if (command == C_Common::LANE_ATTACK_COMMAND_NO) {
+    else if (command == C_Common::TECNICAL_ATTACK_COMMAND_NO) {
         currentEnhance1 = Lane_Attack_Enhance_1;
         currentEnhance2 = Lane_Attack_Enhance_2;
         currentButtonSwicher = Lane_Attack_Switcher;
         //currentText = Lane_Attack_Text;
     }
+    else if (command == C_Common::LOW_BLOCK_COMMAND_NO) {
+        currentEnhance1 = Low_Block_Enhance_1;
+        currentEnhance2 = Low_Block_Enhance_2;
+        currentButtonSwicher = Low_Block_Switcher;
+        //currentText = Escape_Press_Text;
+    }
+    else if (command == C_Common::SIDE_PRESS_COMMAND_NO) {
+        currentEnhance1 = Side_Press_Enhance_1;
+        currentEnhance2 = Side_Press_Enhance_2;
+        currentButtonSwicher = Side_Press_Switcher;
+        //currentText = Long_Attack_Text;
+    }
+    else if (command == C_Common::HIGH_PRESS_COMMAND_NO) {
+        currentEnhance1 = High_Press_Enhance_1;
+        currentEnhance2 = High_Press_Enhance_2;
+        currentButtonSwicher = High_Press_Switcher;
+        //currentText = Lane_Attack_Text;
+    }
     else {
-        currentEnhance1 = Idle_Enhance_1;
-        currentEnhance2 = Idle_Enhance_2;
-        currentButtonSwicher = Idle_Switcher;
-        //currentText = Idle_Text;
+
+        if (isHasBall) {
+            // ●ボール保持 (アイドル)
+            currentEnhance1 = Idle_Enhance_1;
+            currentEnhance2 = Idle_Enhance_2;
+            currentButtonSwicher = Idle_Switcher;
+            //currentText = Idle_Text;
+        }
+        else {
+            // ボール非保持 (ノーコマンド)
+            currentEnhance1 = No_Command_Enhance_1;
+            currentEnhance2 = No_Command_Enhance_2;
+            currentButtonSwicher = No_Command_Switcher;
+        }
     }
 
     // エンハンス表示
@@ -205,6 +271,8 @@ void UC_Opening_UI::MatchStartButtonClicked()
     _instance->game_phase = C_Common::MATCH_READY_PHASE; // (試合準備)フェーズ変更
     SwitchEnhance(_instance->command); // ボタンエンハンス設定
     _instance->phase_count = C_Common::MATCH_READY_TIME; // 試合準備フェーズカウントセット
+    SetVisibleHasLabel(true); // ボール保持・非保持ラベル表示
+    
 }
 
 // ロングアタックボタンクリック
@@ -218,14 +286,14 @@ void UC_Opening_UI::LongAttackButtonClicked()
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
-// レーンアタックボタンクリック
-void UC_Opening_UI::LaneAttackButtonClicked()
+// テクニカルアタックボタンクリック
+void UC_Opening_UI::TacnicalAttackButtonClicked()
 {
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
     if (_instance == nullptr)  return;
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-    _instance->command = C_Common::LANE_ATTACK_COMMAND_NO;
+    _instance->command = C_Common::TECNICAL_ATTACK_COMMAND_NO;
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -247,7 +315,51 @@ void UC_Opening_UI::EscapePressingButtonClicked()
     if (_instance == nullptr)  return;
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
-    _instance->command = C_Common::ESCAPE_PRESSING_COMMAND_NO;
+    _instance->command = C_Common::POSSETION_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// サイド圧縮ボタンクリック
+void UC_Opening_UI::SidePressButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::SIDE_PRESS_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// ハイプレスボタンクリック
+void UC_Opening_UI::HighPressButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::HIGH_PRESS_COMMAND_NO;
+    SwitchEnhance(_instance->command); // エンハンス表示
+}
+
+// ノーコマンドボタンクリック
+void UC_Opening_UI::NoCommandButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = 0;
+    SwitchEnhance(_instance->command, false); // エンハンス表示
+}
+
+// ローブロックボタンクリック
+void UC_Opening_UI::LowBlockButtonClicked()
+{
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
+
+    _instance->command = C_Common::LOW_BLOCK_COMMAND_NO;
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 

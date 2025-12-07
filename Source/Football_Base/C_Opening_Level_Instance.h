@@ -57,6 +57,12 @@ private:
 	bool GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
 	// 試合開始時処理
 	void MatchStart();
+	// ポゼッションコマンド
+	void PossetionCommand();
+	// ロングアタックコマンド
+	void LongAttackCommand();
+	// テクニカルアタックコマンド
+	void TecnicalAttackCommand();
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
@@ -101,7 +107,7 @@ private:
 	AC_Tile* selectedTile = nullptr; // 選択中のタイル (プレイヤー選択フェーズ)
 	TArray<FVector> playerInitialLocation = {}; // 全てのプレイヤーの初回位置
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
-	int awayCommand = 4; // AWAYチームの戦術コマンド
+	int awayCommand = 1; // AWAYチームの戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
