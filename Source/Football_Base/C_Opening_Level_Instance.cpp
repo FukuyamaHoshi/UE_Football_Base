@@ -175,9 +175,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		}
 
 		// -- プレイヤーを元の位置へ --
-		for (int _i = 0; _i < playerInitialLocation.Num(); _i++) {
+		for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
 			// ●位置
-			allPlayers[_i]->SetActorLocation(playerInitialLocation[_i]);
+			allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
 			// ●向き
 			FRotator _rotation = FRotator(0, 0, 0);
 			// ゴール方向へ回転
@@ -214,9 +214,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 				_player->StopAnim();
 			}
 			// ●プレイヤーを元の位置へ
-			for (int _i = 0; _i < playerInitialLocation.Num(); _i++) {
+			for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
 				// ●位置
-				allPlayers[_i]->SetActorLocation(playerInitialLocation[_i]);
+				allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
 				// ●向き
 				FRotator _rotation = FRotator(0,0,0);
 				// ゴール方向へ回転
@@ -911,10 +911,24 @@ void AC_Opening_Level_Instance::MatchStart()
 	}
 	// --
 
-	// -- プレイヤー位置取得 --
-	playerInitialLocation.Empty(); // 空に
+	// -- プレイヤー初期配置位置・タイルNo取得 --
+	// 配列リセット
+	playerInitialPlaceLocation.Empty();
+	homeTeamIntialPlaceLocation.Empty();
+	awayTeamIntialPlaceLocation.Empty();
+	homeTeamIntialTileNo.Empty();
+	awayTeamIntialTileNo.Empty();
+	
 	for (AC_Player* _p : allPlayers) {
-		playerInitialLocation.Add(_p->GetActorLocation());
+		if (_p->ActorHasTag("HOME")) {
+			homeTeamIntialPlaceLocation.Add(_p->GetActorLocation());
+			homeTeamIntialTileNo.Add(_p->tileNo);
+		}
+		else {
+			awayTeamIntialPlaceLocation.Add(_p->GetActorLocation());
+			awayTeamIntialTileNo.Add(_p->tileNo);
+		}
+		playerInitialPlaceLocation.Add(_p->GetActorLocation());
 	}
 	// --
 
@@ -1191,6 +1205,28 @@ void AC_Opening_Level_Instance::TecnicalAttackCommand()
 // ローブロックコマンド
 void AC_Opening_Level_Instance::LowBlockCommand()
 {
+	// チーム・初期配置・初期配置タイルNo取得
+	TArray<AC_Player*> _myTeam = {}; // マイチーム
+	TArray<FVector> _initialPlace = {}; // 初期配置
+	TArray<int> _initialTileNos = {}; // 初期配置タイルNo
+	if (ballHolder->ActorHasTag("HOME")) {
+		_myTeam = awayPlayers;
+		_initialPlace = awayTeamIntialPlaceLocation;
+		_initialTileNos = awayTeamIntialTileNo;
+	}
+	else {
+		_myTeam = homePlayers;
+		_initialPlace = homeTeamIntialPlaceLocation;
+		_initialTileNos = homeTeamIntialTileNo;
+	}
+	// 移動 (初期配置位置へ)
+	for (int _i = 0; _i < _myTeam.Num(); _i++) {
+		// 移動制限
+		if (_myTeam[_i]->isMoving) continue; // (*制限) プレイヤー移動中
+		if (_myTeam[_i]->tileNo == _initialTileNos[_i]) continue; // (*制限) 既に初期配置にいる
+		
+		_myTeam[_i]->RunTo(_initialPlace[_i]); // 移動処理
+	}
 }
 
 // サイド圧縮コマンド
@@ -1651,4 +1687,49 @@ void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
 		subPlayers.Add(_player); // サブへ
 		_player->RunTo(SUB_LOCATION[subPlayers.Num() - 1]);
 	}
+}
+
+// 位置からタイルＮｏ取得
+int AC_Opening_Level_Instance::GetTileNoFromLocation(FVector location)
+{
+	int _tileNo = 0;
+
+	// プレイヤー位置
+	FVector _location = location;
+	double _x = _location.X;
+	double _y = _location.Y;
+	// タイルNo
+	int _tileNoY = 0; // タイルNo y (横から何個目か)
+	int _tileNoX = 0; // タイルNo x (下から何列目か)
+
+	// -- タイルNo y(横から何個目か)を求める --
+	// -の時の処理
+	bool _isPositiveY = true; // xが正の整数か
+	if (_y < 0) {
+		_y = abs(_y); // 絶対値に変換
+		_isPositiveY = false; // フラグ変更
+	}
+	if (_y < (C_Common::TILE_SIZE / 2))	_tileNoY = 3;
+	else if (_y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE) _tileNoY = (_isPositiveY) ? 4 : 2;
+	else if (_y < (C_Common::TILE_SIZE / 2) + C_Common::TILE_SIZE * 2) _tileNoY = (_isPositiveY) ? 5 : 1;
+	else return _tileNo; // 横が2.5タイル以上 (タイルNo.0)
+
+	// -- タイルNo x(下から何列目か)を求める --
+	// -の時の処理
+	bool _isPositiveX = true; // xが正の整数か
+	if (_x < 0) {
+		_x = abs(_x); // 絶対値に変換
+		_isPositiveX = false; // フラグ変更
+	}
+	if (_x < C_Common::TILE_SIZE)	_tileNoX = (_isPositiveX) ? 4 : 3;
+	else if (_x < C_Common::TILE_SIZE * 2) _tileNoX = (_isPositiveX) ? 5 : 2;
+	else if (_x < C_Common::TILE_SIZE * 3)_tileNoX = (_isPositiveX) ? 6 : 1;
+	else return _tileNo; // 縦が3タイル以上 (タイルNo.0)
+
+	// -- タイルNo取得 --
+	// ( (タイル縦(x) - 1個) * フィールドの横のタイル個数 ) + タイル横(y)
+	_tileNo = ((_tileNoX - 1) * C_Common::TILE_NUM_Y) + _tileNoY;
+
+
+	return _tileNo;
 }

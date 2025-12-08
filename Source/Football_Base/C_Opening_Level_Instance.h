@@ -98,6 +98,8 @@ private:
 	void AwayTeamMovement();
 	// プレイヤースポーン (プールから選ばれた)
 	void SpawnPlayerInPool(int playerType);
+	// 位置からタイルＮｏ取得
+	int GetTileNoFromLocation(FVector location);
 
 
 	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
@@ -112,7 +114,11 @@ private:
 	AC_Player* selectedPlayer = nullptr; // 選択中のプレイヤー (プレイヤー選択フェーズ)
 	bool isPlayerGrap = false; // 選択中か (プレイヤー選択フェーズ)
 	AC_Tile* selectedTile = nullptr; // 選択中のタイル (プレイヤー選択フェーズ)
-	TArray<FVector> playerInitialLocation = {}; // 全てのプレイヤーの初回位置
+	TArray<FVector> playerInitialPlaceLocation = {}; // 全てのプレイヤーの初期配置位置
+	TArray<FVector> homeTeamIntialPlaceLocation = {}; // HOMEチームの初期配置位置
+	TArray<FVector> awayTeamIntialPlaceLocation = {}; // AWAYチームの初期配置位置
+	TArray<int> homeTeamIntialTileNo = {}; // HOMEチームの初期配置タイルNo
+	TArray<int> awayTeamIntialTileNo = {}; // AWAYチームの初期配置タイルNo
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
 	int awayCommand = 1; // AWAYチームの戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
