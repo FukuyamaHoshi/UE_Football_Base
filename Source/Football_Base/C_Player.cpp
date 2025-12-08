@@ -32,6 +32,19 @@ AC_Player::AC_Player()
 		runnerPlayerMaterial = _runnerPlayerMaterialAsset.Object;
 	}
 	// ***
+
+	// *** Widgetアイコン取得 ***
+	// -- ランナー --
+	ConstructorHelpers::FClassFinder<UUserWidget> _runnerWidgetFinder(TEXT("/Game/UI/Player_Type/WBP_Runner"));
+	if (_runnerWidgetFinder.Class) {
+		runnerWidgetIcon = _runnerWidgetFinder.Class;
+	}
+	// -- ターゲットマン --
+	ConstructorHelpers::FClassFinder<UUserWidget> _targetmanWidgetFinder(TEXT("/Game/UI/Player_Type/WBP_Targetman"));
+	if (_targetmanWidgetFinder.Class) {
+		targetmanWidgetIcon = _targetmanWidgetFinder.Class;
+	}
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -80,6 +93,10 @@ void AC_Player::BeginPlay()
 			playerAnimInstance = Cast<UC_Player_Anim_Instance>(_animInstance);
 		}
 	}
+	// ***
+
+	// *** Widgetコンポーネント取得 ***
+	myWidget = FindComponentByClass<UWidgetComponent>();
 	// ***
 
 	// *** 全てのタイルを取得 ***
@@ -604,15 +621,25 @@ int AC_Player::GetTileNoFromLocation()
 	return _tileNo;
 }
 
-
 // スポーンプレイヤーのマテリアルセット
-void AC_Player::SetSpwanPlayerMaterial(int playerType)
+void AC_Player::SetSpwanPlayerMaterial(int typeNo)
 {
 	if (myMesh == nullptr) return;
 
-	if (normalPlayerMaterial && playerType == 0)myMesh->SetMaterial(0, normalPlayerMaterial); // ノーマル
-	if (targetmanPlayerMaterial && playerType == 1)myMesh->SetMaterial(0, targetmanPlayerMaterial); // ターゲットマン
-	if (runnerPlayerMaterial && playerType == 2)myMesh->SetMaterial(0, runnerPlayerMaterial); // ランナー
+	if (normalPlayerMaterial && typeNo == 0)myMesh->SetMaterial(0, normalPlayerMaterial); // ノーマル
+	if (runnerPlayerMaterial && typeNo == C_Common::RUNNER_TYPE_NO)myMesh->SetMaterial(0, runnerPlayerMaterial); // ランナー
+	if (targetmanPlayerMaterial && typeNo == C_Common::TARGET_MAN_TYPE_NO)myMesh->SetMaterial(0, targetmanPlayerMaterial); // ターゲットマン
+}
+
+// プレイヤータイプアイコンセット
+void AC_Player::SetPlayerTypeIcon(int typeNo)
+{
+	if (myWidget == nullptr) return;
+	if (runnerWidgetIcon == nullptr) return;
+	if (targetmanWidgetIcon == nullptr) return;
+
+	if (typeNo == C_Common::RUNNER_TYPE_NO) myWidget->SetWidgetClass(runnerWidgetIcon);
+	else if (typeNo == C_Common::TARGET_MAN_TYPE_NO) myWidget->SetWidgetClass(targetmanWidgetIcon);
 }
 
 // ドリブル (前進)

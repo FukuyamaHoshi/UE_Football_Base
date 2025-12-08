@@ -369,7 +369,7 @@ void UC_Opening_UI::PlayerSelectButton0Clicked()
     if (_instance == nullptr)  return;
 
     Player_Status_Box_0->SetVisibility(ESlateVisibility::Hidden); // 削除
-    _instance->pool_selected_player_type = 1; // プレイヤータイプ
+    _instance->pool_selected_player_type = C_Common::TARGET_MAN_TYPE_NO; // プレイヤータイプ
 }
 
 // プレイヤー選択ボタン (1) クリック
@@ -389,7 +389,7 @@ void UC_Opening_UI::PlayerSelectButton2Clicked()
     if (_instance == nullptr)  return;
 
     Player_Status_Box_2->SetVisibility(ESlateVisibility::Hidden);
-    _instance->pool_selected_player_type = 2; // プレイヤータイプ
+    _instance->pool_selected_player_type = C_Common::RUNNER_TYPE_NO; // プレイヤータイプ
 }
 
 // プレイヤー選択ボタン (3) クリック

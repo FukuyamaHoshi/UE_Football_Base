@@ -1541,7 +1541,7 @@ void AC_Opening_Level_Instance::AwayTeamMovement()
 void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
 {
 	if (playerSubClass == nullptr) return;
-	// -- スポーン --
+	// -- スポーン処理 --
 	FVector _spawnLocation = FVector(-1300, 1000, C_Common::PLAYER_BASE_LOCATION_Z);
 	FRotator _rotation = FRotator::ZeroRotator;
 	AC_Player* _player = GetWorld()->SpawnActor<AC_Player>( // アクタースポーン
@@ -1554,6 +1554,7 @@ void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
 		// -- セット --
 		_player->Tags.Add(FName("HOME")); // tagセット
 		_player->SetSpwanPlayerMaterial(playerType); // マテリアルセット
+		_player->SetPlayerTypeIcon(playerType); // プレイヤータイプアイコン
 
 		// -- 出現アニメーション --
 		subPlayers.Add(_player); // サブへ

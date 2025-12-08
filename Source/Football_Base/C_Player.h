@@ -7,6 +7,7 @@
 #include "C_Soccer_Ball.h"
 #include "C_Player_Anim_Instance.h"
 #include "C_Tile.h"
+#include <Components/WidgetComponent.h>
 #include "C_Player.generated.h"
 
 
@@ -35,6 +36,7 @@ public:
 	int position = -1; // ポジション (TAGから取得)
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 	int tileNo = 0; // 現在のタイルNo
+	int playerType = 0; // プレイヤータイプ
 
 	// メッシュを表示する
 	void DisplayMesh();
@@ -85,7 +87,10 @@ public:
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation();
 	// スポーンプレイヤーのマテリアルセット
-	void SetSpwanPlayerMaterial(int playerType);
+	void SetSpwanPlayerMaterial(int typeNo);
+	// プレイヤータイプアイコンセット
+	// 1: ランナー, 2: ターゲットマン
+	void SetPlayerTypeIcon(int typeNo);
 
 private:
 	// 移動処理
@@ -111,6 +116,10 @@ private:
 	UAnimMontage* postmanAppealAnim = nullptr; // アニメーション(ポストマンアピール)
 	UAnimMontage* runnerAppealAnim = nullptr; // アニメーション(ランナーアピール)
 	UAnimMontage* poketmanAppealAnim = nullptr; // アニメーション(ポケットマンアピール)
+	UWidgetComponent* myWidget = nullptr; // ウィジェットコンポーネント
+	TSubclassOf<UUserWidget> runnerWidgetIcon = nullptr; // ランナーWidget
+	TSubclassOf<UUserWidget> targetmanWidgetIcon = nullptr; // ターゲットマンWidget
+
 	bool isTrap = false; // トラップアニメーションするか
 	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
