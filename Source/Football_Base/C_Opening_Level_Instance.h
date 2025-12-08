@@ -63,6 +63,13 @@ private:
 	void LongAttackCommand();
 	// テクニカルアタックコマンド
 	void TecnicalAttackCommand();
+	// ローブロックコマンド
+	void LowBlockCommand();
+	// サイド圧縮コマンド
+	void SidePressCommand();
+	// ハイプレスコマンド
+	void HighPressCommand();
+	
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
@@ -130,6 +137,7 @@ private:
 	FVector poketmanFromLocation = FVector(0, 0, 0); // ポケットマン移動前の位置
 	TSubclassOf<AC_Player> playerSubClass = nullptr; // プレイヤー (サブクラス) *プレイヤーSpawn時使用
 	TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
+	AC_Player* firstDeffender = nullptr; // ファーストディフェンダー
 
 	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 

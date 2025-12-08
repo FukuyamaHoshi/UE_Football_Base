@@ -563,6 +563,19 @@ void AC_Player::Move(float dTime) {
 				break;
 			}
 		}
+		// 前方を向く
+		FVector _front = FVector::ZeroVector;
+		if (ActorHasTag("HOME")) {
+			_front = FVector(1, 0, 0);
+		}
+		else {
+			_front = FVector(-1, 0, 0);
+		}
+		FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + _front);
+		FQuat _q = _rotation.Quaternion(); // 変換
+		_q.X = 0; // *Z軸のみ回転させる
+		_q.Y = 0; // *Z軸のみ回転させる
+		SetActorRotation(_q);
 
 		// -- ドリブル時 --
 		isDrribling = false; // *ドリブル終了

@@ -323,8 +323,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	if (_instance->command != currentCommand) { // コマンド変更がされた時
 		currentCommand = _instance->command; // コマンド一時保存
 
-		// -- コマンド開始時処理 --
-		if (homeManager) homeManager->ChangeAnim(currentCommand); // アニメーション切り替え(マネージャー)
+		// -- マネージャーアニメーション変更 --
+		if (homeManager) homeManager->ChangeAnim(currentCommand);
 	}
 	// ***
 
@@ -449,30 +449,32 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 			return;
 		}
-		if (currentCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッション以外
-			// デゥエル処理
-			if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
-				// -- ディフェンス姿勢セット --
-				TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
-				if (ballHolder->ActorHasTag(FName("HOME"))) {
-					_deffencePlayers = awayPlayers;
-				}
-				else {
-					_deffencePlayers = homePlayers;
-				}
-				for (AC_Player* _player : _deffencePlayers) {
-					if (_player->tileNo == ballHolder->tileNo) {
-						_player->SetDefensiveStance(); // ディフェンス姿勢動作
-
-						break;
+		if (currentCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (HOME)
+			if (awayCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (AWAY)
+				// デゥエル処理
+				if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+					// -- ディフェンス姿勢セット --
+					TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+					if (ballHolder->ActorHasTag(FName("HOME"))) {
+						_deffencePlayers = awayPlayers;
 					}
-				}
-				// -- デゥエル --
-				if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
-					isDueling = true; // デゥエル開始
-					Duel();
+					else {
+						_deffencePlayers = homePlayers;
+					}
+					for (AC_Player* _player : _deffencePlayers) {
+						if (_player->tileNo == ballHolder->tileNo) {
+							_player->SetDefensiveStance(); // ディフェンス姿勢動作
 
-					return;
+							break;
+						}
+					}
+					// -- デゥエル --
+					if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
+						isDueling = true; // デゥエル開始
+						Duel();
+
+						return;
+					}
 				}
 			}
 		}
@@ -529,7 +531,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	}
 
 	
-	// ***** コマンド処理 *****
+	// ***** コマンド操作 *****
 	// * 制限 *
 	if (ball->isMoving) return; // ボール移動中
 	if (ballHolder == nullptr) return; // ボールホルダーなし
@@ -546,6 +548,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		else if (currentCommand == C_Common::LONG_ATTACK_COMMAND_NO) LongAttackCommand();
 		else if (currentCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) TecnicalAttackCommand();
 		// ⓶ボール非保持コマンド (AWAY)
+		if (awayCommand == C_Common::LOW_BLOCK_COMMAND_NO) LowBlockCommand();
+		else if (awayCommand == C_Common::SIDE_PRESS_COMMAND_NO) SidePressCommand();
+		else if (awayCommand == C_Common::HIGH_PRESS_COMMAND_NO) HighPressCommand();
 	}
 	// -- ボール保持がAWAY --
 	else {
@@ -554,6 +559,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		else if (awayCommand == C_Common::LONG_ATTACK_COMMAND_NO) LongAttackCommand();
 		else if (awayCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) TecnicalAttackCommand();
 		// ⓶ボール非保持コマンド (HOME)
+		if (currentCommand == C_Common::LOW_BLOCK_COMMAND_NO) LowBlockCommand();
+		else if (currentCommand == C_Common::SIDE_PRESS_COMMAND_NO) SidePressCommand();
+		else if (currentCommand == C_Common::HIGH_PRESS_COMMAND_NO) HighPressCommand();
 	}
 	// *****
 }
@@ -1178,6 +1186,89 @@ void AC_Opening_Level_Instance::TecnicalAttackCommand()
 		postPlayer = _postPlayer; // 一時保存
 		PostPlay(false);
 	}
+}
+
+// ローブロックコマンド
+void AC_Opening_Level_Instance::LowBlockCommand()
+{
+}
+
+// サイド圧縮コマンド
+void AC_Opening_Level_Instance::SidePressCommand()
+{
+}
+
+// ハイプレスコマンド
+void AC_Opening_Level_Instance::HighPressCommand()
+{
+	// *(制限) ボールホルダーGK
+	if (ballHolder->position == C_Common::GK_POSITION) return;
+	// *(制限) ファーストディフェンダー移動中
+	if (firstDeffender) {
+		if (firstDeffender->isMoving) return;
+	}
+	firstDeffender = nullptr; // リセット
+	// ボールホルダーのフリー確認
+	AC_Tile* _ballHolderTile = nullptr;
+	for (AC_Tile* _t : tiles) {
+		if (_t->tileNo == ballHolder->tileNo) {
+			_ballHolderTile = _t;
+
+			break;
+		}
+	}
+	if (_ballHolderTile == nullptr) return;
+	if (_ballHolderTile->onPlayerNum > 1) return;
+	// チーム取得
+	TArray<AC_Player*> _myTeam = {}; // マイチーム
+	if (ballHolder->ActorHasTag("HOME")) {
+		_myTeam = awayPlayers;
+	}
+	else {
+		_myTeam = homePlayers;
+	}
+	// ファーストライン取得 (ポジションで取得)
+	TArray<AC_Player*> _firstLine = {}; // ファーストライン
+	for (AC_Player* _player : _myTeam) {
+		if (_player->position >= C_Common::LWG_POSITION) _firstLine.Add(_player);
+	}
+	// ファーストディフェンダー取得
+	int _ballHolderLane = (ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y;; // ボールホルダーレーン
+	for (int _l = 1; _l <= 5; _l++) { // レーン数
+		bool _isBreak = false; // ブレイク判定
+		for (int _f = 0; _f < _firstLine.Num(); _f++) { // ファーストライン(プレイヤー)数
+			int _deffenderLane = (_firstLine[_f]->tileNo - 1) % C_Common::TILE_NUM_Y;; // ディフェンダーレーン
+			// 周囲のレーンにいるか確認
+			// ⓵右のレーン
+			int _rightLane = _ballHolderLane + _l;
+			if (_deffenderLane == _rightLane) {
+				firstDeffender = _firstLine[_f];
+				_isBreak = true;
+
+				break;
+			}
+			// ⓶左のレーン
+			int _leftLane = _ballHolderLane - _l;
+			if (_deffenderLane == _leftLane) {
+				firstDeffender = _firstLine[_f];
+				_isBreak = true;
+
+				break;
+			}
+		}
+
+		if (_isBreak) break;
+	}
+	if (firstDeffender == nullptr) return;
+	// 移動
+	FVector _location = _ballHolderTile->GetActorLocation();
+	if (firstDeffender->ActorHasTag("HOME")) { // 位置調整X
+		_location.X -= 82;
+	}
+	else {
+		_location.X += 82;
+	}
+	firstDeffender->RunTo(_location);
 }
 
 // ショートパス
