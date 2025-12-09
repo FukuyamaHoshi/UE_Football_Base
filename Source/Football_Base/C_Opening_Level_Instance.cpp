@@ -1232,6 +1232,88 @@ void AC_Opening_Level_Instance::LowBlockCommand()
 // サイド圧縮コマンド
 void AC_Opening_Level_Instance::SidePressCommand()
 {
+	// ボールが左右のどちらにあるか
+	int _ballHolderLane = ( (ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y ) + 1; // ボールホルダーレーン
+	bool _isRight = _ballHolderLane >= 3 ? true : false; // 右にいる
+	// 自チーム取得
+	TArray<AC_Player*> _myTeam = {};
+	if (ballHolder->ActorHasTag("HOME")) {
+		_myTeam = awayPlayers;
+	}
+	else {
+		_myTeam = homePlayers;
+	}
+	// (ボールの)反対サイドのプレイヤー取得 (*タイルで取得)
+	TArray<AC_Player*> _sidePlayers = {};
+	int _sideLane = _isRight ? 1 : 5; // サイドレーンNo
+	for (AC_Player* _p : _myTeam) {
+		int _pLane = ((_p->tileNo - 1) % C_Common::TILE_NUM_Y) + 1; // レーン
+		if (_pLane == _sideLane) _sidePlayers.Add(_p);
+	}
+	if (_sidePlayers.IsEmpty()) return;
+	// 移動
+	for (AC_Player* _sidePlayer : _sidePlayers) {
+		// -- サイドプレイヤー --
+		// 同ラインのプレイヤー取得
+		TArray<AC_Player*> _mySameLinePlayers = {};
+		int _sidePlayerLine = (_sidePlayer->tileNo - 1) / C_Common::TILE_NUM_Y; // サイドプレイヤーライン (0 - 5)
+		for (AC_Player* _player : _myTeam) {
+			int _playerLine = (_player->tileNo - 1) / C_Common::TILE_NUM_Y; // ライン
+			if (_sidePlayerLine == _playerLine) _mySameLinePlayers.Add(_player);
+		}
+		// 移動先位置取得
+		FVector _location = _sidePlayer->GetActorLocation();
+		if (_isRight) {
+			// 右へ
+			_location.Y += C_Common::TILE_SIZE;
+		}
+		else {
+			// 左へ
+			_location.Y -= C_Common::TILE_SIZE;
+		}
+		// *移動制限
+		if (_sidePlayer->isMoving) continue; // 移動中
+		if (_sidePlayer->position == C_Common::GK_POSITION) continue; // GK
+		if (_mySameLinePlayers.Num() >= 5) return; // 同ラインに5人以上存在
+		// 移動アクション
+		_sidePlayer->RunTo(_location);
+		
+
+		// -- 同ラインのプレイヤー (サイドプレイヤーは移動した後) --
+		for (int _i = 1; _i < 5; _i++) {
+			// 隣のタイルNo取得
+			int _nextToSideTileNo = 0;
+			if (_isRight) {
+				_nextToSideTileNo = _sidePlayer->tileNo + _i;
+			}
+			else {
+				_nextToSideTileNo = _sidePlayer->tileNo - _i;
+			}
+			// 隣のプレイヤー取得
+			AC_Player* _nextToSidePlayer = nullptr;
+			for (AC_Player* _p : _mySameLinePlayers) {
+				if (_p->tileNo == _nextToSideTileNo) {
+					_nextToSidePlayer = _p;
+
+					break;
+				}
+			}
+			if (_nextToSidePlayer == nullptr) break; // (*制限) 隣のプレイヤーがいない
+			// 移動位置取得
+			FVector _nextToLocation = _nextToSidePlayer->GetActorLocation();
+			if (_isRight) {
+				// 右へ
+				_nextToLocation.Y += C_Common::TILE_SIZE;
+			}
+			else {
+				// 左へ
+				_nextToLocation.Y -= C_Common::TILE_SIZE;
+			}
+			if (_nextToSidePlayer->isMoving) break; // (*制限) 移動中
+			// 移動アクション
+			_nextToSidePlayer->RunTo(_nextToLocation);
+		}
+	}
 }
 
 // ハイプレスコマンド
