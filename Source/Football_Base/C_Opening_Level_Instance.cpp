@@ -1321,72 +1321,72 @@ void AC_Opening_Level_Instance::HighPressCommand()
 {
 	// *(制限) ボールホルダーGK
 	if (ballHolder->position == C_Common::GK_POSITION) return;
-	// *(制限) ファーストディフェンダー移動中
-	if (firstDeffender) {
-		if (firstDeffender->isMoving) return;
+	// *(制限) ハイプレスディフェンダー移動中
+	for (AC_Player* _p : highPressDeffenders) {
+		if (_p->isMoving) return;
 	}
-	firstDeffender = nullptr; // リセット
-	// ボールホルダーのフリー確認
-	AC_Tile* _ballHolderTile = nullptr;
-	for (AC_Tile* _t : tiles) {
-		if (_t->tileNo == ballHolder->tileNo) {
-			_ballHolderTile = _t;
-
-			break;
-		}
-	}
-	if (_ballHolderTile == nullptr) return;
-	if (_ballHolderTile->onPlayerNum > 1) return;
+	highPressDeffenders.Empty(); // リセット
 	// チーム取得
 	TArray<AC_Player*> _myTeam = {}; // マイチーム
+	TArray<AC_Player*> _enemyTeam = {}; // 相手チーム
 	if (ballHolder->ActorHasTag("HOME")) {
 		_myTeam = awayPlayers;
+		_enemyTeam = homePlayers;
 	}
 	else {
 		_myTeam = homePlayers;
+		_enemyTeam = awayPlayers;
 	}
-	// ファーストライン取得 (ポジションで取得)
-	TArray<AC_Player*> _firstLine = {}; // ファーストライン
-	for (AC_Player* _player : _myTeam) {
-		if (_player->position >= C_Common::LWG_POSITION) _firstLine.Add(_player);
+	// 相手のフリーマン取得 (*GK除く)
+	TArray<AC_Player*> _freeEnemys = {};
+	for (AC_Player* _p : _enemyTeam) {
+		if (_p->position == C_Common::GK_POSITION) continue; // (*制限) GK
+		
+		if (GetIsFree(_p)) _freeEnemys.Add(_p);
 	}
-	// ファーストディフェンダー取得
-	int _ballHolderLane = (ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y;; // ボールホルダーレーン
-	for (int _l = 1; _l <= 5; _l++) { // レーン数
-		bool _isBreak = false; // ブレイク判定
-		for (int _f = 0; _f < _firstLine.Num(); _f++) { // ファーストライン(プレイヤー)数
-			int _deffenderLane = (_firstLine[_f]->tileNo - 1) % C_Common::TILE_NUM_Y;; // ディフェンダーレーン
-			// 周囲のレーンにいるか確認
-			// ⓵右のレーン
-			int _rightLane = _ballHolderLane + _l;
-			if (_deffenderLane == _rightLane) {
-				firstDeffender = _firstLine[_f];
-				_isBreak = true;
-
-				break;
-			}
-			// ⓶左のレーン
-			int _leftLane = _ballHolderLane - _l;
-			if (_deffenderLane == _leftLane) {
-				firstDeffender = _firstLine[_f];
-				_isBreak = true;
-
-				break;
-			}
+	if (_freeEnemys.IsEmpty()) return;
+	// ハイプレスディフェンダー取得
+	for (AC_Player* _freeEnemy : _freeEnemys) { // 相手フリーマンの中で
+		// ⓵同レーンの味方
+		TArray<AC_Player*> _sameLaneMyPlayers = {};
+		int _freeEnemyLane = ((_freeEnemy->tileNo - 1) % C_Common::TILE_NUM_Y) + 1; // レーン (相手のフリーマン)
+		for (AC_Player* _myPlayer : _myTeam) {
+			int _myPlayerLane = ((_myPlayer->tileNo - 1) % C_Common::TILE_NUM_Y) + 1; // レーン (味方チーム)
+			if (_freeEnemyLane == _myPlayerLane) _sameLaneMyPlayers.Add(_myPlayer); // 同レーンの場合
 		}
+		if (_sameLaneMyPlayers.IsEmpty()) continue;
+		
+		// ⓶前方にいる最も近いプレイヤー
+		for (int _i = 1; _i <= 5; _i++) {
+			bool _isBreak = false; // 2重break
+			int _addLine = _freeEnemy->ActorHasTag("HOME") ? _i : -_i;
+			int _freeEnemyFrontLine = ((_freeEnemy->tileNo) - 1 / C_Common::TILE_NUM_Y) + _addLine; // フリーマンの前のライン
 
-		if (_isBreak) break;
+			for (AC_Player* _sameLanePlayer : _sameLaneMyPlayers) { // 同レーンの味方中で
+				int _samePlayerLine = (_sameLanePlayer->tileNo) - 1 / C_Common::TILE_NUM_Y; // レーン (同レーンの味方)
+				if (_freeEnemyFrontLine == _samePlayerLine) {
+					highPressDeffenders.Add(_sameLanePlayer); // *取得
+					
+					_isBreak = true;
+					break;
+				}
+			}
+			if (_isBreak) break;
+		}
 	}
-	if (firstDeffender == nullptr) return;
+	if (highPressDeffenders.IsEmpty()) return;
+	if (_freeEnemys.Num() != highPressDeffenders.Num()) return; // (*制限) フリーマンとディフェンダー数が異なる
 	// 移動
-	FVector _location = _ballHolderTile->GetActorLocation();
-	if (firstDeffender->ActorHasTag("HOME")) { // 位置調整X
-		_location.X -= 82;
+	for (int _i = 0; _i < _freeEnemys.Num(); _i++) {
+		FVector _location = _freeEnemys[_i]->GetActorLocation();
+		if (highPressDeffenders[_i]->ActorHasTag("HOME")) { // 位置調整X
+			_location.X -= (82 * 2); // *位置を相手プレイヤーにしているため2倍
+		}
+		else {
+			_location.X += (82 * 2); // *位置を相手プレイヤーにしているため2倍
+		}
+		highPressDeffenders[_i]->RunTo(_location);
 	}
-	else {
-		_location.X += 82;
-	}
-	firstDeffender->RunTo(_location);
 }
 
 // ショートパス
