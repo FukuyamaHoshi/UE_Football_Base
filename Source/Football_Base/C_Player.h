@@ -11,6 +11,7 @@
 #include "C_Player.generated.h"
 
 
+
 UCLASS()
 class FOOTBALL_BASE_API AC_Player : public ACharacter
 {
@@ -37,6 +38,8 @@ public:
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 	int tileNo = 0; // 現在のタイルNo
 	int playerType = 0; // プレイヤータイプ
+	DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
+	FCompleteMoveDelegate completeMoving; // 移動終了時コールバック関数
 
 	// メッシュを表示する
 	void DisplayMesh();

@@ -70,6 +70,8 @@ private:
 	// ハイプレスコマンド
 	void HighPressCommand();
 	
+	// 走る
+	void RunTo(AC_Player* player, FVector toLocation);
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
 	// ロングパス
@@ -100,6 +102,8 @@ private:
 	void SpawnPlayerInPool(int playerType);
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation(FVector location);
+	// ディフェンスライン設定
+	void SetDeffenceLine();
 
 
 	UMaterial* managerSelectedDecalMaterial = nullptr; // マネージャー選択デカール (マテリアル)
@@ -125,7 +129,8 @@ private:
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル
 	bool isDueling = false; // デゥエル中か
-	int deffenceLine = 3; // 現在のディフェンスライン(HOME, AWAY兼用 0-5まで) *暫定処理
+	int homeDeffenceLine = 0; // ディフェンスライン (HOME 0-5まで)
+	int awayDeffenceLine = 0; // ディフェンスライン (AWAY 0-5まで)
 	bool isLineBreak = false; // ラインブレイク
 	int postPlayCount = 0; // ポストプレイ手順回数カウンター
 	AC_Player* passAndGoPlayer = nullptr; // 一時保存 (ポストプレイ)

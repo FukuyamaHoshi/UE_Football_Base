@@ -290,19 +290,11 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		// ボールへ移動
 		if (ball == nullptr) return;
 		FVector _ballLocation = ball->GetActorLocation();
-		_gk->RunTo(_ballLocation);
+		RunTo(_gk, _ballLocation);
 		
 		// ボールホルダー設定
 		SetBallHolder(_gk);
 		if (ballHolder == nullptr) return;
-
-		// ディフェンスライン変更
-		if (ballHolder->ActorHasTag("HOME")) {
-			deffenceLine = 3;
-		}
-		else {
-			deffenceLine = 1;
-		}
 
 		// ボール保持・非保持ボタン・ラベル切替
 		if (ballHolder->ActorHasTag("HOME")) {
@@ -355,7 +347,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			// < パスポイントへ移動 >
 			FVector _location = FVector(-577.0f, 0, 100.0f); // (*仮) CBの位置
 			poketmanFromLocation = currentPoketman->GetActorLocation(); // 移動前の位置
-			currentPoketman->RunTo(_location);
+			RunTo(currentPoketman, _location);
 		}
 		else if (poketmanPlayCount == 2) {
 			// < パスを受ける >
@@ -376,7 +368,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			if (ball->isMoving == false) { // ボール移動中以外
 
 				// < 元の位置に移動 >
-				currentPoketman->RunTo(poketmanFromLocation);
+				RunTo(currentPoketman, poketmanFromLocation);
 
 				// リセット
 				poketmanPlayCount = 0;
@@ -490,9 +482,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			return;
 		}
 		if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
-			int _ballHolderLine = ballHolder->tileNo / C_Common::TILE_NUM_Y; // ボールホルダーライン
+			int _ballHolderLine = (ballHolder->tileNo - 1) / C_Common::TILE_NUM_Y; // ボールホルダーライン
 			// ディフェンスラインを超えたか確認
-			bool _isOverDeffenceLine = ballHolder->ActorHasTag("HOME") ? deffenceLine < _ballHolderLine : deffenceLine > _ballHolderLine;
+			bool _isOverDeffenceLine = ballHolder->ActorHasTag("HOME") ? homeDeffenceLine < _ballHolderLine : awayDeffenceLine > _ballHolderLine;
 			if (_isOverDeffenceLine) {
 				isLineBreak = true;
 				LineBreak();
@@ -940,7 +932,7 @@ void AC_Opening_Level_Instance::MatchStart()
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X -= C_Common::TILE_SIZE * 2;
-		_p->RunTo(_targetLocation);
+		RunTo(_p, _targetLocation);
 	}
 	// --
 
@@ -951,7 +943,7 @@ void AC_Opening_Level_Instance::MatchStart()
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X += C_Common::TILE_SIZE;
-		_p->RunTo(_targetLocation);
+		RunTo(_p, _targetLocation);
 	}
 	// --
 }
@@ -968,6 +960,38 @@ void AC_Opening_Level_Instance::PossetionCommand()
 	}
 	else {
 		_myTeamPlayers = awayPlayers;
+	}
+	// フリーのプレイヤー取得
+	TArray<AC_Player*> _freeMyTeam = {};
+	for (AC_Player* _p : _myTeamPlayers) {
+		if (_p->position == C_Common::GK_POSITION) continue; // (*制限) GK
+
+		if (GetIsFree(_p)) _freeMyTeam.Add(_p);
+	}
+	if (_freeMyTeam.IsEmpty()) { // フリープレイヤーが存在しない
+		// -- チーム後退 --
+		// 後退をDFラインまでに制限
+		if (_myTeamPlayers[0]->ActorHasTag("HOME")) {
+			if (homeDeffenceLine == 0) return;
+		}
+		else {
+			if (awayDeffenceLine == 5) return;
+		}
+		// 移動アクション
+		for (AC_Player* _p : _myTeamPlayers) {
+			if (_p->position == C_Common::GK_POSITION) continue; // (*制限) GK
+			if (_p->isMoving) continue; // (*制限) 移動中
+
+			FVector _location = _p->GetActorLocation();
+			if (_p->ActorHasTag("HOME")) {
+				_location.X -= C_Common::TILE_SIZE;
+			}
+			else {
+				_location.X += C_Common::TILE_SIZE;
+			}
+			RunTo(_p, _location);
+		}
+		return;
 	}
 
 	// -- DFラインのプレイヤー、ポケットマン取得 --
@@ -1225,16 +1249,19 @@ void AC_Opening_Level_Instance::LowBlockCommand()
 		if (_myTeam[_i]->isMoving) continue; // (*制限) プレイヤー移動中
 		if (_myTeam[_i]->tileNo == _initialTileNos[_i]) continue; // (*制限) 既に初期配置にいる
 		
-		_myTeam[_i]->RunTo(_initialPlace[_i]); // 移動処理
+		RunTo(_myTeam[_i], _initialPlace[_i]); // 移動処理
 	}
 }
 
 // サイド圧縮コマンド
 void AC_Opening_Level_Instance::SidePressCommand()
 {
+	if (ballHolder->position == C_Common::GK_POSITION) return; // (*制限) GK
+	
 	// ボールが左右のどちらにあるか
 	int _ballHolderLane = ( (ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y ) + 1; // ボールホルダーレーン
-	bool _isRight = _ballHolderLane >= 3 ? true : false; // 右にいる
+	if (_ballHolderLane == 3) return; // (*制限) 中央レーン
+	bool _isRight = _ballHolderLane > 3 ? true : false; // 右にいる
 	// 自チーム取得
 	TArray<AC_Player*> _myTeam = {};
 	if (ballHolder->ActorHasTag("HOME")) {
@@ -1276,7 +1303,7 @@ void AC_Opening_Level_Instance::SidePressCommand()
 		if (_sidePlayer->position == C_Common::GK_POSITION) continue; // GK
 		if (_mySameLinePlayers.Num() >= 5) return; // 同ラインに5人以上存在
 		// 移動アクション
-		_sidePlayer->RunTo(_location);
+		RunTo(_sidePlayer, _location);
 		
 
 		// -- 同ラインのプレイヤー (サイドプレイヤーは移動した後) --
@@ -1311,7 +1338,7 @@ void AC_Opening_Level_Instance::SidePressCommand()
 			}
 			if (_nextToSidePlayer->isMoving) break; // (*制限) 移動中
 			// 移動アクション
-			_nextToSidePlayer->RunTo(_nextToLocation);
+			RunTo(_nextToSidePlayer, _nextToLocation);
 		}
 	}
 }
@@ -1385,8 +1412,17 @@ void AC_Opening_Level_Instance::HighPressCommand()
 		else {
 			_location.X += (82 * 2); // *位置を相手プレイヤーにしているため2倍
 		}
-		highPressDeffenders[_i]->RunTo(_location);
+		RunTo(highPressDeffenders[_i], _location);
 	}
+}
+
+// 走る
+void AC_Opening_Level_Instance::RunTo(AC_Player* player, FVector toLocation)
+{
+	if (player == nullptr) return;
+
+	player->completeMoving.BindUObject(this, &ThisClass::SetDeffenceLine); // セットコールバック (Delegate)
+	player->RunTo(toLocation);
 }
 
 // ショートパス
@@ -1459,7 +1495,7 @@ void AC_Opening_Level_Instance::Shoot()
 // 裏抜け (走る)
 void AC_Opening_Level_Instance::GetBehind(AC_Player* runPlayer, FVector toLocation)
 {
-	runPlayer->RunTo(toLocation);
+	RunTo(runPlayer, toLocation);
 	getBehindingPlayer = runPlayer;
 }
 
@@ -1552,7 +1588,7 @@ void AC_Opening_Level_Instance::LineBreak()
 		else {
 			_location.X -= (C_Common::TILE_SIZE * 2);
 		}
-		_player->RunTo(_location);
+		RunTo(_player, _location);
 	}
 	// --
 	
@@ -1568,7 +1604,7 @@ void AC_Opening_Level_Instance::LineBreak()
 		else {
 			_location.X += (C_Common::TILE_SIZE * 2);
 		}
-		_player->RunTo(_location);
+		RunTo(_player, _location);
 	}
 	// --
 }
@@ -1630,7 +1666,7 @@ void AC_Opening_Level_Instance::PostPlay(bool isLong)
 
 			// オフェンスアクション
 			ShortPass(postPlayer); // ショートパス
-			passAndGoPlayer->RunTo(_ToLocation); // 前進
+			RunTo(passAndGoPlayer, _ToLocation); // 前進
 
 			// ディフェンス姿勢解除
 			TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
@@ -1703,7 +1739,7 @@ void AC_Opening_Level_Instance::PostPlay(bool isLong)
 		// -- ロング (ポストプレイヤーを移動 左へ) --
 		FVector _location = postPlayer->GetActorLocation();
 		_location.Y -= C_Common::TILE_SIZE;
-		postPlayer->RunTo(_location);
+		RunTo(postPlayer, _location);
 	}
 	else {
 		// 終了処理
@@ -1742,7 +1778,7 @@ void AC_Opening_Level_Instance::AwayTeamMovement()
 		FVector _frontLocation = _targetPlayer->GetActorLocation();
 		_frontLocation.X -= C_Common::TILE_SIZE;
 		
-		_targetPlayer->RunTo(_frontLocation); // 移動
+		RunTo(_targetPlayer, _frontLocation); // 移動
 	}
 }
 
@@ -1767,7 +1803,7 @@ void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
 
 		// -- 出現アニメーション --
 		subPlayers.Add(_player); // サブへ
-		_player->RunTo(SUB_LOCATION[subPlayers.Num() - 1]);
+		RunTo(_player, SUB_LOCATION[subPlayers.Num() - 1]);
 	}
 }
 
@@ -1814,4 +1850,30 @@ int AC_Opening_Level_Instance::GetTileNoFromLocation(FVector location)
 
 
 	return _tileNo;
+}
+
+// ディフェンスライン設定
+void AC_Opening_Level_Instance::SetDeffenceLine()
+{	
+	// -- HOME --
+	TArray<int> _homeLines = {};
+	for (AC_Player* _p : homePlayers) {
+		if (_p->position == C_Common::GK_POSITION) continue; // (*制限) GK
+		
+		int _line = (_p->tileNo - 1) / C_Common::TILE_NUM_Y;
+		_homeLines.Add(_line);
+	}
+	if (_homeLines.IsEmpty()) return;
+	homeDeffenceLine = FGenericPlatformMath::Min(_homeLines); // 最小値
+
+	// -- AWAY --
+	TArray<int> _awayLines = {};
+	for (AC_Player* _p : awayPlayers) {
+		if (_p->position == C_Common::GK_POSITION) continue; // (*制限) GK
+
+		int _line = (_p->tileNo - 1) / C_Common::TILE_NUM_Y;
+		_awayLines.Add(_line);
+	}
+	if (_awayLines.IsEmpty()) return;
+	awayDeffenceLine = FGenericPlatformMath::Max(_awayLines); // 最大値
 }

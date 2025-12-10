@@ -549,13 +549,17 @@ void AC_Player::Move(float dTime) {
 	// ** 移動終了処理 **
 	if (_alpha >= 1.0f)
 	{
+		// -- リセットフラグ --
 		targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
 		moveTotalTime = 0.0f; // 移動時間(指定)リセット
 		movingCount = 0.0f; // 移動カウントリセット
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
+		
+		// -- タイルNoセット --
 		tileNo = GetTileNoFromLocation(); // タイルNo更新
-		// ONタイルプレイヤー追加
+		
+		// -- ONタイルプレイヤー追加 --
 		for (AC_Tile* _tile : tiles) {
 			if (_tile->tileNo == tileNo) {
 				_tile->onPlayerNum++; // 増やす
@@ -563,7 +567,7 @@ void AC_Player::Move(float dTime) {
 				break;
 			}
 		}
-		// 前方を向く
+		// -- 前方を向く --
 		FVector _front = FVector::ZeroVector;
 		if (ActorHasTag("HOME")) {
 			_front = FVector(1, 0, 0);
@@ -576,13 +580,13 @@ void AC_Player::Move(float dTime) {
 		_q.X = 0; // *Z軸のみ回転させる
 		_q.Y = 0; // *Z軸のみ回転させる
 		SetActorRotation(_q);
-
+		
 		// -- ドリブル時 --
 		isDrribling = false; // *ドリブル終了
-		// ドリブルアニメーション
-		if (playerAnimInstance)
-			playerAnimInstance->isDrrible = false; // 終了
-		// --
+		if (playerAnimInstance) playerAnimInstance->isDrrible = false; // アニメーション終了
+		
+		// -- コールバック処理 (delegate) --
+		if (completeMoving.IsBound()) completeMoving.Execute(); // 実行処理
 
 		return;
 	}
@@ -805,4 +809,3 @@ void AC_Player::StopAnim()
 	playerAnimInstance->isDrrible = false;
 	playerAnimInstance->isDefensiveStance = false;
 }
-
