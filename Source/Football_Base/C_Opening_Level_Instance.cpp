@@ -645,8 +645,8 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 	if (isPlayerGrap == false) return; // プレイヤー選択中か確認
 	if (selectedPlayer == nullptr) return; // プレイヤー取得できているか確認
 
-	// -- プレイヤーをタイルに移動 --
-	// プレイヤータイルNo更新
+	// -- プレイヤーをタイルに位置変更 --
+	// プレイヤータイルNo取得
 	int _fromTileNo = selectedPlayer->tileNo; // 移動前タイルNo
 	int _toTileNo = selectedPlayer->GetTileNoFromLocation(); // 移動先のタイルNo
 	// タイル取得
@@ -658,16 +658,16 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 			break;
 		}
 	}
-	// 移動
+	// 位置変更アクション
 	if (_tile) {
-		// < タイル位置へ (選択されたプレイヤー) >
+		// タイル位置へ (選択されたプレイヤー)
 		FVector _location = _tile->GetActorLocation(); // 位置
 		_location.Z = C_Common::PLAYER_BASE_LOCATION_Z;
 		_location.X -= 82;
 		selectedPlayer->SetActorLocation(_location);
 		
-		// < プレイヤー入れ替え処理 (移動先タイルにいたプレイヤー移動) >
-		// 移動先タイルにプレイヤーがいるか確認
+		// - プレイヤー入れ替え処理 (既に移動先タイルにいるプレイヤーとの) -
+		// 移動先にプレイヤーが存在するか確認
 		AC_Player* _toExistPlayer = nullptr; // 移動先すでにいるプレイヤー
 		for (AC_Player* _p : homePlayers) {
 			if (_p->tileNo == _toTileNo) {
@@ -676,7 +676,7 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 				break;
 			}
 		}
-		// プレイヤーがいれば選択プレイヤーの元の位置へ
+		// 移動先プレイヤーのタイル取得
 		if (_toExistPlayer) {
 			AC_Tile* _fromTile = nullptr;
 			for (AC_Tile* _t : tiles) { // 元の位置タイル取得
@@ -686,9 +686,9 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 					break;
 				}
 			}
-			// 移動処理
+			// プレイヤー入れ替え
 			if (_fromTile) {
-				// ●タイルへ
+				// ⓵タイルへ
 				FVector _fromTileLocation = _fromTile->GetActorLocation(); // 位置
 				_fromTileLocation.Z = C_Common::PLAYER_BASE_LOCATION_Z;
 				_fromTileLocation.X -= 82;
@@ -696,15 +696,17 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 				_toExistPlayer->tileNo = _fromTileNo; // タイルNo更新
 			}
 			else {
-				// ●サブへ
-				subPlayers.Add(_toExistPlayer); // 配列追加
+				// ⓶サブへ
+				allPlayers.Remove(_toExistPlayer); // フィールドプレイヤー(ALL)から削除
+				homePlayers.Remove(_toExistPlayer); // フィールドプレイヤー(HOME)から削除
+				subPlayers.Add(_toExistPlayer); // サブへ追加
 				FVector _subLocation = SUB_LOCATION[subPlayers.Num() - 1]; // 位置
 				_toExistPlayer->SetActorLocation(_subLocation);
 			}
 		}
 	}
 	else {
-		// < サブ位置へ >
+		// 位置変更のみ (サブ位置へ)
 		subPlayers.Add(selectedPlayer); // 配列追加
 		FVector _location = SUB_LOCATION[subPlayers.Num() - 1]; // 位置
 		selectedPlayer->SetActorLocation(_location);
@@ -712,6 +714,8 @@ void AC_Opening_Level_Instance::ReleasedLeft()
 	// 変数リセット
 	isPlayerGrap = false; // フラグ切り替え
 	selectedPlayer->tileNo = _toTileNo; // タイルNo更新
+	allPlayers.Add(selectedPlayer); // フィールドプレイヤー(ALL)へ追加
+	homePlayers.Add(selectedPlayer); // フィールドプレイヤー(HOME)へ追加
 	selectedPlayer = nullptr;
 
 	// -- マテリアル削除 --
@@ -883,14 +887,6 @@ void AC_Opening_Level_Instance::MatchStart()
 	// -- デカール・アウトライン削除 --
 	if (managerSelectedDecalActor) managerSelectedDecalActor->Destroy();
 	if (currentHoverManager) currentHoverManager->HiddenOutline();
-	// --
-
-
-	// -- プレイヤーを表示 --
-	/*for (AC_Player* _p : allPlayers) {
-		_p->DisplayMesh();
-	}*/
-	// --
 
 
 	// -- ボールホルダー決定 --
@@ -901,16 +897,15 @@ void AC_Opening_Level_Instance::MatchStart()
 			break;
 		}
 	}
-	// --
 
-	// -- プレイヤー初期配置位置・タイルNo取得 --
+	// -- 初期配置位置・初期配置タイルNo・ポジションセット --
 	// 配列リセット
 	playerInitialPlaceLocation.Empty();
 	homeTeamIntialPlaceLocation.Empty();
 	awayTeamIntialPlaceLocation.Empty();
 	homeTeamIntialTileNo.Empty();
 	awayTeamIntialTileNo.Empty();
-	
+	// 取得
 	for (AC_Player* _p : allPlayers) {
 		if (_p->ActorHasTag("HOME")) {
 			homeTeamIntialPlaceLocation.Add(_p->GetActorLocation());
@@ -921,31 +916,27 @@ void AC_Opening_Level_Instance::MatchStart()
 			awayTeamIntialTileNo.Add(_p->tileNo);
 		}
 		playerInitialPlaceLocation.Add(_p->GetActorLocation());
+		_p->SetPosition(); // ポジション
 	}
-	// --
 
 
-	// -- 非保持チームをミドルラインへ移動 --
-	// (*AWAYチーム)
-	for (AC_Player* _p : awayPlayers) { // AWAYチーム
+	// -- プレイヤーをミドルラインへ移動 --
+	// AWAY
+	for (AC_Player* _p : awayPlayers) {
 		if (_p->position == C_Common::GK_POSITION) continue;
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X -= C_Common::TILE_SIZE * 2;
 		RunTo(_p, _targetLocation);
 	}
-	// --
-
-	// -- 保持チームを相手のミドルラインへ移動 --
-	// (*HOME)
-	for (AC_Player* _p : homePlayers) { // HOMEチーム
+	// HOME
+	for (AC_Player* _p : homePlayers) {
 		if (_p->position == C_Common::GK_POSITION) continue;
 
 		FVector _targetLocation = _p->GetActorLocation();
 		_targetLocation.X += C_Common::TILE_SIZE;
 		RunTo(_p, _targetLocation);
 	}
-	// --
 }
 
 // ポゼッションコマンド
@@ -1285,6 +1276,8 @@ void AC_Opening_Level_Instance::SidePressCommand()
 		TArray<AC_Player*> _mySameLinePlayers = {};
 		int _sidePlayerLine = (_sidePlayer->tileNo - 1) / C_Common::TILE_NUM_Y; // サイドプレイヤーライン (0 - 5)
 		for (AC_Player* _player : _myTeam) {
+			if (_player->position == C_Common::GK_POSITION) continue; // (*制限) GK
+
 			int _playerLine = (_player->tileNo - 1) / C_Common::TILE_NUM_Y; // ライン
 			if (_sidePlayerLine == _playerLine) _mySameLinePlayers.Add(_player);
 		}
@@ -1301,7 +1294,7 @@ void AC_Opening_Level_Instance::SidePressCommand()
 		// *移動制限
 		if (_sidePlayer->isMoving) continue; // 移動中
 		if (_sidePlayer->position == C_Common::GK_POSITION) continue; // GK
-		if (_mySameLinePlayers.Num() >= 5) return; // 同ラインに5人以上存在
+		if (_mySameLinePlayers.Num() >= 5) continue; // 同ラインに5人以上存在
 		// 移動アクション
 		RunTo(_sidePlayer, _location);
 		
@@ -1373,8 +1366,9 @@ void AC_Opening_Level_Instance::HighPressCommand()
 	}
 	if (_freeEnemys.IsEmpty()) return;
 	// ハイプレスディフェンダー取得
+	TArray<TArray<AC_Player*>> _freemanAndDeffenders = {}; // フリーマンに対応したディフェンダー配列
 	for (AC_Player* _freeEnemy : _freeEnemys) { // 相手フリーマンの中で
-		// ⓵同レーンの味方
+		// ⓵フリーマンと同レーンのディフェンダー
 		TArray<AC_Player*> _sameLaneMyPlayers = {};
 		int _freeEnemyLane = ((_freeEnemy->tileNo - 1) % C_Common::TILE_NUM_Y) + 1; // レーン (相手のフリーマン)
 		for (AC_Player* _myPlayer : _myTeam) {
@@ -1383,36 +1377,49 @@ void AC_Opening_Level_Instance::HighPressCommand()
 		}
 		if (_sameLaneMyPlayers.IsEmpty()) continue;
 		
-		// ⓶前方にいる最も近いプレイヤー
+		// ⓶前方にいる最も近いディフェンダー
 		for (int _i = 1; _i <= 5; _i++) {
 			bool _isBreak = false; // 2重break
 			int _addLine = _freeEnemy->ActorHasTag("HOME") ? _i : -_i;
-			int _freeEnemyFrontLine = ((_freeEnemy->tileNo) - 1 / C_Common::TILE_NUM_Y) + _addLine; // フリーマンの前のライン
-
+			int _freeEnemyFrontLine = ( (_freeEnemy->tileNo - 1) / C_Common::TILE_NUM_Y ) + _addLine; // フリーマンの前のライン
+			
 			for (AC_Player* _sameLanePlayer : _sameLaneMyPlayers) { // 同レーンの味方中で
-				int _samePlayerLine = (_sameLanePlayer->tileNo) - 1 / C_Common::TILE_NUM_Y; // レーン (同レーンの味方)
-				if (_freeEnemyFrontLine == _samePlayerLine) {
-					highPressDeffenders.Add(_sameLanePlayer); // *取得
-					
-					_isBreak = true;
-					break;
-				}
+				int _samePlayerLine = (_sameLanePlayer->tileNo - 1) / C_Common::TILE_NUM_Y; // ライン (同ラインの味方)
+				if (_freeEnemyFrontLine != _samePlayerLine) continue; // (*制限) フリーマンの前のラインと異なる
+				if (highPressDeffenders.Contains(_sameLanePlayer)) continue; // (*制限) ハイプレスディフェンダーの重複
+				
+				highPressDeffenders.Add(_sameLanePlayer); // ハイプレスディフェンダーのみ取得 (移動制限のため)
+				TArray<AC_Player*> _n = { _freeEnemy, _sameLanePlayer };
+				_freemanAndDeffenders.Add(_n); // セットで取得
+				
+				_isBreak = true;
+				break;
 			}
 			if (_isBreak) break;
 		}
 	}
 	if (highPressDeffenders.IsEmpty()) return;
-	if (_freeEnemys.Num() != highPressDeffenders.Num()) return; // (*制限) フリーマンとディフェンダー数が異なる
 	// 移動
-	for (int _i = 0; _i < _freeEnemys.Num(); _i++) {
-		FVector _location = _freeEnemys[_i]->GetActorLocation();
-		if (highPressDeffenders[_i]->ActorHasTag("HOME")) { // 位置調整X
+	for (TArray<AC_Player*> _fd : _freemanAndDeffenders) {
+		FVector _location = _fd[0]->GetActorLocation();
+		if (_fd[1]->ActorHasTag("HOME")) { // 位置調整X
 			_location.X -= (82 * 2); // *位置を相手プレイヤーにしているため2倍
 		}
 		else {
 			_location.X += (82 * 2); // *位置を相手プレイヤーにしているため2倍
 		}
-		RunTo(highPressDeffenders[_i], _location);
+		// 移動制限
+		int _toTileNo = GetTileNoFromLocation(_location);
+		bool _isContinue = false; // 2重break
+		for (AC_Player* _p : _myTeam) {
+			if (_p->tileNo == _toTileNo) { // (*制限)プレイヤー位置重複
+				_isContinue = true;
+				break;
+			}
+		}
+		if (_isContinue) continue;
+
+		RunTo(_fd[1], _location);
 	}
 }
 
