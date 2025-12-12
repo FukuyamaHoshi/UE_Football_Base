@@ -124,7 +124,7 @@ private:
 	TArray<int> homeTeamIntialTileNo = {}; // HOMEチームの初期配置タイルNo
 	TArray<int> awayTeamIntialTileNo = {}; // AWAYチームの初期配置タイルNo
 	int currentCommand = 0; // 現在の戦術コマンド (一時保存用 インスタンスのコマンドを受付け)
-	int awayCommand = 1; // AWAYチームの戦術コマンド
+	int awayCommand = 0; // AWAYチームの戦術コマンド
 	TArray<AC_Player*> GKEscapeToPlayers = {}; // GKがプレス回避先のプレイヤー (プレス回避時のみ)
 	AC_Player* getBehindingPlayer = nullptr; // 現在裏抜け中のプレイヤー
 	TArray <AC_Tile*> tiles = {}; // 全てのタイル

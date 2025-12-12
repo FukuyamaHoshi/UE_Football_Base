@@ -94,6 +94,8 @@ public:
 	// プレイヤータイプアイコンセット
 	// 1: ランナー, 2: ターゲットマン
 	void SetPlayerTypeIcon(int typeNo);
+	// 前方を向く
+	void LookForward();
 
 private:
 	// 移動処理

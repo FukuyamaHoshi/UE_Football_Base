@@ -44,6 +44,7 @@ private:
     //UTextBlock* currentText = nullptr;
     //FColor textEnhanceColor = FColor::FromHex(TEXT("1996FFFF"));
     int draftPhase = 0; // フェーズを一時保存 (変更時に)
+    int draftCommand = 0; // コマンドを一時保存 (変更時に)
 
     const FLinearColor PLAYER_SELECT_PLACE_COLOR = FLinearColor(FColor::FromHex("22C832FF")); // Stateテキストの色(緑)
     const FLinearColor MATCH_READY_STATE_COLOR = FLinearColor(FColor::FromHex("FFDA00FF")); // Stateテキストの色(黄色)

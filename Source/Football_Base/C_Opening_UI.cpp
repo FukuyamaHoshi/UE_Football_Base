@@ -106,7 +106,6 @@ void UC_Opening_UI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
         
         draftPhase = _instance->game_phase;
     }
-    // ***
 
     // *** タイマー ***
     if (_instance->game_phase == C_Common::MATCH_READY_PHASE || _instance->game_phase == C_Common::MATCH_PHASE) { // *(制限)試合準備・試合フェーズのみ
@@ -116,7 +115,20 @@ void UC_Opening_UI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
         Count_Text->SetText(FText::FromString(FString::FromInt(_instance->phase_count))); // テキスト更新
     }
-    // ***
+
+    // *** コマンド監視 (外部からのコマンド操作に対応) ***
+    if (_instance->game_phase == C_Common::MATCH_PHASE) {
+        if (_instance->command == draftCommand) return;
+
+        draftCommand = _instance->command; // 保存
+        if (draftCommand == C_Common::POSSETION_COMMAND_NO) SwitchEnhance(C_Common::POSSETION_COMMAND_NO, true);
+        else if (draftCommand == C_Common::LONG_ATTACK_COMMAND_NO) SwitchEnhance(C_Common::LONG_ATTACK_COMMAND_NO, true);
+        else if (draftCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) SwitchEnhance(C_Common::TECNICAL_ATTACK_COMMAND_NO, true);
+        else if (draftCommand == C_Common::LOW_BLOCK_COMMAND_NO) SwitchEnhance(C_Common::LOW_BLOCK_COMMAND_NO, false);
+        else if (draftCommand == C_Common::SIDE_PRESS_COMMAND_NO) SwitchEnhance(C_Common::SIDE_PRESS_COMMAND_NO, false);
+        else if (draftCommand == C_Common::HIGH_PRESS_COMMAND_NO) SwitchEnhance(C_Common::HIGH_PRESS_COMMAND_NO, false);
+        else { SwitchEnhance(0, _instance->isHomeHas); }
+    }
 }
 
 // ウィジェットパネル変更
@@ -282,6 +294,7 @@ void UC_Opening_UI::LongAttackButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::LONG_ATTACK_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -293,6 +306,7 @@ void UC_Opening_UI::TacnicalAttackButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::TECNICAL_ATTACK_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -304,6 +318,7 @@ void UC_Opening_UI::IdleButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = 0;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -315,6 +330,7 @@ void UC_Opening_UI::EscapePressingButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::POSSETION_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -326,6 +342,7 @@ void UC_Opening_UI::SidePressButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::SIDE_PRESS_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -337,6 +354,7 @@ void UC_Opening_UI::HighPressButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::HIGH_PRESS_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 
@@ -348,6 +366,7 @@ void UC_Opening_UI::NoCommandButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = 0;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command, false); // エンハンス表示
 }
 
@@ -359,6 +378,7 @@ void UC_Opening_UI::LowBlockButtonClicked()
     if (_instance->game_phase != C_Common::MATCH_PHASE) return; // *(制限)試合フェーズのみ
 
     _instance->command = C_Common::LOW_BLOCK_COMMAND_NO;
+    draftCommand = _instance->command; // *外部変更対応
     SwitchEnhance(_instance->command); // エンハンス表示
 }
 

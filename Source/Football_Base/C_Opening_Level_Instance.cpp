@@ -275,7 +275,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 	// *** ボール保持切替(クリアボール時) ***
 	if (ballHolder == nullptr && ball->isMoving == false) {
-
+		// -- GKをボールボールホルダーにする --
 		// GK取得(AWAY)
 		AC_Player* _gk = nullptr;
 		for (AC_Player* _p : awayPlayers) {
@@ -286,16 +286,15 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			}
 		}
 		if (_gk == nullptr) return;
-		
 		// ボールへ移動
 		if (ball == nullptr) return;
 		FVector _ballLocation = ball->GetActorLocation();
 		RunTo(_gk, _ballLocation);
-		
 		// ボールホルダー設定
 		SetBallHolder(_gk);
 		if (ballHolder == nullptr) return;
 
+		// -- ボタン・ラベル変更 --
 		// ボール保持・非保持ボタン・ラベル切替
 		if (ballHolder->ActorHasTag("HOME")) {
 			openingUI->SwitchButtonPanal(1); // ボタン
@@ -305,6 +304,23 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			openingUI->SwitchButtonPanal(2); // ボタン
 			openingUI->SwitchHasLabelPanal(1); // ラベル
 		}
+
+		// -- 前を向く --
+		// -- プレイヤーアニメーション停止 --
+		for (AC_Player* _p : allPlayers) {
+			if (_p->isMoving) continue; // (*制限) 移動中
+
+			_p->LookForward();
+			_p->StopAnim();
+		}
+
+		// -- ホール保持フラグ切替 --
+		_instance->isHomeHas = !_instance->isHomeHas; // トグル
+		
+		// -- コマンドリセット --
+		_instance->command = 0;
+		awayCommand = 0;
+
 
 		return;
 	}
@@ -441,34 +457,34 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 			return;
 		}
-		if (currentCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (HOME)
-			if (awayCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (AWAY)
-				// デゥエル処理
-				if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
-					// -- ディフェンス姿勢セット --
-					TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
-					if (ballHolder->ActorHasTag(FName("HOME"))) {
-						_deffencePlayers = awayPlayers;
-					}
-					else {
-						_deffencePlayers = homePlayers;
-					}
-					for (AC_Player* _player : _deffencePlayers) {
-						if (_player->tileNo == ballHolder->tileNo) {
-							_player->SetDefensiveStance(); // ディフェンス姿勢動作
+		int _HasCommand = ballHolder->ActorHasTag("HOME") ? currentCommand : awayCommand; // ボール保持側のコマンド
+		if (_HasCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (HOME)
+			// デゥエル処理
+			if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+				// -- ディフェンス姿勢セット --
+				TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
+				if (ballHolder->ActorHasTag(FName("HOME"))) {
+					_deffencePlayers = awayPlayers;
+				}
+				else {
+					_deffencePlayers = homePlayers;
+				}
+				for (AC_Player* _player : _deffencePlayers) {
+					if (_player->tileNo == ballHolder->tileNo) {
+						_player->SetDefensiveStance(); // ディフェンス姿勢動作
 
-							break;
-						}
-					}
-					// -- デゥエル --
-					if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
-						isDueling = true; // デゥエル開始
-						Duel();
-
-						return;
+						break;
 					}
 				}
+				// -- デゥエル --
+				if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
+					isDueling = true; // デゥエル開始
+					Duel();
+
+					return;
+				}
 			}
+			
 		}
 	}
 	// ***
@@ -484,8 +500,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 		if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
 			int _ballHolderLine = (ballHolder->tileNo - 1) / C_Common::TILE_NUM_Y; // ボールホルダーライン
 			// ディフェンスラインを超えたか確認
-			bool _isOverDeffenceLine = ballHolder->ActorHasTag("HOME") ? homeDeffenceLine < _ballHolderLine : awayDeffenceLine > _ballHolderLine;
-			if (_isOverDeffenceLine) {
+			bool _isOver = ballHolder->ActorHasTag("HOME") ? awayDeffenceLine < _ballHolderLine : homeDeffenceLine > _ballHolderLine;
+			if (_isOver) {
 				isLineBreak = true;
 				LineBreak();
 
@@ -919,6 +935,9 @@ void AC_Opening_Level_Instance::MatchStart()
 		_p->SetPosition(); // ポジション
 	}
 
+	// -- コマンドリセット --
+	_instance->command = 0;
+	awayCommand = 0;
 
 	// -- プレイヤーをミドルラインへ移動 --
 	// AWAY
@@ -1620,7 +1639,7 @@ void AC_Opening_Level_Instance::LineBreak()
 void AC_Opening_Level_Instance::Cross()
 {
 	if (ballHolder) {
-		// チーム取得
+		// 自チーム取得
 		TArray<AC_Player*> _myTeamPlayers = {}; // マイチーム
 		if (ballHolder->ActorHasTag(FName("HOME"))) {
 			_myTeamPlayers = homePlayers;
@@ -1628,11 +1647,10 @@ void AC_Opening_Level_Instance::Cross()
 		else {
 			_myTeamPlayers = awayPlayers;
 		}
-
 		// ターゲット取得
 		AC_Player* _targetPlayer = nullptr; // ターゲット
 		for (AC_Player* _player : _myTeamPlayers) {
-			if (_player->ActorHasTag("TARGET")) {
+			if (_player->playerType == C_Common::TARGET_MAN_TYPE_NO) {
 				_targetPlayer = _player;
 
 				break;
@@ -1804,9 +1822,10 @@ void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
 	
 	if (_player) {
 		// -- セット --
-		_player->Tags.Add(FName("HOME")); // tagセット
-		_player->SetSpwanPlayerMaterial(playerType); // マテリアルセット
+		_player->Tags.Add(FName("HOME")); // tag
+		_player->SetSpwanPlayerMaterial(playerType); // マテリアル
 		_player->SetPlayerTypeIcon(playerType); // プレイヤータイプアイコン
+		_player->playerType = playerType; // プレイヤータイプ
 
 		// -- 出現アニメーション --
 		subPlayers.Add(_player); // サブへ

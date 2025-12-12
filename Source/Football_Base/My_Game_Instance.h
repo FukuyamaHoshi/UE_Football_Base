@@ -32,6 +32,8 @@ public:
 	int player_physical_abilty = 1; // 走力
 	int player_press_resistance_abilty = 1; // プレス耐性
 
+
+	// -- NEW ---
 	// ゲームフェーズ (ゲーム中の場面) *マッチフェーズでない
 	// 0: オープニング
 	// 1: マネージャー選択
@@ -44,4 +46,5 @@ public:
 	// 1: ターゲットマン
 	// 2: ランナー
 	int pool_selected_player_type = -1;
+	bool isHomeHas = true; // HOMEボール保持
 };
