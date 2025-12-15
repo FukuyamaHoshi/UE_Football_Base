@@ -545,9 +545,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	if (ballHolder == nullptr) return; // ボールホルダーなし
 	// *
 
-	// -- AWAY (敵AI) --
-	//AwayTeamMovement();
-	// ---
+	// -- AWAYチームAI --
+	//AwayTeamAI();
 
 	// -- ボール保持がHOME --
 	if (ballHolder->ActorHasTag("HOME")) {
@@ -1774,36 +1773,19 @@ void AC_Opening_Level_Instance::PostPlay(bool isLong)
 	}
 }
 
-// AWAYチームの動き (敵AI)
-void AC_Opening_Level_Instance::AwayTeamMovement()
+// AWAYチームAI
+void AC_Opening_Level_Instance::AwayTeamAI()
 {
-	if (ballHolder == nullptr) return;
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
 
-	// *** ハイプレス ***
-	// | ボールホルダー前にいるプレイヤーが前進する |
-	if (awayCommand == C_Common::HIGH_PRESS_COMMAND_NO) {
-		if (ballHolder->position == C_Common::GK_POSITION) return; // GKは処理なし
-
-		// -- プレイヤー取得 --
-		int _frontTile = ballHolder->tileNo + C_Common::TILE_NUM_Y; // ボールホルダー前タイル
-		AC_Player* _targetPlayer = nullptr;
-		
-		for (AC_Player* _player : awayPlayers) {
-			if (_player->tileNo == _frontTile) {
-				_targetPlayer = _player;
-
-				break;
-			}
-		}
-		if (_targetPlayer == nullptr) return;
-		
-		// -- 前進する --
-		if (_targetPlayer->isMoving) return; // *(制限) ターゲットが既に移動している
-
-		FVector _frontLocation = _targetPlayer->GetActorLocation();
-		_frontLocation.X -= C_Common::TILE_SIZE;
-		
-		RunTo(_targetPlayer, _frontLocation); // 移動
+	if (_instance->isHomeHas) {
+		// -- 非保持 --
+		awayCommand = C_Common::HIGH_PRESS_COMMAND_NO;
+	}
+	else {
+		// -- 保持 --
+		awayCommand = C_Common::POSSETION_COMMAND_NO;
 	}
 }
 

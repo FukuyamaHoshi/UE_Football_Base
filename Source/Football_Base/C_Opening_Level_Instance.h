@@ -96,8 +96,8 @@ private:
 	void Cross();
 	// ポストプレー
 	void PostPlay(bool isLong = false);
-	// AWAYチームの動き (敵AI)
-	void AwayTeamMovement();
+	// AWAYチームAI
+	void AwayTeamAI();
 	// プレイヤースポーン (プールから選ばれた)
 	void SpawnPlayerInPool(int playerType);
 	// 位置からタイルＮｏ取得
