@@ -41,10 +41,6 @@ public:
 	int game_phase = 0;
 	int command = 0; // コマンド
 	float phase_count = 0; // フェーズカウントダウンタイマー
-	// プールから選択されたプレイヤータイプ(プレイヤー選択フェーズ)
-	// 0: ノーマル
-	// 1: ターゲットマン
-	// 2: ランナー
-	int pool_selected_player_type = -1;
+	int pool_selected_player_no = -1; // プールから選択されたプレイヤーNo(プレイヤー選択フェーズ)
 	bool isHomeHas = true; // HOMEボール保持
 };

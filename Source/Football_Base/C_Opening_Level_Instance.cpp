@@ -21,9 +21,30 @@ AC_Opening_Level_Instance::AC_Opening_Level_Instance()
 	// ***
 
 	// *** プレイヤーBP取得 ***
-	ConstructorHelpers::FClassFinder<AC_Player> _playerBPFinder(TEXT("/Game/Blue_Print/BP_Player"));
-	if (_playerBPFinder.Class) {
-		playerSubClass = _playerBPFinder.Class;
+	// - 1 -
+	ConstructorHelpers::FClassFinder<AC_Player> _player1BPFinder(TEXT("/Game/Blue_Print/Players/BP_Target_Man_1"));
+	if (_player1BPFinder.Class) {
+		playerSubClass_1 = _player1BPFinder.Class;
+	}
+	// - 2 -
+	ConstructorHelpers::FClassFinder<AC_Player> _player2BPFinder(TEXT("/Game/Blue_Print/Players/BP_Player_Normal_2"));
+	if (_player2BPFinder.Class) {
+		playerSubClass_2 = _player2BPFinder.Class;
+	}
+	// - 3 -
+	ConstructorHelpers::FClassFinder<AC_Player> _player3BPFinder(TEXT("/Game/Blue_Print/Players/BP_Player_Runner_3"));
+	if (_player3BPFinder.Class) {
+		playerSubClass_3 = _player3BPFinder.Class;
+	}
+	// - 4 -
+	ConstructorHelpers::FClassFinder<AC_Player> _player4BPFinder(TEXT("/Game/Blue_Print/Players/BP_Player_Normal_4"));
+	if (_player4BPFinder.Class) {
+		playerSubClass_4 = _player4BPFinder.Class;
+	}
+	// - 5 -
+	ConstructorHelpers::FClassFinder<AC_Player> _player5BPFinder(TEXT("/Game/Blue_Print/Players/BP_Player_Normal_5"));
+	if (_player5BPFinder.Class) {
+		playerSubClass_5 = _player5BPFinder.Class;
 	}
 	// ***
 }
@@ -118,10 +139,10 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			FollowPlayerToMouse();
 		}
 		// -- スポーンプレイヤー (プールから選択された) --
-		if (_instance->pool_selected_player_type >= 0) {
-			SpawnPlayerInPool(_instance->pool_selected_player_type);
+		if (_instance->pool_selected_player_no >= 0) {
+			SpawnPlayerInPool(_instance->pool_selected_player_no);
 
-			_instance->pool_selected_player_type = -1; // リセット
+			_instance->pool_selected_player_no = -1; // リセット
 		}
 
 		return;
@@ -1790,24 +1811,32 @@ void AC_Opening_Level_Instance::AwayTeamAI()
 }
 
 // プレイヤースポーン (プールから選ばれた)
-void AC_Opening_Level_Instance::SpawnPlayerInPool(int playerType)
+void AC_Opening_Level_Instance::SpawnPlayerInPool(int selectedNo)
 {
-	if (playerSubClass == nullptr) return;
+	// -- プールプレイヤー確認 --
+	TArray<TSubclassOf<AC_Player>> _poolPlayers = { playerSubClass_1, playerSubClass_2, playerSubClass_3, playerSubClass_4, playerSubClass_5 };
+	for (TSubclassOf<AC_Player> _p : _poolPlayers) {
+		if (_p == nullptr) return;
+	}
 	// -- スポーン処理 --
 	FVector _spawnLocation = FVector(-1300, 1000, C_Common::PLAYER_BASE_LOCATION_Z);
 	FRotator _rotation = FRotator::ZeroRotator;
 	AC_Player* _player = GetWorld()->SpawnActor<AC_Player>( // アクタースポーン
-		playerSubClass,
+		_poolPlayers[selectedNo],
 		_spawnLocation,
 		_rotation
 	);
-	
+	// -- プレイヤータイプ設定 --
+	int _playerType = 0;
+	if (selectedNo == 0) _playerType = C_Common::TARGET_MAN_TYPE_NO;
+	else if (selectedNo == 2) _playerType = C_Common::RUNNER_TYPE_NO;
+
 	if (_player) {
 		// -- セット --
 		_player->Tags.Add(FName("HOME")); // tag
-		_player->SetSpwanPlayerMaterial(playerType); // マテリアル
-		_player->SetPlayerTypeIcon(playerType); // プレイヤータイプアイコン
-		_player->playerType = playerType; // プレイヤータイプ
+		//_player->SetSpwanPlayerMaterial(playerType); // マテリアル
+		_player->SetPlayerTypeIcon(_playerType); // プレイヤータイプアイコン
+		_player->playerType = _playerType; // プレイヤータイプ
 
 		// -- 出現アニメーション --
 		subPlayers.Add(_player); // サブへ

@@ -99,7 +99,7 @@ private:
 	// AWAYチームAI
 	void AwayTeamAI();
 	// プレイヤースポーン (プールから選ばれた)
-	void SpawnPlayerInPool(int playerType);
+	void SpawnPlayerInPool(int selectedNo);
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation(FVector location);
 	// ディフェンスライン設定
@@ -146,7 +146,12 @@ private:
 	AC_Player* currentPoketman = nullptr; // 現在処理中のポケットマン
 	int poketmanPlayCount = 0; // ポケットマン手順回数カウンター
 	FVector poketmanFromLocation = FVector(0, 0, 0); // ポケットマン移動前の位置
-	TSubclassOf<AC_Player> playerSubClass = nullptr; // プレイヤー (サブクラス) *プレイヤーSpawn時使用
+	// プレイヤー (サブクラス) *プレイヤーSpawn時使用
+	TSubclassOf<AC_Player> playerSubClass_1 = nullptr;
+	TSubclassOf<AC_Player> playerSubClass_2 = nullptr;
+	TSubclassOf<AC_Player> playerSubClass_3 = nullptr;
+	TSubclassOf<AC_Player> playerSubClass_4 = nullptr;
+	TSubclassOf<AC_Player> playerSubClass_5 = nullptr;
 	TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
 	TArray<AC_Player*> highPressDeffenders = {}; // ハイプレスディフェンダー
 
