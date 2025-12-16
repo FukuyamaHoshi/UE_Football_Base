@@ -78,13 +78,15 @@ void AC_Opening_Level_Instance::BeginPlay()
 	for (AActor* _a : _actorPlayers) {
 		AC_Player* _player = Cast<AC_Player>(_a); // キャスト
 		
-		// HOMEとAWAYで分ける
+		if (_player->Tags.Num() < 1) continue; // (*制限) TAGなし
+
+		// HOMEプレイヤー
 		if (_player->ActorHasTag(FName("HOME"))) {
-			// HOMEプレイヤー
 			homePlayers.Add(_player);
 		}
-		else {
-			// AWAYプレイヤー
+
+		// AWAYプレイヤー
+		if (_player->ActorHasTag(FName("AWAY"))) {
 			awayPlayers.Add(_player);
 		}
 		allPlayers.Add(_player); // 追加
@@ -307,6 +309,7 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 			}
 		}
 		if (_gk == nullptr) return;
+
 		// ボールへ移動
 		if (ball == nullptr) return;
 		FVector _ballLocation = ball->GetActorLocation();
@@ -478,10 +481,9 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 			return;
 		}
-		int _HasCommand = ballHolder->ActorHasTag("HOME") ? currentCommand : awayCommand; // ボール保持側のコマンド
-		if (_HasCommand != C_Common::POSSETION_COMMAND_NO) { // *ポゼッションコマンド制限 (HOME)
-			// デゥエル処理
-			if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // GK以外 かつ、接敵している
+		
+		if (ballHolder->ballKeepingCount > C_Common::DUEL_INTERVAL) { // (*条件) インターバル
+			if (ballHolder->position > C_Common::GK_POSITION && GetIsFree(ballHolder) == false) { // (*条件)　⑴GK以外　⑵接敵中
 				// -- ディフェンス姿勢セット --
 				TArray<AC_Player*> _deffencePlayers = {}; // ディフェンスチーム
 				if (ballHolder->ActorHasTag(FName("HOME"))) {
@@ -497,15 +499,12 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 						break;
 					}
 				}
-				// -- デゥエル --
-				if (ballHolder->ballKeepingCount > 1.0f) { // インターバル設定
-					isDueling = true; // デゥエル開始
-					Duel();
+				// -- アクション --
+				isDueling = true; // デゥエル開始
+				Duel();
 
-					return;
-				}
+				return;
 			}
-			
 		}
 	}
 	// ***
@@ -551,47 +550,54 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 				if (_p == ballHolder) continue; // ボールホルダーなし
 
 				if (GetIsFree(_p)) _p->FreeAppeal(ballHolder); // ●フリー
-				if (_p->ActorHasTag("TARGET")) _p->TargetmanAppeal(ballHolder); // ●ターゲットマン
-				if (_p->ActorHasTag("POST")) _p->PostmanAppeal(ballHolder); // ●ポストマン
-				if (_p->ActorHasTag("RUNNER")) _p->RunnerAppeal(); // ●ランナー
-				if (_p->ActorHasTag("POKET")) _p->PoketmanAppeal(ballHolder); // ●ポケットマン
+				if (_p->playerType == C_Common::TARGET_MAN_TYPE_NO) _p->TargetmanAppeal(ballHolder); // ●ターゲットマン
+				if (_p->playerType == C_Common::POST_MAN_TYPE_NO) _p->PostmanAppeal(ballHolder); // ●ポストマン
+				if (_p->playerType == C_Common::RUNNER_TYPE_NO) _p->RunnerAppeal(); // ●ランナー
+				if (_p->playerType == C_Common::POKET_MAN_TYPE_NO) _p->PoketmanAppeal(ballHolder); // ●ポケットマン
 			}
 		}
 	}
 
 	
+	// *** AWAYチームAI ***
+	AwayTeamAI();
+
+
 	// ***** コマンド操作 *****
 	// * 制限 *
 	if (ball->isMoving) return; // ボール移動中
 	if (ballHolder == nullptr) return; // ボールホルダーなし
 	// *
-
-	// -- AWAYチームAI --
-	//AwayTeamAI();
-
-	// -- ボール保持がHOME --
-	if (ballHolder->ActorHasTag("HOME")) {
-		// ⓵ボール保持コマンド (HOME)
+	// -- HOME --
+	if (_instance->isHomeHas) {
+		// ⓵ボール保持
 		if (currentCommand == C_Common::POSSETION_COMMAND_NO) PossetionCommand();
 		else if (currentCommand == C_Common::LONG_ATTACK_COMMAND_NO) LongAttackCommand();
 		else if (currentCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) TecnicalAttackCommand();
-		// ⓶ボール非保持コマンド (AWAY)
-		if (awayCommand == C_Common::LOW_BLOCK_COMMAND_NO) LowBlockCommand();
-		else if (awayCommand == C_Common::SIDE_PRESS_COMMAND_NO) SidePressCommand();
-		else if (awayCommand == C_Common::HIGH_PRESS_COMMAND_NO) HighPressCommand();
 	}
-	// -- ボール保持がAWAY --
 	else {
-		// ⓵ボール保持コマンド (AWAY)
-		if (awayCommand == C_Common::POSSETION_COMMAND_NO) PossetionCommand();
-		else if (awayCommand == C_Common::LONG_ATTACK_COMMAND_NO) LongAttackCommand();
-		else if (awayCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) TecnicalAttackCommand();
-		// ⓶ボール非保持コマンド (HOME)
+		// ⓶ボール非保持
 		if (currentCommand == C_Common::LOW_BLOCK_COMMAND_NO) LowBlockCommand();
 		else if (currentCommand == C_Common::SIDE_PRESS_COMMAND_NO) SidePressCommand();
 		else if (currentCommand == C_Common::HIGH_PRESS_COMMAND_NO) HighPressCommand();
 	}
-	// *****
+
+	// * 制限 *
+	if (ballHolder == nullptr) return; // ボールホルダーなし (*コマンドによってnullになる)
+	// *
+	// -- AWAY --
+	if (_instance->isHomeHas == false) {
+		// ⓵ボール保持
+		if (awayCommand == C_Common::POSSETION_COMMAND_NO) PossetionCommand();
+		else if (awayCommand == C_Common::LONG_ATTACK_COMMAND_NO) LongAttackCommand();
+		else if (awayCommand == C_Common::TECNICAL_ATTACK_COMMAND_NO) TecnicalAttackCommand();
+	}
+	else {
+		// ⓶ボール非保持
+		if (awayCommand == C_Common::LOW_BLOCK_COMMAND_NO) LowBlockCommand();
+		else if (awayCommand == C_Common::SIDE_PRESS_COMMAND_NO) SidePressCommand();
+		else if (awayCommand == C_Common::HIGH_PRESS_COMMAND_NO) HighPressCommand();
+	}
 }
 
 // ********* input *********
@@ -959,6 +965,14 @@ void AC_Opening_Level_Instance::MatchStart()
 	_instance->command = 0;
 	awayCommand = 0;
 
+	// -- ホール保持フラグ切替 --
+	_instance->isHomeHas = true; // HOMEボール保持で開始
+
+	// -- ボタン・ラベル変更 --
+	openingUI->SwitchButtonPanal(1); // ボタン (HOME)
+	openingUI->SwitchHasLabelPanal(0); // ラベル (HOME)
+
+
 	// -- プレイヤーをミドルラインへ移動 --
 	// AWAY
 	for (AC_Player* _p : awayPlayers) {
@@ -981,7 +995,7 @@ void AC_Opening_Level_Instance::MatchStart()
 // ポゼッションコマンド
 void AC_Opening_Level_Instance::PossetionCommand()
 {
-	if (ballHolder->ballKeepingCount < ESCAPE_INTERVAL) return; // インターバル設定
+	if (ballHolder->ballKeepingCount < C_Common::POSSETION_INTERVAL) return; // (*制限) インターバル
 
 	// -- ボール保持チーム取得 --
 	TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
@@ -1135,24 +1149,28 @@ void AC_Opening_Level_Instance::LongAttackCommand()
 	}
 
 	// -- ターゲットプレイヤー取得 --
-	// ⓵ダイレクトアタック(走る)
+	// ⓵ダイレクトアタック
 	AC_Player* _runPlayer = nullptr;
-	for (AC_Player* _p : _myFWPlayers) {
-		if ((_p->position % 5 == _kickerLane)) { // キッカーと同レーンのFW
+	for (AC_Player* _p : _myFWPlayers) { // FWの中で
+		// ⑴ キッカーと同レーン
+		if ((_p->position % 5 == _kickerLane)) {
 			_runPlayer = _p;
 
 			break;
 		}
-		if (_p->ActorHasTag("RUNNER")) { // FWのランナー
+		// ⑵ランナー
+		if (_p->playerType == C_Common::RUNNER_TYPE_NO) {
 			_runPlayer = _p;
 
 			break;
 		}
 	}
-	// ⓶ポストプレイヤー
+
+	// ⓶ポストプレイ
 	AC_Player* _postPlayer = nullptr;
-	for (AC_Player* _p : _myFWPlayers) {
-		if (_p->ActorHasTag("POST")) { // FWのポストプレイヤー
+	for (AC_Player* _p : _myFWPlayers) { // FWの中で
+		// ⑴ ターゲットマン
+		if (_p->playerType == C_Common::TARGET_MAN_TYPE_NO) {
 			_postPlayer = _p;
 
 			break;
@@ -1182,7 +1200,7 @@ void AC_Opening_Level_Instance::LongAttackCommand()
 		PostPlay(true);
 	}
 
-	// ③ラフボール
+	// ③クリアボール
 	else {
 		// ポイントの取得 (キッカーと同じレーン)
 		FVector _targetLocation = FVector(0, 0, 0);
@@ -1223,16 +1241,16 @@ void AC_Opening_Level_Instance::TecnicalAttackCommand()
 	// -- アクション --
 	if (_frontPlayer)
 	{
-		// 〇ショートパス
+		// ⓵ショートパス
 		ShortPass(_frontPlayer);
 	}
 	else {
-		// ●ポストプレー
-
+		// ⓶ポストプレー
 		// プレイヤー取得
-		AC_Player* _postPlayer = nullptr; // ポストプレイヤー
+		AC_Player* _postPlayer = nullptr;
 		for (AC_Player* _player : _myTeamPlayers) {
-			if (_player->ActorHasTag("POST")) {
+			// ⑴ターゲットマン
+			if (_player->playerType == C_Common::TARGET_MAN_TYPE_NO) {
 				_postPlayer = _player;
 
 				break;

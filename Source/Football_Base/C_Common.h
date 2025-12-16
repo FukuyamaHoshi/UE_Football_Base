@@ -99,6 +99,8 @@ public:
     // -- プレイヤータイプNo --
     static constexpr int RUNNER_TYPE_NO = 1; // ランナー
     static constexpr int TARGET_MAN_TYPE_NO = 2; // ターゲットマン
+    static constexpr int POST_MAN_TYPE_NO = 3; // ポストマン
+    static constexpr int POKET_MAN_TYPE_NO = 4; // ポケットマン
 
     // 戦術コマンドテキスト取得
     static TArray<FString> GetTacticsCommandTexts(int tacticsCommandNo);
@@ -130,6 +132,9 @@ public:
     // フェーズ時間
     static constexpr float MATCH_READY_TIME = 3.0f; // 試合準備
     static constexpr float MATCH_TIME = 30.0f; // 試合中
+    // インターバル
+    static constexpr float POSSETION_INTERVAL = 2.5f; // ポゼッション発火
+    static constexpr float DUEL_INTERVAL = 3.0f; // デゥエル発火
     
     
     // ***** ゲーム内時間ごとの名称 *****************

@@ -155,7 +155,6 @@ private:
 	TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
 	TArray<AC_Player*> highPressDeffenders = {}; // ハイプレスディフェンダー
 
-	const float ESCAPE_INTERVAL = 3.0f; // プレス回避間隔
 	TArray<FVector> HOME_LONG_ATTACK_POINTS = 
 	{ 
 		FVector(825.0f, -660.0f, C_Common::BALL_BASE_LOCATION_Z), 
