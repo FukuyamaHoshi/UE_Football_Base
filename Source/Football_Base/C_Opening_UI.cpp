@@ -279,9 +279,9 @@ void UC_Opening_UI::MatchStartButtonClicked()
     UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
     if (_instance == nullptr) return;
 
-    SwitchButtonPanal(1); // ボタン変更(保持コマンド)
+    //SwitchButtonPanal(1); // ボタン変更(保持コマンド)
     _instance->game_phase = C_Common::MATCH_READY_PHASE; // (試合準備)フェーズ変更
-    SwitchEnhance(_instance->command); // ボタンエンハンス設定
+    //SwitchEnhance(_instance->command); // ボタンエンハンス設定
     _instance->phase_count = C_Common::MATCH_READY_TIME; // 試合準備フェーズカウントセット
     
 }

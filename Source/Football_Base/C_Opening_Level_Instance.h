@@ -57,8 +57,9 @@ private:
 	bool GetResultFromMouseLocation(FHitResult& hitResult, TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes);
 	// 試合開始時処理
 	void MatchStart();
-	// ポゼッションコマンド
-	void PossetionCommand();
+	// フリーマンへパス
+	// | return : 実行済みか |
+	bool ShortPassToFreeMan();
 	// ロングアタックコマンド
 	void LongAttackCommand();
 	// テクニカルアタックコマンド
@@ -69,6 +70,8 @@ private:
 	void SidePressCommand();
 	// ハイプレスコマンド
 	void HighPressCommand();
+	// ボールホルダープレイ
+	void PlayBallHolder();
 	
 	// 走る
 	void RunTo(AC_Player* player, FVector toLocation);
@@ -83,17 +86,23 @@ private:
 	// シュート
 	void Shoot();
 	// 裏抜け (走る)
-	void GetBehind(AC_Player* runPlayer, FVector toLocation);
+	bool GetBehind();
 	// ボールホルダー設定
 	void SetBallHolder(AC_Player* targetPlayer);
 	// プレイヤーフリー判定
 	bool GetIsFree(AC_Player* targetPlayer);
 	// デゥエル
-	void Duel();
+	// | return : 実行済みか |
+	bool Duel();
+	// ドリブル突破
+	void DrribleBreakThrough();
 	// ラインブレイク
 	void LineBreak();
 	// クロス
 	void Cross();
+	// キャリー (前進ドリブル)
+	// | return : 実行済みか |
+	bool Carry();
 	// ポストプレー
 	void PostPlay(bool isLong = false);
 	// AWAYチームAI

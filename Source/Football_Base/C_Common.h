@@ -133,20 +133,8 @@ public:
     static constexpr float MATCH_READY_TIME = 3.0f; // 試合準備
     static constexpr float MATCH_TIME = 30.0f; // 試合中
     // インターバル
-    static constexpr float POSSETION_INTERVAL = 2.5f; // ポゼッション発火
-    static constexpr float DUEL_INTERVAL = 3.0f; // デゥエル発火
-    
-    
-    // ***** ゲーム内時間ごとの名称 *****************
-    // ーーラウンド （試合数）ーー
-    //  ①初期配置フェーズ：プレイヤーを手移動可能な時間
-    //  ②2次配置フェーズ：対戦準備位置へ移動する
-    //  ⓷対戦フェーズ
-    //    ーステップー
-    //    ⑴準備ステップフェーズ
-    //    ⑵プレイステップフェーズ
-    //    ⑶リセットステップフェーズ
-    //    ー
-    // ーー
-    // ********************************************
+    static constexpr float PLAY_INTERVAL = 1.0f; // プレイ間隔
+
+    // 位置からタイルＮｏ取得
+    static int GetTileNoFromLocation(FVector location);
 };

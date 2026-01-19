@@ -10,8 +10,11 @@
 #include <Components/WidgetComponent.h>
 #include "C_Player.generated.h"
 
+DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
 
-
+/**
+ * プレイヤーキャラクター
+ */
 UCLASS()
 class FOOTBALL_BASE_API AC_Player : public ACharacter
 {
@@ -38,7 +41,7 @@ public:
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 	int tileNo = 0; // 現在のタイルNo
 	int playerType = 0; // プレイヤータイプ
-	DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
+	TArray<int> viewNos = {}; // 視野タイルNo
 	FCompleteMoveDelegate completeMoving; // 移動終了時コールバック関数
 
 	// メッシュを表示する
@@ -96,11 +99,12 @@ public:
 	void SetPlayerTypeIcon(int typeNo);
 	// 前方を向く
 	void LookForward();
+	// 視野タイルNo更新
+	void UpdateViewTileNos();
 
 private:
 	// 移動処理
 	void Move(float dTime);
-
 
 	USkeletalMeshComponent* myMesh = nullptr; // メッシュ
 	UMaterial* normalPlayerMaterial = nullptr; // マテリアル(ノーマル)

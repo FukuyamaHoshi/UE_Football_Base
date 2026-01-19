@@ -7,7 +7,9 @@
 #include "C_Player_Anim_Instance.h"
 #include "C_Common.h"
 #include "My_Game_Instance.h"
+#include "CPlayerAI.h"
 #include "GameFramework/CharacterMovementComponent.h" // キャラクター移動コンポーネントをインクルード
+#include "TimerManager.h" // For scheduling a callback when montage ends
 
 // Sets default values
 AC_Player::AC_Player()
@@ -45,6 +47,10 @@ AC_Player::AC_Player()
 		targetmanWidgetIcon = _targetmanWidgetFinder.Class;
 	}
 	// ***
+
+	// *** AIコントローラーセット ***
+	AIControllerClass = ACPlayerAI::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned
@@ -132,7 +138,6 @@ void AC_Player::Tick(float DeltaTime)
 	}
 	// ***
 
-
 	// *** トラップアニメーション ***
 	if (isTrap) {
 		float _dis = 0; // ボールとの距離
@@ -146,14 +151,29 @@ void AC_Player::Tick(float DeltaTime)
 			// プレイヤーアニメーション
 			UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
 			if (trapAnim)
+			{
+				// Play trap montage
 				_animInstance->Montage_Play(trapAnim);
+
+				// - トラップアニメーション終了後、前方を向く -
+				float _animLength = trapAnim->GetPlayLength();
+				if (_animLength <= 0.0f) _animLength = 0.1f;
+				FTimerHandle _trapTimerHandle;
+				FTimerDelegate _trapDelegate = FTimerDelegate::CreateUObject(this, &AC_Player::LookForward);
+				if (GetWorld())
+				{
+					GetWorld()->GetTimerManager().SetTimer(_trapTimerHandle, _trapDelegate, _animLength, false);
+				}
+			}
 		}
 	}
 	// ***
 
-
 	// *** アニメーションBP 調整 ***
-	if (isBallHolder) { // 〇ボールホルダー時
+	// aiコントローラー取得
+	ACPlayerAI* _aiController = Cast<ACPlayerAI>(GetController());
+	if (_aiController == nullptr) return;
+	if (_aiController->isBallHolder) { // 〇ボールホルダー時
 		// -- ボールキープ --
 		if (isBallKeeping == false) {
 			if (ball) {
@@ -461,6 +481,8 @@ void AC_Player::RunTo(FVector toLocation)
 // ドリブル (相手を抜く)
 void AC_Player::RegateDrrible()
 {
+	StopAnim(); // アニメーション停止
+
 	// 移動位置取得
 	FVector _ToLocation = GetActorLocation();
 	if (ActorHasTag("HOME")) {
@@ -510,6 +532,8 @@ void AC_Player::Tackle()
 // ディフェンス姿勢
 void AC_Player::SetDefensiveStance()
 {
+	StopAnim();
+
 	// プレイヤーアニメーション
 	if (playerAnimInstance) {
 		playerAnimInstance->isDefensiveStance = true;
@@ -545,7 +569,6 @@ void AC_Player::Move(float dTime) {
 	}
 	// ***
 
-
 	// ** 移動終了処理 **
 	if (_alpha >= 1.0f)
 	{
@@ -556,8 +579,9 @@ void AC_Player::Move(float dTime) {
 		isMoving = false; // 移動終了
 		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
 		
-		// -- タイルNoセット --
+		// -- タイルNo更新 --
 		tileNo = GetTileNoFromLocation(); // タイルNo更新
+		UpdateViewTileNos(); // 視野タイル更新
 		
 		// -- ONタイルプレイヤー追加 --
 		for (AC_Tile* _tile : tiles) {
@@ -664,6 +688,37 @@ void AC_Player::LookForward()
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
+}
+
+// 視野タイルNo更新
+void AC_Player::UpdateViewTileNos()
+{
+	viewNos.Empty(); // 空にする
+
+	const int width = C_Common::TILE_NUM_Y;
+	const int height = 6;
+	const int _pos = tileNo - 1;
+
+	int row = _pos / width;
+	int col = _pos % width;
+	int frontRow = row + 1;
+	
+	// -- 前方の行が存在しない --
+	if (frontRow >= height) return;
+
+	// -- 最大3マスのウィンドウを作る --
+	int startCol = col - 1;
+	int endCol = col + 1;
+
+	if (startCol < 0) startCol = 0;
+	if (endCol >= width) endCol = width - 1;
+
+	for (int c = startCol; c <= endCol; c++) {
+		int idx = frontRow * width + c;
+		idx++; // インクリメント (タイルが1-5のため)
+		viewNos.Add(idx);
+	}
+
 }
 
 // ドリブル (前進)
