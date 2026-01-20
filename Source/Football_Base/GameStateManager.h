@@ -17,9 +17,11 @@ DECLARE_MULTICAST_DELEGATE(FOnShoot);
 DECLARE_MULTICAST_DELEGATE(FOnGetBehind);
 DECLARE_MULTICAST_DELEGATE(FOnDribbleBreakThrough);
 DECLARE_MULTICAST_DELEGATE(FOnGoal);
+DECLARE_MULTICAST_DELEGATE(FOnMatchStart);
+DECLARE_MULTICAST_DELEGATE(FOnMatchEnd);
 
 /**
- * ゲーム状態検知サブシステム
+ * 試合状態検知サブシステム
  */
 UCLASS()
 class FOOTBALL_BASE_API UGameStateManager
@@ -49,6 +51,8 @@ public:
     FOnGetBehind OnGetBehind;
 	FOnDribbleBreakThrough OnDribbleBreakThrough;
 	FOnGoal OnGoal;
+	FOnMatchStart OnMatchStart;
+	FOnMatchEnd OnMatchEnd;
 
     TArray <AC_Tile*> tiles = {}; // 全てのタイル
     AC_Player* ballHolder = nullptr; // ボールホルダー
@@ -89,6 +93,10 @@ private:
 	bool isMoving = false;
 	// ゴール中
 	bool isGoal = false;
+	// 試合開始済み
+	bool isMatchStarted = false;
+	// 試合終了済み
+	bool isMatchEnded = false;
 
 private:
 	// 初期化処理 (アクター取得など)
@@ -130,6 +138,12 @@ private:
 	bool DedectGoal();
 	// - ゴール状態更新 -
 	void UpdateGoal();
+	// - 試合開始更新 -
+	void UpdateMatchStart();
+	// - 試合終了検知 -
+	bool DedectMatchEnd();
+	// - 試合終了更新 -
+	void UpdateMatchEnd();
 
 	// リセット状態フラグ
 	void ResetStateFlags();
@@ -143,4 +157,6 @@ private:
     void SetBallHolder();
 	// 移動終了時処理
 	void OnCompleteMoving();
+	// 試合終了時処理
+	void OnMatchEnded();
 };

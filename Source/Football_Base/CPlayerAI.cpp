@@ -5,6 +5,7 @@
 #include "GameStateManager.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
+#include "My_Game_Instance.h"
 
 //UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
 void ACPlayerAI::BeginPlay()
@@ -21,6 +22,8 @@ void ACPlayerAI::BeginPlay()
 	state->OnGetBehind.AddUObject(this, &ACPlayerAI::HandleGetBehind);
 	state->OnDribbleBreakThrough.AddUObject(this, &ACPlayerAI::HandleDribbleBreakThrough);
 	state->OnGoal.AddUObject(this, &ACPlayerAI::HandleGoal);
+	state->OnMatchStart.AddUObject(this, &ACPlayerAI::HandleMatchStart);
+	state->OnMatchEnd.AddUObject(this, &ACPlayerAI::HandleMatchEnd);
 }
 
 void ACPlayerAI::Tick(float DeltaSeconds)
@@ -32,15 +35,17 @@ void ACPlayerAI::HandleFreeHolder()
 {
 	// ボールホルダー時
 	if (isBallHolder) {
+		isBallHolder = false;
 		bool _b = ShortPassToFreeMan();
 		if (_b == false) {
 			Carry();
 		}
-
+		
 		return;
 	}
 	// フリー時
 	if (isFreeMan) {
+		isFreeMan = false;
 		AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (controlledPlayer == nullptr) return;
 		// ステート取得
@@ -63,13 +68,15 @@ void ACPlayerAI::HandleDuelStart()
 	
 	// ボールホルダー時
 	if (isBallHolder) {
+		//isBallHolder = false;
 		// アグレッシブスタンスに変更
 		_controlledPlayer->SetDefensiveStance();
-		
+
 		return;
 	}
 	// ディフェンダー時
 	if (isDefender) {
+		isDefender = false;
 		// アグレッシブスタンスに変更
 		_controlledPlayer->SetDefensiveStance();
 
@@ -77,6 +84,7 @@ void ACPlayerAI::HandleDuelStart()
 	}
 	// フリー時
 	if (isFreeMan) {
+		isFreeMan = false;
 		// ステート取得
 		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 		if (_state == nullptr) return;
@@ -93,7 +101,9 @@ void ACPlayerAI::HandleLineBreak()
 {
 	// ボールホルダー
 	if (isBallHolder) {
+		isBallHolder = false;
 		Carry();
+
 		return;
 	}
 
@@ -111,6 +121,7 @@ void ACPlayerAI::HandleLineBreak()
 void ACPlayerAI::HandleCross()
 {
 	if (isBallHolder) {
+		isBallHolder = false;
 		// 自チーム取得
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (_controlledPlayer == nullptr) return;
@@ -155,6 +166,7 @@ void ACPlayerAI::HandleCross()
 void ACPlayerAI::HandleShoot()
 {
 	if (isBallHolder) {
+		isBallHolder = false;
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		_controlledPlayer->Shoot();
 
@@ -193,12 +205,14 @@ void ACPlayerAI::HandleGetBehind()
 	}
 
 	if (isBallHolder) {
+		isBallHolder = false;
 		LongKick(_moveLocation);
 		
 		return;
 	}
 
 	if (isGetBehindRunner) {
+		isGetBehindRunner = false;
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (_controlledPlayer)
 			_controlledPlayer->RunTo(_moveLocation);
@@ -216,6 +230,7 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 	// ボールホルダー
 	if (isBallHolder)
 	{
+		isBallHolder = false;
 		_controlledPlayer->RegateDrrible();
 		return;
 	}
@@ -223,6 +238,7 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 	// ディフェンダー
 	if (isDefender) 
 	{
+		isDefender = false;
 		_controlledPlayer->Tackle();
 		return;
 	}
@@ -230,6 +246,7 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 	// 縦ずれプレイヤー
 	if (isFrontMovingPlayer) 
 	{
+		isFrontMovingPlayer = false;
 		FVector _l = _controlledPlayer->GetActorLocation();
 		if (_controlledPlayer->ActorHasTag("HOME")) {
 			_l.X += C_Common::TILE_SIZE;
@@ -255,6 +272,62 @@ void ACPlayerAI::HandleGoal()
 	else {
 		_controlledPlayer->SadMotion();
 	}
+}
+
+// 試合開始ハンドル
+void ACPlayerAI::HandleMatchStart()
+{
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return;
+	
+	// アニメーション停止 (*再試合対応)
+	_controlledPlayer->StopAnim();
+
+	// 初期配置 (*再試合対応)
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) 
+	{
+		// <試合開始>
+		initialLocation = _controlledPlayer->GetActorLocation();
+	}else 
+	{
+		// <再試合>
+		_controlledPlayer->SetActorLocation(initialLocation); // 位置
+		_controlledPlayer->LookForward(); // 向き
+	}
+
+	// GK以外
+	if (_controlledPlayer->position != C_Common::GK_POSITION) {
+		// ミドルラインへ移動 (走る)
+		if (_controlledPlayer->ActorHasTag("HOME")) {
+			// HOME
+			FVector _targetLocation = _controlledPlayer->GetActorLocation();
+			_targetLocation.X += C_Common::TILE_SIZE;
+			_controlledPlayer->RunTo(_targetLocation);
+		}
+		else {
+			// AWAY
+			FVector _targetLocation = _controlledPlayer->GetActorLocation();
+			_targetLocation.X -= C_Common::TILE_SIZE * 2;
+			_controlledPlayer->RunTo(_targetLocation);
+		}
+	}
+
+}
+
+// 試合終了ハンドル
+void ACPlayerAI::HandleMatchEnd()
+{
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return;
+
+	// アニメーション停止
+	_controlledPlayer->StopAnim();
+
+	// 初期配置
+	_controlledPlayer->SetActorLocation(initialLocation); // 位置
+	_controlledPlayer->LookForward(); // 向き
 }
 
 // ショートパス

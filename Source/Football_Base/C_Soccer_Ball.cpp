@@ -5,6 +5,9 @@
 #include "C_Common.h"
 #include <Kismet/KismetMathLibrary.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include "GameStateManager.h"
+#include "My_Game_Instance.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AC_Soccer_Ball::AC_Soccer_Ball()
@@ -22,6 +25,11 @@ void AC_Soccer_Ball::BeginPlay()
     // *** カーブアセット取得 ***
     longBallHeightCurve = LoadObject<UCurveFloat>(NULL, TEXT("/Game/Animations/Curve/C_LongBall_Height.C_LongBall_Height"), NULL, LOAD_None, NULL);
     // ***
+
+    // StateSubsystem を取得
+    UGameStateManager* state = GetGameInstance()->GetSubsystem<UGameStateManager>();
+
+    state->OnMatchStart.AddUObject(this, &AC_Soccer_Ball::HandleMatchStart);
 }
 
 // Called every frame
@@ -68,6 +76,25 @@ void AC_Soccer_Ball::Move(float dTime)
         movingCount = 0.0f; // 移動カウントリセット
 
         return;
+    }
+}
+
+// - 試合開始ハンドル -
+void AC_Soccer_Ball::HandleMatchStart()
+{
+    // 初期配置 (*再試合対応)
+    // 位置
+    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+    if (_instance == nullptr)  return;
+    if (_instance->game_phase == C_Common::MATCH_READY_PHASE)
+    {
+        // <試合開始>
+        initialLocation = GetActorLocation();
+    }
+    else
+    {
+        // <再試合>
+        SetActorLocation(initialLocation); // 位置
     }
 }
 

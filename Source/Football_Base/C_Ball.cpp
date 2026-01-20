@@ -5,6 +5,9 @@
 #include <Kismet/KismetMathLibrary.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include "C_Common.h"
+#include "GameStateManager.h"
+#include "My_Game_Instance.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AC_Ball::AC_Ball()

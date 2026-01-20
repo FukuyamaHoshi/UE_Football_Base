@@ -32,6 +32,9 @@ public:
 	bool isFrontMovingPlayer = false;
 
 private:
+	FVector initialLocation = FVector::ZeroVector; // 初期位置
+
+private:
 	// - フリー(ボールホルダー)ハンドラ -
 	void HandleFreeHolder();
 	// - デュエルハンドラ -
@@ -48,6 +51,10 @@ private:
 	void HandleDribbleBreakThrough();
 	// - ゴールハンドラ -
 	void HandleGoal();
+	// - 試合開始ハンドラ -
+	void HandleMatchStart();
+	// - 試合終了ハンドラ -
+	void HandleMatchEnd();
 
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);

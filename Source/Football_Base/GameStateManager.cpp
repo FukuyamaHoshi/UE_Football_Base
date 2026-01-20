@@ -4,6 +4,7 @@
 #include "GameStateManager.h"
 #include <Kismet/GameplayStatics.h>
 #include "CPlayerAI.h"
+#include "My_Game_Instance.h"
 
 //UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
 void UGameStateManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -29,24 +30,49 @@ void UGameStateManager::Tick(float DeltaTime)
 		return;
 	}
 	
-	// - 移動終了更新 -
-	UpdateCompleteMoving();
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
 
-	// インターバル設定 (ボールキープ時間)
-	if (ballHolder == nullptr) return;
-	if (ballHolder->ballKeepingCount < C_Common::PLAY_INTERVAL) return;
+	// --- 試合準備フェーズ ---
+	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) 
+	{
+		// 試合開始状態更新
+		UpdateMatchStart();
+		
+		// フェーズカウントダウン
+		if (_instance->phase_count < 1.0f) {
+			_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
+			_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
+			OnCompleteMoving(); // 移動終了時処理 (*例外的に、試合開始時に実行)
+		}
 
-	// - 状態更新 -
-	// シュート
-	UpdateShoot();
-	// クロス
-	UpdateCross();
-	// ラインブレイク
-	UpdateLineBreak();
-	// デュエル
-	UpdateDuel();
-	// フリー(ボールホルダー)
-	UpdateFreeHolder();
+		return;
+	}
+	
+	// --- 試合フェーズ処理 ---
+	if (_instance->game_phase == C_Common::MATCH_PHASE)
+	{
+		// - 移動終了更新 -
+		UpdateCompleteMoving();
+
+		// インターバル設定 (ボールキープ時間)
+		if (ballHolder == nullptr) return;
+		if (ballHolder->ballKeepingCount < C_Common::PLAY_INTERVAL) return;
+
+		// - 状態更新 -
+		// 試合終了
+		UpdateMatchEnd();
+		// シュート
+		UpdateShoot();
+		// クロス
+		UpdateCross();
+		// ラインブレイク
+		UpdateLineBreak();
+		// デュエル
+		UpdateDuel();
+		// フリー(ボールホルダー)
+		UpdateFreeHolder();
+	}
 }
 
 TStatId UGameStateManager::GetStatId() const
@@ -469,6 +495,43 @@ void UGameStateManager::UpdateGoal()
 	}
 }
 
+// - 試合開始状態更新 -
+void UGameStateManager::UpdateMatchStart()
+{
+	if (isMatchStarted) return; // do once
+	isMatchStarted = true;
+
+	if (isMatchStarted) {
+		// 通知
+		OnMatchStart.Broadcast();
+	}
+}
+
+// - 試合終了検知 -
+bool UGameStateManager::DedectMatchEnd()
+{
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return false;
+	// *条件*
+	// ①フェーズカウントが1.0f以下で終了
+	if (_instance->phase_count > 1.0f) return false;
+	
+	return true;
+}
+
+// - 試合終了更新 -
+void UGameStateManager::UpdateMatchEnd()
+{
+	if (isMatchEnded) return; // do once
+	
+	isMatchEnded = DedectMatchEnd();
+	if (isMatchEnded) {
+		// 通知
+		OnMatchEnd.Broadcast();
+		OnMatchEnded(); // 試合終了時処理
+	}
+}
+
 // プレイヤーフリー判定
 // ( true: フリー )
 bool UGameStateManager::GetIsFree(AC_Player* targetPlayer)
@@ -528,17 +591,36 @@ void UGameStateManager::SetBallHolder()
 // 移動完了時処理
 void UGameStateManager::OnCompleteMoving()
 {
-	// ゴール状態更新
+	// - ゴール時処理 -
 	if (isShoot) {
-		UpdateGoal();
+		UpdateGoal(); // ゴール状態更新
+		ResetStateFlags(); // 状態フラグリセット (*ゴール時にボールホルダーをセットするとプレイが再開される)
 
-		// 試合再開処理
-		// タイマー関数呼び出し後
+		// - 試合再開処理 -
+		// 試合再開時は、フラグをリセットしない
+		FTimerHandle TimerHandle;
+		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::UpdateMatchStart);
+		if (GetWorld())
+		{
+			float _delay = 2.5f;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, _delay, false);
+		}
+		
 		return;
 	}
 
 	SetDeffenceLine(); // ディフェンスライン更新
 	SetBallHolder(); // ボールホルダー更新
+	ResetStateFlags(); // 状態フラグリセット
+}
+
+// 試合終了時処理
+void UGameStateManager::OnMatchEnded()
+{
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	if (_instance == nullptr)  return;
+
+	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ変更
 	ResetStateFlags(); // 状態フラグリセット
 }
 
@@ -553,6 +635,8 @@ void UGameStateManager::ResetStateFlags()
 	isCross = false;
 	isShoot = false;
 	isGoal = false;
+	isMatchStarted = false;
+	isMatchEnded = false;
 }
 
 // 状態フラグチェック
@@ -566,6 +650,8 @@ bool UGameStateManager::CheckStateFlags()
 		|| isCross
 		|| isShoot
 		|| isGoal
+		|| isMatchStarted
+		|| isMatchEnded
 		)
 	return true;
 

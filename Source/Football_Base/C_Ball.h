@@ -34,8 +34,9 @@ public:
 	bool isMoving = false; // 移動中か (*** フェーズ中フラグ ***)
 
 private:
+	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
+
+private:
 	// 指定された位置へ動く処理
 	void MoveTo();
-
-	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 };

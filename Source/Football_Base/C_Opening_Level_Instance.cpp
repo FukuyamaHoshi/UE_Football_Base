@@ -155,24 +155,24 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 
 	// ***** 試合準備フェーズ *****
-	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) {
-		// -- 試合開始 --
-		if (isOnceMatchStart)
-		{
-			isOnceMatchStart = false;
-			MatchStart();
-		}
+	//if (_instance->game_phase == C_Common::MATCH_READY_PHASE) {
+	//	// -- 試合開始 --
+	//	if (isOnceMatchStart)
+	//	{
+	//		isOnceMatchStart = false;
+	//		MatchStart();
+	//	}
 
-		// -- フェーズ切替 --
-		if (_instance->phase_count < 1.0f) {
-			_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
-			_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
+	//	// -- フェーズ切替 --
+	//	if (_instance->phase_count < 1.0f) {
+	//		_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
+	//		_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
 
-			openingUI->SetVisibleHasLabel(true); // ボール保持・非保持ラベル表示
-		}
+	//		openingUI->SetVisibleHasLabel(true); // ボール保持・非保持ラベル表示
+	//	}
 
-		return;
-	}
+	//	return;
+	//}
 	// *****
 
 
@@ -181,122 +181,122 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 	if (ball == nullptr) return; // ボール取得確認
 
 	
-	// *** 試合終了時 (試合時間終了) ***
-	if (_instance->phase_count < 1) {
-		// -- プレイヤー選択・配置フェーズへ --
-		_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ
-		//openingUI->SwitchButtonPanal(0); // 保持・非保持ボタン
-		openingUI->SetVisibleHasLabel(false); // 保持・非保持ラベル
+	//// *** 試合終了時 (試合時間終了) ***
+	//if (_instance->phase_count < 1) {
+	//	// -- プレイヤー選択・配置フェーズへ --
+	//	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ
+	//	//openingUI->SwitchButtonPanal(0); // 保持・非保持ボタン
+	//	openingUI->SetVisibleHasLabel(false); // 保持・非保持ラベル
 
-		// -- フラグリセット --
-		isGoal = false;
-		goalCount = 0;
-		isOnceGoal = false;
-		isOnceMatchStart = true;
+	//	// -- フラグリセット --
+	//	isGoal = false;
+	//	goalCount = 0;
+	//	isOnceGoal = false;
+	//	isOnceMatchStart = true;
 
-		// -- プレイヤーアニメーション停止 --
-		for (AC_Player* _player : allPlayers) {
-			_player->StopAnim();
-		}
+	//	// -- プレイヤーアニメーション停止 --
+	//	for (AC_Player* _player : allPlayers) {
+	//		_player->StopAnim();
+	//	}
 
-		// -- プレイヤーを元の位置へ --
-		for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
-			// ●位置
-			allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
-			// ●向き
-			FRotator _rotation = FRotator(0, 0, 0);
-			// ゴール方向へ回転
-			if (allPlayers[_i]->ActorHasTag("HOME")) {
-				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
-			}
-			else {
-				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
-			}
-			FQuat _q = _rotation.Quaternion(); // 変換
-			_q.X = 0; // *Z軸のみ回転させる
-			_q.Y = 0; // *Z軸のみ回転させる
-			allPlayers[_i]->SetActorRotation(_q);
-		}
+	//	// -- プレイヤーを元の位置へ --
+	//	for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
+	//		// ●位置
+	//		allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
+	//		// ●向き
+	//		FRotator _rotation = FRotator(0, 0, 0);
+	//		// ゴール方向へ回転
+	//		if (allPlayers[_i]->ActorHasTag("HOME")) {
+	//			_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
+	//		}
+	//		else {
+	//			_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
+	//		}
+	//		FQuat _q = _rotation.Quaternion(); // 変換
+	//		_q.X = 0; // *Z軸のみ回転させる
+	//		_q.Y = 0; // *Z軸のみ回転させる
+	//		allPlayers[_i]->SetActorRotation(_q);
+	//	}
 
 
-		return;
-	}
-	// ***
+	//	return;
+	//}
+	//// ***
 
 
 	// *** ゴール時 ***
-	if (isGoal && ball->isMoving == false) {
-		goalCount += DeltaTime;
+	//if (isGoal && ball->isMoving == false) {
+	//	goalCount += DeltaTime;
 
-		// -- 試合再開処理 --
-		if (goalCount > 3.0f) {
-			// ●フラグリセット
-			isGoal = false;
-			goalCount = 0;
-			isOnceGoal = false;
-			// ●プレイヤーアニメーション停止
-			for (AC_Player* _player : allPlayers) {
-				_player->StopAnim();
-			}
-			// ●プレイヤーを元の位置へ
-			for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
-				// ●位置
-				allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
-				// ●向き
-				FRotator _rotation = FRotator(0,0,0);
-				// ゴール方向へ回転
-				if (allPlayers[_i]->ActorHasTag("HOME")) {
-					_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
-				}
-				else {
-					_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
-				}
-				FQuat _q = _rotation.Quaternion(); // 変換
-				_q.X = 0; // *Z軸のみ回転させる
-				_q.Y = 0; // *Z軸のみ回転させる
-				allPlayers[_i]->SetActorRotation(_q);
-			}
-			// ●試合開始処理
-			MatchStart();
-			
+	//	// -- 試合再開処理 --
+	//	if (goalCount > 3.0f) {
+	//		// ●フラグリセット
+	//		isGoal = false;
+	//		goalCount = 0;
+	//		isOnceGoal = false;
+	//		// ●プレイヤーアニメーション停止
+	//		for (AC_Player* _player : allPlayers) {
+	//			_player->StopAnim();
+	//		}
+	//		// ●プレイヤーを元の位置へ
+	//		for (int _i = 0; _i < playerInitialPlaceLocation.Num(); _i++) {
+	//			// ●位置
+	//			allPlayers[_i]->SetActorLocation(playerInitialPlaceLocation[_i]);
+	//			// ●向き
+	//			FRotator _rotation = FRotator(0,0,0);
+	//			// ゴール方向へ回転
+	//			if (allPlayers[_i]->ActorHasTag("HOME")) {
+	//				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(100.0f, 0, 0));
+	//			}
+	//			else {
+	//				_rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), GetActorLocation() + FVector(-100.0f, 0, 0));
+	//			}
+	//			FQuat _q = _rotation.Quaternion(); // 変換
+	//			_q.X = 0; // *Z軸のみ回転させる
+	//			_q.Y = 0; // *Z軸のみ回転させる
+	//			allPlayers[_i]->SetActorRotation(_q);
+	//		}
+	//		// ●試合開始処理
+	//		MatchStart();
+	//		
 
-			return;
-		}
-
-
-		// -- ゴールアニメーション処理 --
-		if (isOnceGoal) return; // 一度のみの処理
-		isOnceGoal = true; // フラグON
-		
-		// ●ゴール・被ゴールチーム取得
-		float _ballX = ball->GetActorLocation().X;
-		bool _isHomeGoal = (_ballX > 0) ? true : false; // どのチームのゴールか (ボール位置から)
-		TArray<AC_Player*> _scoreTeam = {}; // ゴールチーム
-		TArray<AC_Player*> _notScoreTeam = {}; // 被ゴールチーム
-		if (_isHomeGoal) {
-			_scoreTeam = homePlayers; // ゴールチーム
-			_notScoreTeam = awayPlayers; // 被ゴールチーム
-		}
-		else {
-			_scoreTeam = awayPlayers; // ゴールチーム
-			_notScoreTeam = homePlayers; // 被ゴールチーム
-		}
-		// ●アニメーション
-		// - ゴールチーム -
-		for (AC_Player* _player : _scoreTeam) {
-			_player->CheerMotion();
-		}
-		// - 被ゴールチーム -
-		for (AC_Player* _player : _notScoreTeam) {
-			_player->SadMotion();
-		}
-		// - HOMEマネージャー -
-		if (homeManager) homeManager->CheerAnim();
+	//		return;
+	//	}
 
 
-		return;
-	}
-	// ***
+	//	// -- ゴールアニメーション処理 --
+	//	if (isOnceGoal) return; // 一度のみの処理
+	//	isOnceGoal = true; // フラグON
+	//	
+	//	// ●ゴール・被ゴールチーム取得
+	//	float _ballX = ball->GetActorLocation().X;
+	//	bool _isHomeGoal = (_ballX > 0) ? true : false; // どのチームのゴールか (ボール位置から)
+	//	TArray<AC_Player*> _scoreTeam = {}; // ゴールチーム
+	//	TArray<AC_Player*> _notScoreTeam = {}; // 被ゴールチーム
+	//	if (_isHomeGoal) {
+	//		_scoreTeam = homePlayers; // ゴールチーム
+	//		_notScoreTeam = awayPlayers; // 被ゴールチーム
+	//	}
+	//	else {
+	//		_scoreTeam = awayPlayers; // ゴールチーム
+	//		_notScoreTeam = homePlayers; // 被ゴールチーム
+	//	}
+	//	// ●アニメーション
+	//	// - ゴールチーム -
+	//	for (AC_Player* _player : _scoreTeam) {
+	//		_player->CheerMotion();
+	//	}
+	//	// - 被ゴールチーム -
+	//	for (AC_Player* _player : _notScoreTeam) {
+	//		_player->SadMotion();
+	//	}
+	//	// - HOMEマネージャー -
+	//	if (homeManager) homeManager->CheerAnim();
+
+
+	//	return;
+	//}
+	//// ***
 
 	//// *** ボール保持切替(クリアボール時) ***
 	//if (ballHolder == nullptr && ball->isMoving == false) {

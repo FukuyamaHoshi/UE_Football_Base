@@ -40,12 +40,15 @@ public:
 private:
 	// 移動処理
 	void Move(float dTime);
+	// - 試合開始ハンドル -
+	void HandleMatchStart();
 
+private:
 	UCurveFloat* longBallHeightCurve = nullptr; // カーブアセット (ロングボール)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	FVector fromLocation = FVector(0, 0, 0); // 動く前の位置(一時保存)
-
 	float movingCount = 0.0f; // 移動経過時間
 	float moveTotalTime = 0.0f; // 移動時間(指定)
+	FVector initialLocation = FVector::ZeroVector; // 初期位置
 
 };
