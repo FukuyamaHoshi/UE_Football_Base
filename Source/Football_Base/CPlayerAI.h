@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 #include "CPlayerAI.generated.h"
 
 /**
- * ƒvƒŒƒCƒ„[AIƒRƒ“ƒgƒ[ƒ‰[
+ * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼AIã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼
  */
 UCLASS()
 class FOOTBALL_BASE_API ACPlayerAI : public AAIController
@@ -20,50 +20,48 @@ public:
     virtual void Tick(float DeltaSeconds) override;
 
 public:
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒtƒ‰ƒO
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãƒ•ãƒ©ã‚°
 	bool isBallHolder = false;
-	// ƒfƒBƒtƒFƒ“ƒ_[ƒtƒ‰ƒO
+	// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ãƒ•ãƒ©ã‚°
 	bool isDefender = false;
-	// ƒtƒŠ[ƒAƒs[ƒ‹ƒtƒ‰ƒO
+	// ãƒ•ãƒªãƒ¼ã‚¢ãƒ”ãƒ¼ãƒ«ãƒ•ãƒ©ã‚°
 	bool isFreeMan = false;
-	// — ”²‚¯ƒtƒ‰ƒO (‘–‚éƒvƒŒƒCƒ„[)
+	// è£æŠœã‘ãƒ•ãƒ©ã‚° (èµ°ã‚‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼)
 	bool isGetBehindRunner = false;
-	// c‚¸‚êƒvƒŒƒCƒ„[ƒtƒ‰ƒO
+	// ç¸¦ãšã‚Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°
 	bool isFrontMovingPlayer = false;
 
 private:
-	FVector initialLocation = FVector::ZeroVector; // ‰ŠúˆÊ’u
+	FVector initialLocation = FVector::ZeroVector; // åˆæœŸä½ç½®
 
 private:
-	// - ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ƒnƒ“ƒhƒ‰ -
+	// - ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleFreeHolder();
-	// - ƒfƒ…ƒGƒ‹ƒnƒ“ƒhƒ‰ -
+	// - ãƒ‡ãƒ¥ã‚¨ãƒ«ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleDuelStart();
-	// - ƒ‰ƒCƒ“ƒuƒŒƒCƒNƒnƒ“ƒhƒ‰ -
+	// - ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleLineBreak();
-	// - ƒNƒƒXƒnƒ“ƒhƒ‰ -
+	// - ã‚¯ãƒ­ã‚¹ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleCross();
-	// - ƒVƒ…[ƒgƒnƒ“ƒhƒ‰ -
+	// - ã‚·ãƒ¥ãƒ¼ãƒˆãƒãƒ³ãƒ‰ãƒ© -
 	void HandleShoot();
-	// - — ”²‚¯ƒnƒ“ƒhƒ‰ -
+	// - è£æŠœã‘ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleGetBehind();
-	// - ƒhƒŠƒuƒ‹“Ë”jƒnƒ“ƒhƒ‰ -
+	// - ãƒ‰ãƒªãƒ–ãƒ«çªç ´ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleDribbleBreakThrough();
-	// - ƒS[ƒ‹ƒnƒ“ƒhƒ‰ -
+	// - ã‚´ãƒ¼ãƒ«ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleGoal();
-	// - ‡ŠJnƒnƒ“ƒhƒ‰ -
+	// - è©¦åˆé–‹å§‹ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleMatchStart();
-	// - ‡I—¹ƒnƒ“ƒhƒ‰ -
+	// - è©¦åˆçµ‚äº†ãƒãƒ³ãƒ‰ãƒ© -
 	void HandleMatchEnd();
 
-	// ƒVƒ‡[ƒgƒpƒX
+	// ã‚·ãƒ§ãƒ¼ãƒˆãƒ‘ã‚¹
 	void ShortPass(AC_Player* toPlayer);
-	// ƒƒ“ƒOƒLƒbƒN
-	void LongKick(FVector toLocation);
-	// ƒtƒŠ[ƒ}ƒ“‚ÖƒpƒX
-	// | return : ÀsÏ‚İ‚© |
+	// ãƒ•ãƒªãƒ¼ãƒãƒ³ã¸ãƒ‘ã‚¹
+	// | return : å®Ÿè¡Œæ¸ˆã¿ã‹ |
 	bool ShortPassToFreeMan();
-	// ƒLƒƒƒŠ[ (‘OiƒhƒŠƒuƒ‹)
-	// | return : ÀsÏ‚İ‚© |
+	// ã‚­ãƒ£ãƒªãƒ¼ (å‰é€²ãƒ‰ãƒªãƒ–ãƒ«)
+	// | return : å®Ÿè¡Œæ¸ˆã¿ã‹ |
 	bool Carry();
 };

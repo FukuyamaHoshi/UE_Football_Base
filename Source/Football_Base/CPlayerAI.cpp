@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CPlayerAI.h"
@@ -10,10 +10,10 @@
 //UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
 void ACPlayerAI::BeginPlay()
 {
-	// StateSubsystem ‚ğæ“¾
+	// StateSubsystem ã‚’å–å¾—
 	UGameStateManager*  state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 
-	// C++ ƒfƒŠƒQ[ƒg‚ğw“Ç
+	// C++ ãƒ‡ãƒªã‚²ãƒ¼ãƒˆã‚’è³¼èª­
 	state->OnFreeHolder.AddUObject(this, &ACPlayerAI::HandleFreeHolder);
 	state->OnDuelStart.AddUObject(this, &ACPlayerAI::HandleDuelStart);
 	state->OnLineBreak.AddUObject(this, &ACPlayerAI::HandleLineBreak);
@@ -30,12 +30,11 @@ void ACPlayerAI::Tick(float DeltaSeconds)
 {
 }
 
-// ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ƒnƒ“ƒhƒ‹
+// ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleFreeHolder()
 {
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼æ™‚
 	if (isBallHolder) {
-		isBallHolder = false;
 		bool _b = ShortPassToFreeMan();
 		if (_b == false) {
 			Carry();
@@ -43,12 +42,11 @@ void ACPlayerAI::HandleFreeHolder()
 		
 		return;
 	}
-	// ƒtƒŠ[
+	// ãƒ•ãƒªãƒ¼æ™‚
 	if (isFreeMan) {
-		isFreeMan = false;
 		AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (controlledPlayer == nullptr) return;
-		// ƒXƒe[ƒgæ“¾
+		// ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
 		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 		if (_state == nullptr) return;
 		
@@ -59,33 +57,30 @@ void ACPlayerAI::HandleFreeHolder()
 	}
 }
 
-// ƒfƒ…ƒGƒ‹ŠJnƒnƒ“ƒhƒ‹
+// ãƒ‡ãƒ¥ã‚¨ãƒ«é–‹å§‹ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleDuelStart()
 {
-	// Š—LƒvƒŒƒCƒ„[æ“¾
+	// æ‰€æœ‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å–å¾—
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer == nullptr) return;
 	
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼æ™‚
 	if (isBallHolder) {
-		//isBallHolder = false;
-		// ƒAƒOƒŒƒbƒVƒuƒXƒ^ƒ“ƒX‚É•ÏX
+		// ã‚¢ã‚°ãƒ¬ãƒƒã‚·ãƒ–ã‚¹ã‚¿ãƒ³ã‚¹ã«å¤‰æ›´
 		_controlledPlayer->SetDefensiveStance();
 
 		return;
 	}
-	// ƒfƒBƒtƒFƒ“ƒ_[
+	// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼æ™‚
 	if (isDefender) {
-		isDefender = false;
-		// ƒAƒOƒŒƒbƒVƒuƒXƒ^ƒ“ƒX‚É•ÏX
+		// ã‚¢ã‚°ãƒ¬ãƒƒã‚·ãƒ–ã‚¹ã‚¿ãƒ³ã‚¹ã«å¤‰æ›´
 		_controlledPlayer->SetDefensiveStance();
 
 		return;
 	}
-	// ƒtƒŠ[
+	// ãƒ•ãƒªãƒ¼æ™‚
 	if (isFreeMan) {
-		isFreeMan = false;
-		// ƒXƒe[ƒgæ“¾
+		// ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
 		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 		if (_state == nullptr) return;
 
@@ -96,55 +91,53 @@ void ACPlayerAI::HandleDuelStart()
 	}
 }
 
-// ƒ‰ƒCƒ“ƒuƒŒƒCƒNƒnƒ“ƒhƒ‹
+// ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleLineBreak()
 {
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 	if (isBallHolder) {
-		isBallHolder = false;
 		Carry();
 
 		return;
 	}
 
-	// GKˆÈŠO
+	// GKä»¥å¤–
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer->position != C_Common::GK_POSITION) {
-		// 2ƒ}ƒXˆÚ“®
-		FVector _location = _controlledPlayer->GetActorLocation(); // ˆÚ“®ˆÊ’u
+		// 2ãƒã‚¹ç§»å‹•
+		FVector _location = _controlledPlayer->GetActorLocation(); // ç§»å‹•ä½ç½®
 		_location.X += (C_Common::TILE_SIZE * 2);
 		_controlledPlayer->RunTo(_location);
 	}
 }
 
-// ƒNƒƒXƒnƒ“ƒhƒ‹
+// ã‚¯ãƒ­ã‚¹ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleCross()
 {
 	if (isBallHolder) {
-		isBallHolder = false;
-		// ©ƒ`[ƒ€æ“¾
+		// è‡ªãƒãƒ¼ãƒ å–å¾—
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (_controlledPlayer == nullptr) return;
 		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 		if (_state == nullptr) return;
 
-		TArray<AC_Player*> _myTeamPlayers = {}; // ƒ}ƒCƒ`[ƒ€
+		TArray<AC_Player*> _myTeamPlayers = {}; // ãƒã‚¤ãƒãƒ¼ãƒ 
 		if (_controlledPlayer->ActorHasTag(FName("HOME"))) {
 			_myTeamPlayers = _state->homePlayers;
 		}
 		else {
 			_myTeamPlayers = _state->awayPlayers;
 		}
-		// ƒ^[ƒQƒbƒgæ“¾
-		AC_Player* _targetPlayer = nullptr; // ƒ^[ƒQƒbƒg
+		// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆå–å¾—
+		AC_Player* _targetPlayer = nullptr; // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆ
 		for (AC_Player* _player : _myTeamPlayers) {
-			// ‡@ƒ^[ƒQƒbƒgƒ}ƒ“
+			// â‘ ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒãƒ³
 			if (_player->playerType == C_Common::TARGET_MAN_TYPE_NO) {
 				_targetPlayer = _player;
 
 				break;
 			}
-			// ‡AFW
+			// â‘¡FW
 			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_player->GetController());
 			if (_playerAI->isBallHolder) continue;
 			if (_player->position < C_Common::LWG_POSITION) continue;
@@ -154,19 +147,18 @@ void ACPlayerAI::HandleCross()
 		}
 		if (_targetPlayer == nullptr) return;
 
-		// Às
-		_controlledPlayer->LongPass(_targetPlayer); // ƒƒ“ƒOƒpƒX
-		_targetPlayer->Trap(_controlledPlayer); // ƒgƒ‰ƒbƒv
+		// å®Ÿè¡Œ
+		_controlledPlayer->LongPass(_targetPlayer); // ãƒ­ãƒ³ã‚°ãƒ‘ã‚¹
+		_targetPlayer->Trap(_controlledPlayer); // ãƒˆãƒ©ãƒƒãƒ—
 
 		return;
 	}
 }
 
-// ƒVƒ…[ƒgƒnƒ“ƒhƒ‹
+// ã‚·ãƒ¥ãƒ¼ãƒˆãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleShoot()
 {
 	if (isBallHolder) {
-		isBallHolder = false;
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		_controlledPlayer->Shoot();
 
@@ -174,20 +166,20 @@ void ACPlayerAI::HandleShoot()
 	}
 }
 
-// — ”²‚¯ƒnƒ“ƒhƒ‹
+// è£æŠœã‘ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleGetBehind()
 {
-	// -- ˆÚ“®ˆÊ’uæ“¾ --
-	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>(); // ƒXƒe[ƒg
+	// -- ç§»å‹•ä½ç½®å–å¾— --
+	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>(); // ã‚¹ãƒ†ãƒ¼ãƒˆ
 	if (_state == nullptr) return;
 	
-	// ‘Šè‚ÌƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“æ“¾
+	// ç›¸æ‰‹ã®ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³å–å¾—
 	int _deffenceBehindLine = _state->ballHolder->ActorHasTag(FName("HOME")) ? (_state->awayDeffenceLine + 1) : (_state->homeDeffenceLine - 1);
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ÌƒŒ[ƒ“
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã®ãƒ¬ãƒ¼ãƒ³
 	int _holderLane = (_state->ballHolder->tileNo - 1) % C_Common::TILE_NUM_Y;
-	// ˆÚ“®ƒ^ƒCƒ‹No
+	// ç§»å‹•ã‚¿ã‚¤ãƒ«No
 	int _moveTileNo = (_deffenceBehindLine * C_Common::TILE_NUM_Y) + _holderLane + 1;
-	// ˆÚ“®ˆÊ’uæ“¾
+	// ç§»å‹•ä½ç½®å–å¾—
 	FVector _moveLocation = FVector::ZeroVector;
 	for (AC_Tile* _t : _state->tiles) {
 		if (_t->tileNo != _moveTileNo) continue;
@@ -205,14 +197,13 @@ void ACPlayerAI::HandleGetBehind()
 	}
 
 	if (isBallHolder) {
-		isBallHolder = false;
-		LongKick(_moveLocation);
+		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+		_controlledPlayer->LongKick(_moveLocation);
 		
 		return;
 	}
 
 	if (isGetBehindRunner) {
-		isGetBehindRunner = false;
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (_controlledPlayer)
 			_controlledPlayer->RunTo(_moveLocation);
@@ -221,32 +212,29 @@ void ACPlayerAI::HandleGetBehind()
 	}
 }
 
-// ƒhƒŠƒuƒ‹“Ë”jƒnƒ“ƒhƒ‹
+// ãƒ‰ãƒªãƒ–ãƒ«çªç ´ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleDribbleBreakThrough()
 {
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer == nullptr) return;
 
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
 	if (isBallHolder)
 	{
-		isBallHolder = false;
 		_controlledPlayer->RegateDrrible();
 		return;
 	}
 
-	// ƒfƒBƒtƒFƒ“ƒ_[
+	// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼
 	if (isDefender) 
 	{
-		isDefender = false;
 		_controlledPlayer->Tackle();
 		return;
 	}
 
-	// c‚¸‚êƒvƒŒƒCƒ„[
+	// ç¸¦ãšã‚Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	if (isFrontMovingPlayer) 
 	{
-		isFrontMovingPlayer = false;
 		FVector _l = _controlledPlayer->GetActorLocation();
 		if (_controlledPlayer->ActorHasTag("HOME")) {
 			_l.X += C_Common::TILE_SIZE;
@@ -260,7 +248,7 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 	}
 }
 
-// ƒS[ƒ‹ƒnƒ“ƒhƒ‹
+// ã‚´ãƒ¼ãƒ«ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleGoal()
 {
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
@@ -274,32 +262,32 @@ void ACPlayerAI::HandleGoal()
 	}
 }
 
-// ‡ŠJnƒnƒ“ƒhƒ‹
+// è©¦åˆé–‹å§‹ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleMatchStart()
 {
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer == nullptr) return;
 	
-	// ƒAƒjƒ[ƒVƒ‡ƒ“’â~ (*Ä‡‘Î‰)
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åœæ­¢ (*å†è©¦åˆå¯¾å¿œ)
 	_controlledPlayer->StopAnim();
 
-	// ‰Šú”z’u (*Ä‡‘Î‰)
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
+	// åˆæœŸé…ç½® (*å†è©¦åˆå¯¾å¿œ)
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	if (_instance == nullptr)  return;
 	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) 
 	{
-		// <‡ŠJn>
+		// <è©¦åˆé–‹å§‹>
 		initialLocation = _controlledPlayer->GetActorLocation();
 	}else 
 	{
-		// <Ä‡>
-		_controlledPlayer->SetActorLocation(initialLocation); // ˆÊ’u
-		_controlledPlayer->LookForward(); // Œü‚«
+		// <å†è©¦åˆ>
+		_controlledPlayer->SetActorLocation(initialLocation); // ä½ç½®
+		_controlledPlayer->LookForward(); // å‘ã
 	}
 
-	// GKˆÈŠO
+	// GKä»¥å¤–
 	if (_controlledPlayer->position != C_Common::GK_POSITION) {
-		// ƒ~ƒhƒ‹ƒ‰ƒCƒ“‚ÖˆÚ“® (‘–‚é)
+		// ãƒŸãƒ‰ãƒ«ãƒ©ã‚¤ãƒ³ã¸ç§»å‹• (èµ°ã‚‹)
 		if (_controlledPlayer->ActorHasTag("HOME")) {
 			// HOME
 			FVector _targetLocation = _controlledPlayer->GetActorLocation();
@@ -316,46 +304,32 @@ void ACPlayerAI::HandleMatchStart()
 
 }
 
-// ‡I—¹ƒnƒ“ƒhƒ‹
+// è©¦åˆçµ‚äº†ãƒãƒ³ãƒ‰ãƒ«
 void ACPlayerAI::HandleMatchEnd()
 {
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer == nullptr) return;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“’â~
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åœæ­¢
 	_controlledPlayer->StopAnim();
 
-	// ‰Šú”z’u
-	_controlledPlayer->SetActorLocation(initialLocation); // ˆÊ’u
-	_controlledPlayer->LookForward(); // Œü‚«
+	// åˆæœŸé…ç½®
+	_controlledPlayer->SetActorLocation(initialLocation); // ä½ç½®
+	_controlledPlayer->LookForward(); // å‘ã
 }
 
-// ƒVƒ‡[ƒgƒpƒX
+// ã‚·ãƒ§ãƒ¼ãƒˆãƒ‘ã‚¹
 void ACPlayerAI::ShortPass(AC_Player* toPlayer)
 {
 	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (controlledPlayer == nullptr) return;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“
-	controlledPlayer->ShotPass(toPlayer); // ƒVƒ‡[ƒgƒpƒX
-	toPlayer->Trap(controlledPlayer); // ƒgƒ‰ƒbƒv
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
+	controlledPlayer->ShotPass(toPlayer); // ã‚·ãƒ§ãƒ¼ãƒˆãƒ‘ã‚¹
+	toPlayer->Trap(controlledPlayer); // ãƒˆãƒ©ãƒƒãƒ—
 }
 
-// ƒƒ“ƒOƒLƒbƒN
-void ACPlayerAI::LongKick(FVector toLocation)
-{
-	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
-
-	if (controlledPlayer) {
-		// ˆ—
-		controlledPlayer->LongKick(toLocation);
-
-		// ƒ{[ƒ‹ƒzƒ‹ƒ_[OFF
-		//isBallHolder = false;
-	}
-}
-
-// ƒtƒŠ[ƒ}ƒ“‚ÖƒpƒX
+// ãƒ•ãƒªãƒ¼ãƒãƒ³ã¸ãƒ‘ã‚¹
 bool ACPlayerAI::ShortPassToFreeMan()
 {
 	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
@@ -363,8 +337,8 @@ bool ACPlayerAI::ShortPassToFreeMan()
 	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 	if (_state == nullptr) return false;
 
-	// -- ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾ --
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// -- ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾— --
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (controlledPlayer->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = _state->homePlayers;
 	}
@@ -372,23 +346,23 @@ bool ACPlayerAI::ShortPassToFreeMan()
 		_myTeamPlayers = _state->awayPlayers;
 	}
 
-	// -- ƒ^[ƒQƒbƒgæ“¾ --
-	AC_Player* _targetPlayer = nullptr; // ƒpƒXæ‚ÌƒvƒŒƒCƒ„[
+	// -- ã‚¿ãƒ¼ã‚²ãƒƒãƒˆå–å¾— --
+	AC_Player* _targetPlayer = nullptr; // ãƒ‘ã‚¹å…ˆã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	for (AC_Player* _p : _myTeamPlayers) {
 
 		if (controlledPlayer->position == C_Common::GK_POSITION) {
 			// < GK >
-			// ‡@RB
+			// â‘ RB
 			if (_p->position != C_Common::RSB_POSITION) continue;
 
 			_targetPlayer = _p;
 			break;
 		}
 		else {
-			// < ƒtƒB[ƒ‹ƒhƒvƒŒƒCƒ„[ >
-			// ‡@‹–ì“à
+			// < ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ >
+			// â‘ è¦–é‡å†…
 			if (controlledPlayer->viewNos.Contains(_p->tileNo) == false) continue;
-			// ‡AƒtƒŠ[
+			// â‘¡ãƒ•ãƒªãƒ¼
 			if (_state->GetIsFree(_p) == false) continue;
 
 			_targetPlayer = _p;
@@ -397,13 +371,13 @@ bool ACPlayerAI::ShortPassToFreeMan()
 	}
 	if (_targetPlayer == nullptr) return false;
 
-	// -- ƒVƒ‡[ƒgƒpƒX --
+	// -- ã‚·ãƒ§ãƒ¼ãƒˆãƒ‘ã‚¹ --
 	ShortPass(_targetPlayer);
 	
 	return true;
 }
 
-// ƒLƒƒƒŠ[
+// ã‚­ãƒ£ãƒªãƒ¼
 bool ACPlayerAI::Carry()
 {
 	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
@@ -411,8 +385,8 @@ bool ACPlayerAI::Carry()
 	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 	if (_state == nullptr) return false;
 
-	// -- ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾ --
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// -- ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾— --
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (controlledPlayer->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = _state->homePlayers;
 	}
@@ -420,13 +394,13 @@ bool ACPlayerAI::Carry()
 		_myTeamPlayers = _state->awayPlayers;
 	}
 
-	// *ğŒ*
-	// ‡@GK‚Å‚È‚¢
+	// *æ¡ä»¶*
+	// â‘ GKã§ãªã„
 	if (controlledPlayer->position == C_Common::GK_POSITION) return false;
 
-	// -- c‚¸‚êˆ— --
-	// ‡@‘O‚ÌƒvƒŒƒCƒ„[æ“¾
-	AC_Player* _frontPlayer = nullptr; // ‘O‚ÌƒvƒŒƒCƒ„[
+	// -- ç¸¦ãšã‚Œå‡¦ç† --
+	// â‘ å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å–å¾—
+	AC_Player* _frontPlayer = nullptr; // å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	int _frontTile = controlledPlayer->tileNo + C_Common::TILE_NUM_Y;
 	for (AC_Player* _p : _myTeamPlayers) {
 		if (_p->tileNo == _frontTile) {
@@ -435,9 +409,9 @@ bool ACPlayerAI::Carry()
 			break;
 		}
 	}
-	// ‡AˆÚ“®
+	// â‘¡ç§»å‹•
 	if (_frontPlayer) {
-		// ˆÚ“®ˆÊ’uæ“¾
+		// ç§»å‹•ä½ç½®å–å¾—
 		FVector _l = _frontPlayer->GetActorLocation();
 		if (controlledPlayer->ActorHasTag("HOME")) {
 			_l.X += C_Common::TILE_SIZE;
@@ -445,12 +419,12 @@ bool ACPlayerAI::Carry()
 		else {
 			_l.X -= C_Common::TILE_SIZE;
 		}
-		// ˆÚ“®
+		// ç§»å‹•
 		_frontPlayer->RunTo(_l);
 	}
 	// --
 
-	controlledPlayer->Drrible(); // ƒhƒŠƒuƒ‹
+	controlledPlayer->Drrible(); // ãƒ‰ãƒªãƒ–ãƒ«
 	
 	return true;
 }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GameStateManager.h"
@@ -10,67 +10,65 @@
 void UGameStateManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	// ‰Šú‰»ˆ—‚ğ‘‚­
-	//UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
 }
 
 void UGameStateManager::Deinitialize()
 {
-	// I—¹ˆ—‚ğ‘‚­
+	// çµ‚äº†å‡¦ç†ã‚’æ›¸ã
 	Super::Deinitialize();
 
 }
 
 void UGameStateManager::Tick(float DeltaTime)
 {
-	// ‰Šú‰»ˆ—
+	// åˆæœŸåŒ–å‡¦ç†
 	if (isInitialized == false) {
 		isInitialized = Initialize();
 		
 		return;
 	}
 	
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	if (_instance == nullptr)  return;
 
-	// --- ‡€”õƒtƒF[ƒY ---
+	// --- è©¦åˆæº–å‚™ãƒ•ã‚§ãƒ¼ã‚º ---
 	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) 
 	{
-		// ‡ŠJnó‘ÔXV
+		// è©¦åˆé–‹å§‹çŠ¶æ…‹æ›´æ–°
 		UpdateMatchStart();
 		
-		// ƒtƒF[ƒYƒJƒEƒ“ƒgƒ_ƒEƒ“
+		// ãƒ•ã‚§ãƒ¼ã‚ºã‚«ã‚¦ãƒ³ãƒˆãƒ€ã‚¦ãƒ³
 		if (_instance->phase_count < 1.0f) {
-			_instance->game_phase = C_Common::MATCH_PHASE; // ‡ƒtƒF[ƒY‚Ö
-			_instance->phase_count = C_Common::MATCH_TIME; // ƒJƒEƒ“ƒ^[ƒZƒbƒg
-			OnCompleteMoving(); // ˆÚ“®I—¹ˆ— (*—áŠO“I‚ÉA‡ŠJn‚ÉÀs)
+			_instance->game_phase = C_Common::MATCH_PHASE; // è©¦åˆãƒ•ã‚§ãƒ¼ã‚ºã¸
+			_instance->phase_count = C_Common::MATCH_TIME; // ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã‚»ãƒƒãƒˆ
+			OnCompleteMoving(); // ç§»å‹•çµ‚äº†æ™‚å‡¦ç† (*ä¾‹å¤–çš„ã«ã€è©¦åˆé–‹å§‹æ™‚ã«å®Ÿè¡Œ)
 		}
 
 		return;
 	}
 	
-	// --- ‡ƒtƒF[ƒYˆ— ---
+	// --- è©¦åˆãƒ•ã‚§ãƒ¼ã‚ºå‡¦ç† ---
 	if (_instance->game_phase == C_Common::MATCH_PHASE)
 	{
-		// - ˆÚ“®I—¹XV -
+		// - ç§»å‹•çµ‚äº†æ›´æ–° -
 		UpdateCompleteMoving();
 
-		// ƒCƒ“ƒ^[ƒoƒ‹İ’è (ƒ{[ƒ‹ƒL[ƒvŠÔ)
+		// ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«è¨­å®š (ãƒœãƒ¼ãƒ«ã‚­ãƒ¼ãƒ—æ™‚é–“)
 		if (ballHolder == nullptr) return;
 		if (ballHolder->ballKeepingCount < C_Common::PLAY_INTERVAL) return;
-
-		// - ó‘ÔXV -
-		// ‡I—¹
+		
+		// - çŠ¶æ…‹æ›´æ–° -
+		// è©¦åˆçµ‚äº†
 		UpdateMatchEnd();
-		// ƒVƒ…[ƒg
+		// ã‚·ãƒ¥ãƒ¼ãƒˆ
 		UpdateShoot();
-		// ƒNƒƒX
+		// ã‚¯ãƒ­ã‚¹
 		UpdateCross();
-		// ƒ‰ƒCƒ“ƒuƒŒƒCƒN
+		// ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯
 		UpdateLineBreak();
-		// ƒfƒ…ƒGƒ‹
+		// ãƒ‡ãƒ¥ã‚¨ãƒ«
 		UpdateDuel();
-		// ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)
+		// ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)
 		UpdateFreeHolder();
 	}
 }
@@ -81,65 +79,65 @@ TStatId UGameStateManager::GetStatId() const
 
 }
 
-// ‰Šú‰»ˆ— (ƒAƒNƒ^[æ“¾‚È‚Ç)
+// åˆæœŸåŒ–å‡¦ç† (ã‚¢ã‚¯ã‚¿ãƒ¼å–å¾—ãªã©)
 bool UGameStateManager::Initialize()
 {
-	// *** ‘S‚Ä‚ÌƒvƒŒƒCƒ„[‚ğæ“¾ ***
+	// *** å…¨ã¦ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾— ***
 	if (allPlayers.Num() < 22)
 	{
-		// - ‹ó‚É‚·‚é -
+		// - ç©ºã«ã™ã‚‹ -
 		homePlayers.Empty();
 		awayPlayers.Empty();
 		allPlayers.Empty();
 
-		TArray<AActor*> _actorPlayers = {}; // ƒvƒŒƒCƒ„[ƒAƒNƒ^[”z—ñ
-		UGameplayStatics::GetAllActorsOfClass(this, AC_Player::StaticClass(), _actorPlayers); // ƒNƒ‰ƒX‚Å’T‚·
+		TArray<AActor*> _actorPlayers = {}; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚¿ãƒ¼é…åˆ—
+		UGameplayStatics::GetAllActorsOfClass(this, AC_Player::StaticClass(), _actorPlayers); // ã‚¯ãƒ©ã‚¹ã§æ¢ã™
 
 		for (AActor* _a : _actorPlayers) {
-			AC_Player* _player = Cast<AC_Player>(_a); // ƒLƒƒƒXƒg
+			AC_Player* _player = Cast<AC_Player>(_a); // ã‚­ãƒ£ã‚¹ãƒˆ
 
-			if (_player->Tags.Num() < 1) continue; // (*§ŒÀ) TAG‚È‚µ
+			if (_player->Tags.Num() < 1) continue; // (*åˆ¶é™) TAGãªã—
 
-			// HOMEƒvƒŒƒCƒ„[
+			// HOMEãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 			if (_player->ActorHasTag(FName("HOME"))) {
 				homePlayers.Add(_player);
 			}
 
-			// AWAYƒvƒŒƒCƒ„[
+			// AWAYãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 			if (_player->ActorHasTag(FName("AWAY"))) {
 				awayPlayers.Add(_player);
 			}
-			allPlayers.Add(_player); // ’Ç‰Á
+			allPlayers.Add(_player); // è¿½åŠ 
 		}
 	}
 	// ***
 
-	// *** ƒ^ƒCƒ‹‚ğæ“¾ ***
+	// *** ã‚¿ã‚¤ãƒ«ã‚’å–å¾— ***
 	if (tiles.Num() < 30)
 	{
-		// - ‹ó‚É‚·‚é -
+		// - ç©ºã«ã™ã‚‹ -
 		tiles.Empty();
 
-		TArray<AActor*> _actorTiles = {}; // ƒ^ƒCƒ‹ƒAƒNƒ^[”z—ñ
-		UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // ƒNƒ‰ƒX‚Å’T‚·
+		TArray<AActor*> _actorTiles = {}; // ã‚¿ã‚¤ãƒ«ã‚¢ã‚¯ã‚¿ãƒ¼é…åˆ—
+		UGameplayStatics::GetAllActorsOfClass(this, AC_Tile::StaticClass(), _actorTiles); // ã‚¯ãƒ©ã‚¹ã§æ¢ã™
 
 		for (AActor* _a : _actorTiles) {
-			AC_Tile* _tile = Cast<AC_Tile>(_a); // ƒLƒƒƒXƒg
+			AC_Tile* _tile = Cast<AC_Tile>(_a); // ã‚­ãƒ£ã‚¹ãƒˆ
 
 			tiles.Add(_tile);
 		}
 	}
 	// ***
 
-	// *** ƒ{[ƒ‹æ“¾ ***
+	// *** ãƒœãƒ¼ãƒ«å–å¾— ***
 	if (ball == nullptr)
 	{
 		AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
-		ball = Cast<AC_Soccer_Ball>(_b); // ƒLƒƒƒXƒg
+		ball = Cast<AC_Soccer_Ball>(_b); // ã‚­ãƒ£ã‚¹ãƒˆ
 	}
 	// ***
 
-	// - ‰Šú‰»Š®—¹”»’è -
+	// - åˆæœŸåŒ–å®Œäº†åˆ¤å®š -
 	if (allPlayers.Num() < 22) return false;
 	if (tiles.Num() < 30) return false;
 	if (ball == nullptr) return false;
@@ -147,65 +145,66 @@ bool UGameStateManager::Initialize()
 	return true;
 }
 
-// - ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ó‘ÔŒŸ’m -
+// - ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)çŠ¶æ…‹æ¤œçŸ¥ -
 bool UGameStateManager::DedectFreeHolder()
 {
-	// *ğŒ*
-	// ƒ{[ƒ‹’â~’†
+	// *æ¡ä»¶*
+	// ãƒœãƒ¼ãƒ«åœæ­¢ä¸­
 	if (ball->isMoving) return false;
-	// ‚·‚×‚Ä‚Ìó‘Ôƒtƒ‰ƒOŠm”F
+	// ã™ã¹ã¦ã®çŠ¶æ…‹ãƒ•ãƒ©ã‚°ç¢ºèª
 	if (CheckStateFlags()) return false;
 
-	// *ƒvƒŒƒCƒ„[ƒtƒ‰ƒOXV*
-	// - ƒtƒŠ[ƒ}ƒ“ -
-	// ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°æ›´æ–°*
+	// - ãƒ•ãƒªãƒ¼ãƒãƒ³ -
+	// ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾—
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = homePlayers;
 	}
 	else {
 		_myTeamPlayers = awayPlayers;
 	}
-	// ƒtƒ‰ƒOXV
+	// ãƒ•ãƒ©ã‚°æ›´æ–°
 	for (AC_Player* _p : _myTeamPlayers) {
-		if (_p->isMoving) continue; // ˆÚ“®’†‚Í‚È‚µ
-		if (_p == ballHolder) continue; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚È‚µ
+		if (_p->isMoving) continue; // ç§»å‹•ä¸­ã¯ãªã—
+		if (_p == ballHolder) continue; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãªã—
 
 		if (GetIsFree(_p)) {
 			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
-			_playerAI->isFreeMan = true; // ƒtƒŠ[ƒ}ƒ“ƒtƒ‰ƒOƒZƒbƒg
+			_playerAI->isFreeMan = true; // *ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ
+			freeMans.Add(_p); // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚»ãƒƒãƒˆ
 		}
 	}
 	return true;
 }
 
-// - ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ó‘ÔXV -
+// - ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateFreeHolder()
 {
 	if (isFreeHolder) return; // do once
 
 	isFreeHolder = DedectFreeHolder();
-	// ƒtƒŠ[’Ê’m
+	// ãƒ•ãƒªãƒ¼é€šçŸ¥
 	if (isFreeHolder) OnFreeHolder.Broadcast();
 }
 
-// - ƒfƒ…ƒGƒ‹ó‘ÔŒŸ’m -
+// - ãƒ‡ãƒ¥ã‚¨ãƒ«çŠ¶æ…‹æ¤œçŸ¥ -
 bool UGameStateManager::DedectDuel()
 {
-	// *ğŒ*
-	// ƒ{[ƒ‹’â~’†
+	// *æ¡ä»¶*
+	// ãƒœãƒ¼ãƒ«åœæ­¢ä¸­
 	if (ball->isMoving) return false;
-	// ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ª‘¶İ
+	// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒå­˜åœ¨
 	if (ballHolder == nullptr) return false;
-	// GKˆÈŠO
+	// GKä»¥å¤–
 	if (ballHolder->position == C_Common::GK_POSITION) return false;
-	// Ú“G’†
+	// æ¥æ•µä¸­
 	if (GetIsFree(ballHolder)) return false;
-	// ‚·‚×‚Ä‚Ìó‘Ôƒtƒ‰ƒOŠm”F
+	// ã™ã¹ã¦ã®çŠ¶æ…‹ãƒ•ãƒ©ã‚°ç¢ºèª
 	if (CheckStateFlags()) return false;
 
-	// *ƒvƒŒƒCƒ„[ƒtƒ‰ƒOXV*
-	// - ƒfƒBƒtƒFƒ“ƒ_[ -
+	// *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°æ›´æ–°*
+	// - ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼ -
 	TArray<AC_Player*> _deffencePlayers = {};
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_deffencePlayers = awayPlayers;
@@ -215,66 +214,68 @@ bool UGameStateManager::DedectDuel()
 	}
 	for (AC_Player* _player : _deffencePlayers) {
 		if (_player->tileNo == ballHolder->tileNo) {
-			// ƒvƒŒƒCƒ„[‚ÌAIƒRƒ“ƒgƒ[ƒ‰[æ“¾
+			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®AIã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼å–å¾—
 			ACPlayerAI* _defenceAI = Cast<ACPlayerAI>(_player->GetController());
-			_defenceAI->isDefender = true; // ƒfƒBƒtƒFƒ“ƒ_[ƒtƒ‰ƒOƒZƒbƒg
+			_defenceAI->isDefender = true; // *ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ
+			duelDeffender = _player; // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚»ãƒƒãƒˆ
 
 			break;
 		}
 	}
 
-	// - ƒtƒŠ[ƒ}ƒ“ -
-	// ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// - ãƒ•ãƒªãƒ¼ãƒãƒ³ -
+	// ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾—
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = homePlayers;
 	}
 	else {
 		_myTeamPlayers = awayPlayers;
 	}
-	// ƒtƒ‰ƒOXV
+	// ãƒ•ãƒ©ã‚°æ›´æ–°
 	for (AC_Player* _p : _myTeamPlayers) {
-		if (_p->isMoving) continue; // ˆÚ“®’†‚Í‚È‚µ
-		if (_p == ballHolder) continue; // ƒ{[ƒ‹ƒzƒ‹ƒ_[‚È‚µ
+		if (_p->isMoving) continue; // ç§»å‹•ä¸­ã¯ãªã—
+		if (_p == ballHolder) continue; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãªã—
 
 		if (GetIsFree(_p)) {
 			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
-			_playerAI->isFreeMan = true; // ƒtƒŠ[ƒ}ƒ“ƒtƒ‰ƒOƒZƒbƒg
+			_playerAI->isFreeMan = true; // *ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ
+			freeMans.Add(_p); // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚»ãƒƒãƒˆ
 		}
 	}
 	
 	return true;
 }
 
-// - ƒfƒ…ƒGƒ‹ó‘ÔXV -
+// - ãƒ‡ãƒ¥ã‚¨ãƒ«çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateDuel()
 {
-	if (isDuel) return; // do onceˆ—
+	if (isDuel) return; // do onceå‡¦ç†
 
 	isDuel = DedectDuel();
-	// ƒfƒ…ƒGƒ‹ŠJn’Ê’m
+	// ãƒ‡ãƒ¥ã‚¨ãƒ«é–‹å§‹é€šçŸ¥
 	if (isDuel) {
 		OnDuelStart.Broadcast();
 
-		// -- ƒfƒDƒGƒ‹ŠJnŒãAwƒfƒDƒGƒ‹ƒvƒŒƒC‘I‘ğx‚ğ’x‰„Às --
+		// -- ãƒ‡ã‚¥ã‚¨ãƒ«é–‹å§‹å¾Œã€ã€ãƒ‡ã‚¥ã‚¨ãƒ«æ™‚ãƒ—ãƒ¬ã‚¤é¸æŠã€ã‚’é…å»¶å®Ÿè¡Œ --
 		UWorld* _world = GetWorld();
 		if (_world == nullptr) return;
 		// Create a timer delegate to call the function
 		FTimerDelegate _timerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::DuelPlayChoice /*, optional params */);
 		// Provide a timer handle and a delay value so identifiers are defined.
 		FTimerHandle _timerHandle_SomeTask;
-		const float _delaySeconds = 2.0f; // ƒfƒBƒŒƒCŠÔ
+		const float _delaySeconds = 2.0f; // ãƒ‡ã‚£ãƒ¬ã‚¤æ™‚é–“
 		_world->GetTimerManager().SetTimer(_timerHandle_SomeTask, _timerDel, _delaySeconds, false /* bLoop */);
 	}
 }
 
-// - ˆÚ“®I—¹ŒŸ’m -
+// - ç§»å‹•çµ‚äº†æ¤œçŸ¥ -
 bool UGameStateManager::DedectCompleteMoving()
 {
-	// *ğŒ*
-	// ‡@ƒ{[ƒ‹ˆÚ“®’†
+	// *æ¡ä»¶*
+	// â‘ ãƒœãƒ¼ãƒ«ç§»å‹•ä¸­
 	if (ball->isMoving) return true;
-	// ‡A‘SƒvƒŒƒCƒ„[ˆÚ“®’†
+	// â‘¡å…¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç§»å‹•ä¸­
 	for (AC_Player* _p : allPlayers) {
 		if (_p->isMoving) {
 			
@@ -285,43 +286,43 @@ bool UGameStateManager::DedectCompleteMoving()
 	return false;
 }
 
-// - ˆÚ“®I—¹XV -
+// - ç§»å‹•çµ‚äº†æ›´æ–° -
 void UGameStateManager::UpdateCompleteMoving()
 {
 	bool _isCurrentPlaying = DedectCompleteMoving();
 	if (_isCurrentPlaying) {
-		// ˆÚ“®’†
+		// ç§»å‹•ä¸­
 		isMoving = true;
 	}
 	else
 	{
 		if (isMoving)
 		{
-			// ƒ^[ƒ“I—¹ˆ—
-			turnCount++; // ƒ^[ƒ“ƒJƒEƒ“ƒgƒAƒbƒv
+			// ã‚¿ãƒ¼ãƒ³çµ‚äº†å‡¦ç†
+			turnCount++; // ã‚¿ãƒ¼ãƒ³ã‚«ã‚¦ãƒ³ãƒˆã‚¢ãƒƒãƒ—
 			UKismetSystemLibrary::PrintString(this, "turn end" + FString::FromInt(turnCount), true, true, FColor::Red, 10.0f, TEXT("None"));
-			OnCompleteMoving(); // ƒCƒxƒ“ƒg”­s
+			OnCompleteMoving(); // ã‚¤ãƒ™ãƒ³ãƒˆç™ºè¡Œ
 			
 			isMoving = false;
 		}
 	}
 }
 
-// - ƒ‰ƒCƒ“ƒuƒŒƒCƒNŒŸ’m -
+// - ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯æ¤œçŸ¥ -
 bool UGameStateManager::DedectLineBreak()
 {
-	// *ğŒ*
-	// ‡@ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ªƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“‚ğ’´‚¦‚Ä‚¢‚é
-	int _ballHolderLine = (ballHolder->tileNo - 1) / C_Common::TILE_NUM_Y; // ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒ‰ƒCƒ“
+	// *æ¡ä»¶*
+	// â‘ ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ã‚’è¶…ãˆã¦ã„ã‚‹
+	int _ballHolderLine = (ballHolder->tileNo - 1) / C_Common::TILE_NUM_Y; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãƒ©ã‚¤ãƒ³
 	bool _isOver = ballHolder->ActorHasTag("HOME") ? awayDeffenceLine < _ballHolderLine : homeDeffenceLine > _ballHolderLine;
 	if (_isOver == false) return false;
-	// ‡A‚·‚×‚Ä‚Ìó‘Ôƒtƒ‰ƒOŠm”F
+	// â‘¡ã™ã¹ã¦ã®çŠ¶æ…‹ãƒ•ãƒ©ã‚°ç¢ºèª
 	if (CheckStateFlags()) return false;
 	
 	return true;
 }
 
-// - ƒ‰ƒCƒ“ƒuƒŒƒCƒNó‘ÔXV -
+// - ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateLineBreak()
 {
 	if (isLineBreak) return; // do once
@@ -332,10 +333,10 @@ void UGameStateManager::UpdateLineBreak()
 	}
 }
 
-// - ƒNƒƒXŒŸ’m -
+// - ã‚¯ãƒ­ã‚¹æ¤œçŸ¥ -
 bool UGameStateManager::DedectCross()
 {
-	TArray<int> _crossRangeNo = {}; // ƒNƒ‰ƒXƒŒƒ“ƒW(ƒ^ƒCƒ‹No)
+	TArray<int> _crossRangeNo = {}; // ã‚¯ãƒ©ã‚¹ãƒ¬ãƒ³ã‚¸(ã‚¿ã‚¤ãƒ«No)
 	if (ballHolder->ActorHasTag("HOME")) {
 		_crossRangeNo.Append({ 26, 30 });
 	}
@@ -347,7 +348,7 @@ bool UGameStateManager::DedectCross()
 	return false;
 }
 
-// - ƒNƒƒXó‘ÔXV -
+// - ã‚¯ãƒ­ã‚¹çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateCross()
 {
 	if (isCross) return; // do once
@@ -358,12 +359,12 @@ void UGameStateManager::UpdateCross()
 	}
 }
 
-// - ƒVƒ…[ƒgó‘ÔŒŸ’m -
+// - ã‚·ãƒ¥ãƒ¼ãƒˆçŠ¶æ…‹æ¤œçŸ¥ -
 bool UGameStateManager::DedectShoot()
 {
 	
-	// ƒVƒ…[ƒgƒŒƒ“ƒWæ“¾
-	TArray<int> _shortRangeNo = {}; // ƒVƒ…[ƒgƒŒƒ“ƒW(ƒ^ƒCƒ‹No)
+	// ã‚·ãƒ¥ãƒ¼ãƒˆãƒ¬ãƒ³ã‚¸å–å¾—
+	TArray<int> _shortRangeNo = {}; // ã‚·ãƒ¥ãƒ¼ãƒˆãƒ¬ãƒ³ã‚¸(ã‚¿ã‚¤ãƒ«No)
 	if (ballHolder->ActorHasTag("HOME")) {
 		_shortRangeNo.Append({ 27, 28, 29 });
 	}
@@ -371,13 +372,13 @@ bool UGameStateManager::DedectShoot()
 		_shortRangeNo.Append({ 2, 3, 4 });
 	}
 
-	// ƒVƒ…[ƒg
+	// ã‚·ãƒ¥ãƒ¼ãƒˆ
 	if (_shortRangeNo.Contains(ballHolder->tileNo)) return true;
 	
 	return false;
 }
 
-// - ƒVƒ…[ƒgó‘ÔXV -
+// - ã‚·ãƒ¥ãƒ¼ãƒˆçŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateShoot()
 {
 	if (isShoot) return; // do once
@@ -388,21 +389,21 @@ void UGameStateManager::UpdateShoot()
 	}
 }
 
-// - — ”²‚¯ó‘ÔŒŸ’m -
+// - è£æŠœã‘çŠ¶æ…‹æ¤œçŸ¥ -
 bool UGameStateManager::DedectGetBehind()
 {
-	// *ğŒ*
-	// - ‡@‘O‚ÌƒvƒŒƒCƒ„[‚ªÅIƒ‰ƒCƒ“ã‚É‚¢‚é -
-	// ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// *æ¡ä»¶*
+	// - â‘ å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæœ€çµ‚ãƒ©ã‚¤ãƒ³ä¸Šã«ã„ã‚‹ -
+	// ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾—
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = homePlayers;
 	}
 	else {
 		_myTeamPlayers = awayPlayers;
 	}
-	// ‘O‚ÌƒvƒŒƒCƒ„[æ“¾
-	AC_Player* _frontPlayer = nullptr; // ‘O‚ÌƒvƒŒƒCƒ„[
+	// å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å–å¾—
+	AC_Player* _frontPlayer = nullptr; // å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	int _frontTile = ballHolder->tileNo + C_Common::TILE_NUM_Y;
 	for (AC_Player* _p : _myTeamPlayers) {
 		if (_p->tileNo == _frontTile) {
@@ -412,19 +413,19 @@ bool UGameStateManager::DedectGetBehind()
 		}
 	}
 	if (_frontPlayer == nullptr) return false;
-	// ÅIƒ‰ƒCƒ“ã‚É‚¢‚é
-	int _frontPlayerLine = (_frontPlayer->tileNo - 1) / C_Common::TILE_NUM_Y; // ‘O‚ÌƒvƒŒƒCƒ„[ƒ‰ƒCƒ“
+	// æœ€çµ‚ãƒ©ã‚¤ãƒ³ä¸Šã«ã„ã‚‹
+	int _frontPlayerLine = (_frontPlayer->tileNo - 1) / C_Common::TILE_NUM_Y; // å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ©ã‚¤ãƒ³
 	bool _isOn = ballHolder->ActorHasTag("HOME") ? awayDeffenceLine == _frontPlayerLine : homeDeffenceLine == _frontPlayerLine;
 	if (_isOn == false) return false;
 
-	// *ƒvƒŒƒCƒ„[ƒtƒ‰ƒOXV*
 	ACPlayerAI* _frontPlayerAI = Cast<ACPlayerAI>(_frontPlayer->GetController());
-	_frontPlayerAI->isGetBehindRunner = true;
+	_frontPlayerAI->isGetBehindRunner = true; // *ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ (è£æŠœã‘)
+	getBehindingRunner = _frontPlayer; // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚»ãƒƒãƒˆ
 	
 	return true;
 }
 
-// - — ”²‚¯ó‘ÔXV -
+// - è£æŠœã‘çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateGetBehind()
 {
 	if (isGetBehind) return; // do once
@@ -435,20 +436,20 @@ void UGameStateManager::UpdateGetBehind()
 	}
 }
 
-// - ƒhƒŠƒuƒ‹“Ë”jŒŸ’m -
+// - ãƒ‰ãƒªãƒ–ãƒ«çªç ´æ¤œçŸ¥ -
 bool UGameStateManager::DedectDribbleBreakThrough()
 {
-	// - c‚¸‚êƒvƒŒƒCƒ„[‚Éƒtƒ‰ƒOƒZƒbƒg -
-	// ƒ{[ƒ‹•Ûƒ`[ƒ€æ“¾
-	TArray<AC_Player*> _myTeamPlayers = {}; // ƒ{[ƒ‹•Ûƒ`[ƒ€
+	// - ç¸¦ãšã‚Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ -
+	// ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ å–å¾—
+	TArray<AC_Player*> _myTeamPlayers = {}; // ãƒœãƒ¼ãƒ«ä¿æŒãƒãƒ¼ãƒ 
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_myTeamPlayers = homePlayers;
 	}
 	else {
 		_myTeamPlayers = awayPlayers;
 	}
-	// ‘O(c‚¸‚ê)‚ÌƒvƒŒƒCƒ„[æ“¾
-	AC_Player* _frontPlayer = nullptr; // ‘O‚ÌƒvƒŒƒCƒ„[
+	// å‰(ç¸¦ãšã‚Œ)ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å–å¾—
+	AC_Player* _frontPlayer = nullptr; // å‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	int _frontTile = ballHolder->tileNo + C_Common::TILE_NUM_Y;
 	for (AC_Player* _p : _myTeamPlayers) {
 		if (_p->tileNo == _frontTile) {
@@ -459,13 +460,14 @@ bool UGameStateManager::DedectDribbleBreakThrough()
 	}
 	if (_frontPlayer) {
 		ACPlayerAI* _frontPlayerAI = Cast<ACPlayerAI>(_frontPlayer->GetController());
-		_frontPlayerAI->isFrontMovingPlayer = true; // *ƒtƒ‰ƒOƒZƒbƒg (c‚¸‚ê)
+		_frontPlayerAI->isFrontMovingPlayer = true; // *ãƒ•ãƒ©ã‚°ã‚»ãƒƒãƒˆ (ç¸¦ãšã‚Œ)
+		frontMovingPlayer = _frontPlayer; // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚»ãƒƒãƒˆ
 	}
 
 	return true;
 }
 
-// - ƒhƒŠƒuƒ‹“Ë”jó‘ÔXV -
+// - ãƒ‰ãƒªãƒ–ãƒ«çªç ´çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateDribbleBreakThrough()
 {
 	if (isDribbleBreakThrough) return; // do once
@@ -476,7 +478,7 @@ void UGameStateManager::UpdateDribbleBreakThrough()
 	}
 }
 
-// - ƒS[ƒ‹ó‘ÔŒŸ’m -
+// - ã‚´ãƒ¼ãƒ«çŠ¶æ…‹æ¤œçŸ¥ -
 bool UGameStateManager::DedectGoal()
 {
 	if (isShoot) return true;
@@ -484,7 +486,7 @@ bool UGameStateManager::DedectGoal()
 	return false;
 }
 
-// - ƒS[ƒ‹ó‘ÔXV -
+// - ã‚´ãƒ¼ãƒ«çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateGoal()
 {
 	if (isGoal) return; // do once
@@ -495,50 +497,60 @@ void UGameStateManager::UpdateGoal()
 	}
 }
 
-// - ‡ŠJnó‘ÔXV -
+// - è©¦åˆé–‹å§‹çŠ¶æ…‹æ›´æ–° -
 void UGameStateManager::UpdateMatchStart()
 {
 	if (isMatchStarted) return; // do once
 	isMatchStarted = true;
 
 	if (isMatchStarted) {
-		// ’Ê’m
+		// é€šçŸ¥
 		OnMatchStart.Broadcast();
 	}
 }
 
-// - ‡I—¹ŒŸ’m -
+// - è©¦åˆå†é–‹å‡¦ç† -
+void UGameStateManager::OnMatchRestart()
+{
+	// ãƒªã‚»ãƒƒãƒˆ
+	ResetStateFlags(); // çŠ¶æ…‹ãƒ•ãƒ©ã‚°
+	ResetPlayerFlags(); // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°
+	// è©¦åˆé–‹å§‹
+	UpdateMatchStart();
+}
+
+// - è©¦åˆçµ‚äº†æ¤œçŸ¥ -
 bool UGameStateManager::DedectMatchEnd()
 {
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	if (_instance == nullptr)  return false;
-	// *ğŒ*
-	// ‡@ƒtƒF[ƒYƒJƒEƒ“ƒg‚ª1.0fˆÈ‰º‚ÅI—¹
+	// *æ¡ä»¶*
+	// â‘ ãƒ•ã‚§ãƒ¼ã‚ºã‚«ã‚¦ãƒ³ãƒˆãŒ1.0fä»¥ä¸‹ã§çµ‚äº†
 	if (_instance->phase_count > 1.0f) return false;
 	
 	return true;
 }
 
-// - ‡I—¹XV -
+// - è©¦åˆçµ‚äº†æ›´æ–° -
 void UGameStateManager::UpdateMatchEnd()
 {
 	if (isMatchEnded) return; // do once
 	
 	isMatchEnded = DedectMatchEnd();
 	if (isMatchEnded) {
-		// ’Ê’m
+		// é€šçŸ¥
 		OnMatchEnd.Broadcast();
-		OnMatchEnded(); // ‡I—¹ˆ—
+		OnMatchEnded(); // è©¦åˆçµ‚äº†æ™‚å‡¦ç†
 	}
 }
 
-// ƒvƒŒƒCƒ„[ƒtƒŠ[”»’è
-// ( true: ƒtƒŠ[ )
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒªãƒ¼åˆ¤å®š
+// ( true: ãƒ•ãƒªãƒ¼ )
 bool UGameStateManager::GetIsFree(AC_Player* targetPlayer)
 {
 	bool _isFree = false;
 
-	// ƒ^ƒCƒ‹No = 0‚Å‚àƒtƒŠ[
+	// ã‚¿ã‚¤ãƒ«No = 0ã§ã‚‚ãƒ•ãƒªãƒ¼
 	if (targetPlayer->tileNo == 0 && subPlayers.Contains(targetPlayer) == false) {
 		_isFree = true;
 
@@ -555,51 +567,50 @@ bool UGameStateManager::GetIsFree(AC_Player* targetPlayer)
 	return _isFree;
 }
 
-// ƒ{[ƒ‹ƒzƒ‹ƒ_[İ’è
+// ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼è¨­å®š
 void UGameStateManager::SetBallHolder()
 {
-	// - ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[ -
+	// - å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ -
 	if (ballHolder) {
-		ACPlayerAI* _ballHolderAI = Cast<ACPlayerAI>(ballHolder->GetController()); // ƒ{[ƒ‹ƒzƒ‹ƒ_[AI
-		_ballHolderAI->isBallHolder = false; // *ƒvƒŒƒCƒ„[AIXV
+		ACPlayerAI* _ballHolderAI = Cast<ACPlayerAI>(ballHolder->GetController()); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼AI
+		_ballHolderAI->isBallHolder = false; // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼AIæ›´æ–°
 	}
 
-	// - V‚µ‚¢ƒ{[ƒ‹ƒzƒ‹ƒ_[æ“¾ -
-	// ƒ{[ƒ‹‚Ìƒ^ƒCƒ‹Noæ“¾
+	// - æ–°ã—ã„ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å–å¾— -
+	// ãƒœãƒ¼ãƒ«ã®ã‚¿ã‚¤ãƒ«Noå–å¾—
 	int _ballTileNo = C_Common::GetTileNoFromLocation(ball->GetActorLocation());
-	// ƒ{[ƒ‹ƒ^ƒCƒ‹No‚ÌƒvƒŒƒCƒ„[æ“¾
+	// ãƒœãƒ¼ãƒ«ã‚¿ã‚¤ãƒ«Noã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å–å¾—
 	TArray<AC_Player*> _onTilePlayers = {};
 	for (AC_Player* _p : allPlayers) {
 		if (_p->tileNo == _ballTileNo) {
 			_onTilePlayers.Add(_p);
 		}
 	}
-	// ‘O‰ñ‚Ìƒ{[ƒ‹ƒzƒ‹ƒ_[‚Æ”äŠr
+	// å‰å›ã®ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã¨æ¯”è¼ƒ
 	for (AC_Player* _p : _onTilePlayers) {
-		if (_p->ActorHasTag(FName("HOME"))) { // © HOMEƒ{[ƒ‹ƒzƒ‹ƒ_[—Dæ (*b’èˆ—)
-			// XVˆ—
-			ballHolder = _p; // *ƒ{[ƒ‹ƒzƒ‹ƒ_[XV
-			ballHolder->ballKeepingCount = 0; // *ƒCƒ“ƒ^[ƒoƒ‹ƒŠƒZƒbƒg
+		if (_p->ActorHasTag(FName("HOME"))) { // â† HOMEãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼å„ªå…ˆ (*æš«å®šå‡¦ç†)
+			// æ›´æ–°å‡¦ç†
+			ballHolder = _p; // *ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼æ›´æ–°
+			ballHolder->ballKeepingCount = 0; // *ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ãƒªã‚»ãƒƒãƒˆ
 			ACPlayerAI* _ballHolderAI = Cast<ACPlayerAI>(ballHolder->GetController());
-			_ballHolderAI->isBallHolder = true; // *ƒvƒŒƒCƒ„[AIXV
+			_ballHolderAI->isBallHolder = true; // *ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼AIæ›´æ–°
 			
 			break;
 		}
 	}
 }
 
-// ˆÚ“®Š®—¹ˆ—
+// ç§»å‹•å®Œäº†æ™‚å‡¦ç†
 void UGameStateManager::OnCompleteMoving()
 {
-	// - ƒS[ƒ‹ˆ— -
+	// - ã‚´ãƒ¼ãƒ«æ™‚å‡¦ç† -
 	if (isShoot) {
-		UpdateGoal(); // ƒS[ƒ‹ó‘ÔXV
-		ResetStateFlags(); // ó‘Ôƒtƒ‰ƒOƒŠƒZƒbƒg (*ƒS[ƒ‹‚Éƒ{[ƒ‹ƒzƒ‹ƒ_[‚ğƒZƒbƒg‚·‚é‚ÆƒvƒŒƒC‚ªÄŠJ‚³‚ê‚é)
+		UpdateGoal(); // ã‚´ãƒ¼ãƒ«çŠ¶æ…‹æ›´æ–°
 
-		// - ‡ÄŠJˆ— -
-		// ‡ÄŠJ‚ÍAƒtƒ‰ƒO‚ğƒŠƒZƒbƒg‚µ‚È‚¢
+		// - è©¦åˆå†é–‹å‡¦ç† -
+		// è©¦åˆå†é–‹æ™‚ã¯ã€ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆã—ãªã„
 		FTimerHandle TimerHandle;
-		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::UpdateMatchStart);
+		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::OnMatchRestart);
 		if (GetWorld())
 		{
 			float _delay = 2.5f;
@@ -609,22 +620,23 @@ void UGameStateManager::OnCompleteMoving()
 		return;
 	}
 
-	SetDeffenceLine(); // ƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“XV
-	SetBallHolder(); // ƒ{[ƒ‹ƒzƒ‹ƒ_[XV
-	ResetStateFlags(); // ó‘Ôƒtƒ‰ƒOƒŠƒZƒbƒg
+	SetDeffenceLine(); // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³æ›´æ–°
+	SetBallHolder(); // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼æ›´æ–°
+	ResetStateFlags(); // çŠ¶æ…‹ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
+	ResetPlayerFlags(); // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
 }
 
-// ‡I—¹ˆ—
+// è©¦åˆçµ‚äº†æ™‚å‡¦ç†
 void UGameStateManager::OnMatchEnded()
 {
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ƒQ[ƒ€ƒCƒ“ƒXƒ^ƒ“ƒX
+	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ã‚²ãƒ¼ãƒ ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 	if (_instance == nullptr)  return;
 
-	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // ƒtƒF[ƒY•ÏX
-	ResetStateFlags(); // ó‘Ôƒtƒ‰ƒOƒŠƒZƒbƒg
+	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // ãƒ•ã‚§ãƒ¼ã‚ºå¤‰æ›´
+	ResetStateFlags(); // çŠ¶æ…‹ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
 }
 
-// ó‘Ôƒtƒ‰ƒOƒŠƒZƒbƒg
+// çŠ¶æ…‹ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
 void UGameStateManager::ResetStateFlags()
 {
 	isFreeHolder = false;
@@ -639,7 +651,41 @@ void UGameStateManager::ResetStateFlags()
 	isMatchEnded = false;
 }
 
-// ó‘Ôƒtƒ‰ƒOƒ`ƒFƒbƒN
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
+void UGameStateManager::ResetPlayerFlags()
+{
+	// ãƒ‡ãƒ•ã‚§ãƒ³ãƒ€ãƒ¼(ãƒ‡ãƒ¥ã‚¨ãƒ«)
+	if (duelDeffender) {
+		ACPlayerAI* _defenceAI = Cast<ACPlayerAI>(duelDeffender->GetController());
+		_defenceAI->isDefender = false; // ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
+		duelDeffender = nullptr;
+	}
+
+	// ãƒ•ãƒªãƒ¼ãƒãƒ³
+	if (freeMans.Num() > 0) {
+		for (AC_Player* _p : freeMans) {
+			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
+			_playerAI->isFreeMan = false; // ãƒ•ãƒ©ã‚°ãƒªã‚»ãƒƒãƒˆ
+		}
+		freeMans.Empty();
+	}
+
+	// è£æŠœã‘ãƒ©ãƒ³ãƒŠãƒ¼
+	if (getBehindingRunner) {
+		ACPlayerAI* _runnerAI = Cast<ACPlayerAI>(getBehindingRunner->GetController());
+		_runnerAI->isGetBehindRunner = false; // ãƒ•ãƒ©
+		getBehindingRunner = nullptr;
+	}
+
+	// ç¸¦ãšã‚Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+	if (frontMovingPlayer) {
+		ACPlayerAI* _frontAI = Cast<ACPlayerAI>(frontMovingPlayer->GetController());
+		_frontAI->isFrontMovingPlayer = false; // ãƒ•ãƒ©ã‚°
+		frontMovingPlayer = nullptr;
+	}
+}
+
+// çŠ¶æ…‹ãƒ•ãƒ©ã‚°ãƒã‚§ãƒƒã‚¯
 bool UGameStateManager::CheckStateFlags()
 {
 	if (isFreeHolder
@@ -658,39 +704,39 @@ bool UGameStateManager::CheckStateFlags()
 	return false;
 }
 
-// ƒfƒDƒGƒ‹ƒvƒŒƒC‘I‘ğ
+// ãƒ‡ã‚¥ã‚¨ãƒ«æ™‚ãƒ—ãƒ¬ã‚¤é¸æŠ
 void UGameStateManager::DuelPlayChoice()
 {
-	// — ”²‚¯ or ƒhƒŠƒuƒ‹“Ë”j
-	UpdateGetBehind(); // — ”²‚¯ó‘ÔXV
-	if (isGetBehind) return; // — ”²‚¯’†‚Í‚È‚µ
+	// è£æŠœã‘ or ãƒ‰ãƒªãƒ–ãƒ«çªç ´
+	UpdateGetBehind(); // è£æŠœã‘çŠ¶æ…‹æ›´æ–°
+	if (isGetBehind) return; // è£æŠœã‘ä¸­ã¯ãªã—
 	
-	UpdateDribbleBreakThrough(); // ƒhƒŠƒuƒ‹“Ë”jó‘ÔXV
+	UpdateDribbleBreakThrough(); // ãƒ‰ãƒªãƒ–ãƒ«çªç ´çŠ¶æ…‹æ›´æ–°
 
 }
 
-// ƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“İ’è
+// ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³è¨­å®š
 void UGameStateManager::SetDeffenceLine()
 {
 	// -- HOME --
 	TArray<int> _homeLines = {};
 	for (AC_Player* _p : homePlayers) {
-		if (_p->position == C_Common::GK_POSITION) continue; // (*§ŒÀ) GK
+		if (_p->position == C_Common::GK_POSITION) continue; // (*åˆ¶é™) GK
 
 		int _line = (_p->tileNo - 1) / C_Common::TILE_NUM_Y;
 		_homeLines.Add(_line);
 	}
 	if (_homeLines.IsEmpty()) return;
-	homeDeffenceLine = FGenericPlatformMath::Min(_homeLines); // Å¬’l
+	homeDeffenceLine = FGenericPlatformMath::Min(_homeLines); // æœ€å°å€¤
 
 	// -- AWAY --
 	TArray<int> _awayLines = {};
 	for (AC_Player* _p : awayPlayers) {
-		if (_p->position == C_Common::GK_POSITION) continue; // (*§ŒÀ) GK
+		if (_p->position == C_Common::GK_POSITION) continue; // (*åˆ¶é™) GK
 
 		int _line = (_p->tileNo - 1) / C_Common::TILE_NUM_Y;
 		_awayLines.Add(_line);
 	}
 	if (_awayLines.IsEmpty()) return;
-	awayDeffenceLine = FGenericPlatformMath::Max(_awayLines); // Å‘å’l
+	awayDeffenceLine = FGenericPlatformMath::Max(_awayLines); // æœ€å¤§å€¤
 }

@@ -1,14 +1,14 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Tickable.h" // © •K{
+#include "Tickable.h" // â† å¿…é ˆ
 #include "C_Common.h"
 #include "C_Tile.h"
 #include "C_Player.h"
 #include "GameStateManager.generated.h"
 
-// C++ ê—pƒfƒŠƒQ[ƒgiBlueprint ˜AŒg‚È‚µj
+// C++ å°‚ç”¨ãƒ‡ãƒªã‚²ãƒ¼ãƒˆï¼ˆBlueprint é€£æºãªã—ï¼‰
 DECLARE_MULTICAST_DELEGATE(FOnFreeHolder);
 DECLARE_MULTICAST_DELEGATE(FOnDuelStart);
 DECLARE_MULTICAST_DELEGATE(FOnLineBreak);
@@ -21,12 +21,12 @@ DECLARE_MULTICAST_DELEGATE(FOnMatchStart);
 DECLARE_MULTICAST_DELEGATE(FOnMatchEnd);
 
 /**
- * ‡ó‘ÔŒŸ’mƒTƒuƒVƒXƒeƒ€
+ * è©¦åˆçŠ¶æ…‹æ¤œçŸ¥ã‚µãƒ–ã‚·ã‚¹ãƒ†ãƒ 
  */
 UCLASS()
 class FOOTBALL_BASE_API UGameStateManager
     : public UGameInstanceSubsystem
-    , public FTickableGameObject   // © ‚±‚ê‚ğŒp³‚·‚é
+    , public FTickableGameObject   // â† ã“ã‚Œã‚’ç¶™æ‰¿ã™ã‚‹
 {
     GENERATED_BODY()
 
@@ -35,14 +35,14 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    // TickableGameObject ‚Ì Tick
+    // TickableGameObject ã® Tick
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override;
 
     virtual bool IsTickable() const override { return true; }
 
 public:
-    // C++ ƒfƒŠƒQ[ƒg
+    // C++ ãƒ‡ãƒªã‚²ãƒ¼ãƒˆ
     FOnFreeHolder OnFreeHolder;
     FOnDuelStart OnDuelStart;
 	FOnLineBreak OnLineBreak;
@@ -54,109 +54,119 @@ public:
 	FOnMatchStart OnMatchStart;
 	FOnMatchEnd OnMatchEnd;
 
-    TArray <AC_Tile*> tiles = {}; // ‘S‚Ä‚Ìƒ^ƒCƒ‹
-    AC_Player* ballHolder = nullptr; // ƒ{[ƒ‹ƒzƒ‹ƒ_[
-    TArray<AC_Player*> allPlayers = {}; // ‘S‚Ä‚ÌƒvƒŒƒCƒ„[
-    TArray<AC_Player*> homePlayers = {}; // HOMEƒvƒŒƒCƒ„[
-    TArray<AC_Player*> awayPlayers = {}; // AWAYƒvƒŒƒCƒ„[
-    TArray<AC_Player*> freePlayers = {}; // ƒtƒŠ[ƒ}ƒ“
-    int homeDeffenceLine = 0; // ƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“ (HOME 0-5‚Ü‚Å)
-    int awayDeffenceLine = 0; // ƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“ (AWAY 0-5‚Ü‚Å)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+	AC_Player* ballHolder = nullptr; // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼
+	AC_Player* duelDeffender = nullptr; // ãƒ‡ãƒ¥ã‚¨ãƒ«å®ˆå‚™å´
+	TArray<AC_Player*> freeMans = {}; // ãƒ•ãƒªãƒ¼ãƒãƒ³ (è¤‡æ•°)
+	AC_Player* getBehindingRunner = nullptr; // è£æŠœã‘ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ (èµ°ã‚‹å´)
+	AC_Player* frontMovingPlayer = nullptr; // ç¸¦ãšã‚Œãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+
+    TArray <AC_Tile*> tiles = {}; // å…¨ã¦ã®ã‚¿ã‚¤ãƒ«
+    TArray<AC_Player*> allPlayers = {}; // å…¨ã¦ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    TArray<AC_Player*> homePlayers = {}; // HOMEãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    TArray<AC_Player*> awayPlayers = {}; // AWAYãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    TArray<AC_Player*> freePlayers = {}; // ãƒ•ãƒªãƒ¼ãƒãƒ³
+    int homeDeffenceLine = 0; // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ (HOME 0-5ã¾ã§)
+    int awayDeffenceLine = 0; // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³ (AWAY 0-5ã¾ã§)
 
 public:
-    // -- ‹¤’ÊŠÖ” --
-   // - ƒvƒŒƒCƒ„[ƒtƒŠ[”»’è -
+    // -- å…±é€šé–¢æ•° --
+   // - ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒªãƒ¼åˆ¤å®š -
     bool GetIsFree(AC_Player* targetPlayer);
 
 private:
-	bool isInitialized = false; // ‰Šú‰»Ï‚İƒtƒ‰ƒO
-    TArray <AC_Player*> subPlayers = {}; // ƒTƒuƒvƒŒƒCƒ„[
-    AC_Soccer_Ball* ball = nullptr; // ƒ{[ƒ‹
-	int turnCount = 0; // ƒ^[ƒ“ƒJƒEƒ“ƒg (ˆÚ“® ¨ ’â~‚Ì‚İAƒJƒEƒ“ƒg)
+	bool isInitialized = false; // åˆæœŸåŒ–æ¸ˆã¿ãƒ•ãƒ©ã‚°
+    TArray <AC_Player*> subPlayers = {}; // ã‚µãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    AC_Soccer_Ball* ball = nullptr; // ãƒœãƒ¼ãƒ«
+	int turnCount = 0; // ã‚¿ãƒ¼ãƒ³ã‚«ã‚¦ãƒ³ãƒˆ (ç§»å‹• â†’ åœæ­¢æ™‚ã®ã¿ã€ã‚«ã‚¦ãƒ³ãƒˆ)
     
-	// - ó‘Ôƒtƒ‰ƒO -
-	// ƒtƒŠ[ (ƒ{[ƒ‹ƒzƒ‹ƒ_[‚ªÚ“G‚µ‚Ä‚¢‚È‚¢)
+	// - çŠ¶æ…‹ãƒ•ãƒ©ã‚° -
+	// ãƒ•ãƒªãƒ¼ (ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ãŒæ¥æ•µã—ã¦ã„ãªã„)
 	bool isFreeHolder = false;
-	// ƒfƒ…ƒGƒ‹
+	// ãƒ‡ãƒ¥ã‚¨ãƒ«
     bool isDuel = false;
-	// ƒ‰ƒCƒ“ƒuƒŒƒCƒN’†
+	// ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯ä¸­
 	bool isLineBreak = false;
-	// ƒNƒƒX’†
+	// ã‚¯ãƒ­ã‚¹ä¸­
 	bool isCross = false;
-	// ƒVƒ…[ƒg’†
+	// ã‚·ãƒ¥ãƒ¼ãƒˆä¸­
 	bool isShoot = false;
-	// — ”²‚¯’†
+	// è£æŠœã‘ä¸­
 	bool isGetBehind = false;
-	// ƒhƒŠƒuƒ‹“Ë”j’†
+	// ãƒ‰ãƒªãƒ–ãƒ«çªç ´ä¸­
 	bool isDribbleBreakThrough = false;
-	// ˆÚ“®’†
+	// ç§»å‹•ä¸­
 	bool isMoving = false;
-	// ƒS[ƒ‹’†
+	// ã‚´ãƒ¼ãƒ«ä¸­
 	bool isGoal = false;
-	// ‡ŠJnÏ‚İ
+	// è©¦åˆé–‹å§‹æ¸ˆã¿
 	bool isMatchStarted = false;
-	// ‡I—¹Ï‚İ
+	// è©¦åˆçµ‚äº†æ¸ˆã¿
 	bool isMatchEnded = false;
 
 private:
-	// ‰Šú‰»ˆ— (ƒAƒNƒ^[æ“¾‚È‚Ç)
+	// åˆæœŸåŒ–å‡¦ç† (ã‚¢ã‚¯ã‚¿ãƒ¼å–å¾—ãªã©)
 	bool Initialize();
 	
-	// - ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ó‘ÔŒŸ’m -
+	// - ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)çŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectFreeHolder();
-	// - ƒtƒŠ[(ƒ{[ƒ‹ƒzƒ‹ƒ_[)ó‘ÔXV -
+	// - ãƒ•ãƒªãƒ¼(ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼)çŠ¶æ…‹æ›´æ–° -
 	void UpdateFreeHolder();
-    // - ƒfƒ…ƒGƒ‹ó‘ÔŒŸ’m -
+    // - ãƒ‡ãƒ¥ã‚¨ãƒ«çŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectDuel();
-	// - ƒfƒ…ƒGƒ‹ó‘ÔXV -
+	// - ãƒ‡ãƒ¥ã‚¨ãƒ«çŠ¶æ…‹æ›´æ–° -
     void UpdateDuel();
-	// - ˆÚ“®I—¹ŒŸ’m -
+	// - ç§»å‹•çµ‚äº†æ¤œçŸ¥ -
 	bool DedectCompleteMoving();
-	// - ˆÚ“®I—¹XV -
+	// - ç§»å‹•çµ‚äº†æ›´æ–° -
 	void UpdateCompleteMoving();
-	// - ƒ‰ƒCƒ“ƒuƒŒƒCƒNŒŸ’m -
+	// - ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯æ¤œçŸ¥ -
 	bool DedectLineBreak();
-	// - ƒ‰ƒCƒ“ƒuƒŒƒCƒNXV -
+	// - ãƒ©ã‚¤ãƒ³ãƒ–ãƒ¬ã‚¤ã‚¯æ›´æ–° -
 	void UpdateLineBreak();
-	// - ƒNƒƒXŒŸ’m -
+	// - ã‚¯ãƒ­ã‚¹æ¤œçŸ¥ -
 	bool DedectCross();
-	// - ƒNƒƒXXV -
+	// - ã‚¯ãƒ­ã‚¹æ›´æ–° -
 	void UpdateCross();
-	// - ƒVƒ…[ƒgó‘ÔŒŸ’m -
+	// - ã‚·ãƒ¥ãƒ¼ãƒˆçŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectShoot();
-	// - ƒVƒ…[ƒgó‘ÔXV -
+	// - ã‚·ãƒ¥ãƒ¼ãƒˆçŠ¶æ…‹æ›´æ–° -
 	void UpdateShoot();
-	// - — ”²‚¯ó‘ÔŒŸ’m -
+	// - è£æŠœã‘çŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectGetBehind();
-	// - — ”²‚¯ó‘ÔXV -
+	// - è£æŠœã‘çŠ¶æ…‹æ›´æ–° -
 	void UpdateGetBehind();
-	// - ƒhƒŠƒuƒ‹“Ë”jó‘ÔŒŸ’m -
+	// - ãƒ‰ãƒªãƒ–ãƒ«çªç ´çŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectDribbleBreakThrough();
-	// - ƒhƒŠƒuƒ‹“Ë”jó‘ÔXV -
+	// - ãƒ‰ãƒªãƒ–ãƒ«çªç ´çŠ¶æ…‹æ›´æ–° -
 	void UpdateDribbleBreakThrough();
-	// - ƒS[ƒ‹ó‘ÔŒŸ’m -
+	// - ã‚´ãƒ¼ãƒ«çŠ¶æ…‹æ¤œçŸ¥ -
 	bool DedectGoal();
-	// - ƒS[ƒ‹ó‘ÔXV -
+	// - ã‚´ãƒ¼ãƒ«çŠ¶æ…‹æ›´æ–° -
 	void UpdateGoal();
-	// - ‡ŠJnXV -
+	// - è©¦åˆé–‹å§‹æ›´æ–° -
 	void UpdateMatchStart();
-	// - ‡I—¹ŒŸ’m -
+	// - è©¦åˆå†é–‹å‡¦ç† -
+	void OnMatchRestart();
+	// - è©¦åˆçµ‚äº†æ¤œçŸ¥ -
 	bool DedectMatchEnd();
-	// - ‡I—¹XV -
+	// - è©¦åˆçµ‚äº†æ›´æ–° -
 	void UpdateMatchEnd();
-
-	// ƒŠƒZƒbƒgó‘Ôƒtƒ‰ƒO
+	
+	// ãƒªã‚»ãƒƒãƒˆçŠ¶æ…‹ãƒ•ãƒ©ã‚°
 	void ResetStateFlags();
-	// ƒ`ƒFƒbƒNó‘Ôƒtƒ‰ƒO
+	// ãƒªã‚»ãƒƒãƒˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ©ã‚°
+	void ResetPlayerFlags();
+	// ãƒã‚§ãƒƒã‚¯çŠ¶æ…‹ãƒ•ãƒ©ã‚°
 	bool CheckStateFlags();
-    // ƒfƒDƒGƒ‹ƒvƒŒƒC‘I‘ğ
+    // ãƒ‡ã‚¥ã‚¨ãƒ«æ™‚ãƒ—ãƒ¬ã‚¤é¸æŠ
 	void DuelPlayChoice();
-    // ƒfƒBƒtƒFƒ“ƒXƒ‰ƒCƒ“İ’è
+    // ãƒ‡ã‚£ãƒ•ã‚§ãƒ³ã‚¹ãƒ©ã‚¤ãƒ³è¨­å®š
     void SetDeffenceLine();
-    // ƒ{[ƒ‹ƒzƒ‹ƒ_[ƒZƒbƒg
+    // ãƒœãƒ¼ãƒ«ãƒ›ãƒ«ãƒ€ãƒ¼ã‚»ãƒƒãƒˆ
     void SetBallHolder();
-	// ˆÚ“®I—¹ˆ—
+	// ç§»å‹•çµ‚äº†æ™‚å‡¦ç†
 	void OnCompleteMoving();
-	// ‡I—¹ˆ—
+	// è©¦åˆçµ‚äº†æ™‚å‡¦ç†
 	void OnMatchEnded();
 };
