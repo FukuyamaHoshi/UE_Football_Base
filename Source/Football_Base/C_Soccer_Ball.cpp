@@ -30,6 +30,7 @@ void AC_Soccer_Ball::BeginPlay()
     UGameStateManager* state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 
     state->OnMatchStart.AddUObject(this, &AC_Soccer_Ball::HandleMatchStart);
+	state->OnMatchEnd.AddUObject(this, &AC_Soccer_Ball::HandleMatchEnd);
 }
 
 // Called every frame
@@ -96,6 +97,12 @@ void AC_Soccer_Ball::HandleMatchStart()
         // <再試合>
         SetActorLocation(initialLocation); // 位置
     }
+}
+
+// - 試合終了ハンドル -
+void AC_Soccer_Ball::HandleMatchEnd()
+{
+    SetActorLocation(initialLocation); // 位置
 }
 
 // ショートパス処理

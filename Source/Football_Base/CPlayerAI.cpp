@@ -24,6 +24,7 @@ void ACPlayerAI::BeginPlay()
 	state->OnGoal.AddUObject(this, &ACPlayerAI::HandleGoal);
 	state->OnMatchStart.AddUObject(this, &ACPlayerAI::HandleMatchStart);
 	state->OnMatchEnd.AddUObject(this, &ACPlayerAI::HandleMatchEnd);
+	state->OnTurnCompletePhase.AddUObject(this, &ACPlayerAI::HandleTurnCompletePhase);
 }
 
 void ACPlayerAI::Tick(float DeltaSeconds)
@@ -316,6 +317,17 @@ void ACPlayerAI::HandleMatchEnd()
 	// 初期配置
 	_controlledPlayer->SetActorLocation(initialLocation); // 位置
 	_controlledPlayer->LookForward(); // 向き
+}
+
+// ターン完了ハンドル
+void ACPlayerAI::HandleTurnCompletePhase()
+{
+	// get controlled player
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return;
+
+	// アニメーション停止
+	_controlledPlayer->StopAnim();
 }
 
 // ショートパス

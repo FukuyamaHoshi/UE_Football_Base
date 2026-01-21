@@ -41,7 +41,9 @@ void UGameStateManager::Tick(float DeltaTime)
 		if (_instance->phase_count < 1.0f) {
 			_instance->game_phase = C_Common::MATCH_PHASE; // 試合フェーズへ
 			_instance->phase_count = C_Common::MATCH_TIME; // カウンターセット
-			OnCompleteMoving(); // 移動終了時処理 (*例外的に、試合開始時に実行)
+			
+			ClearAllStates(); // 全状態クリア (スタートフラグが残るため)
+			TransitionToPhase(ETurnPhase::WaitingForAction);
 		}
 
 		return;
@@ -50,26 +52,31 @@ void UGameStateManager::Tick(float DeltaTime)
 	// --- 試合フェーズ処理 ---
 	if (_instance->game_phase == C_Common::MATCH_PHASE)
 	{
-		// - 移動終了更新 -
-		UpdateCompleteMoving();
+		UpdateMatchEnd(); // 試合終了状態更新
 
-		// インターバル設定 (ボールキープ時間)
-		if (ballHolder == nullptr) return;
-		if (ballHolder->ballKeepingCount < C_Common::PLAY_INTERVAL) return;
-		
-		// - 状態更新 -
-		// 試合終了
-		UpdateMatchEnd();
-		// シュート
-		UpdateShoot();
-		// クロス
-		UpdateCross();
-		// ラインブレイク
-		UpdateLineBreak();
-		// デュエル
-		UpdateDuel();
-		// フリー(ボールホルダー)
-		UpdateFreeHolder();
+		switch (currentTurnPhase)
+		{
+			case ETurnPhase::WaitingForAction:
+				HandleWaitingForActionPhase(DeltaTime); // ← Pass DeltaTime
+				break;
+
+			case ETurnPhase::ActionPlaying:
+				HandleActionPlayingPhase();
+				break;
+
+			case ETurnPhase::StateDetection:
+				HandleStateDetectionPhase();
+				break;
+
+			case ETurnPhase::TurnComplete:
+				HandleTurnCompletePhase();
+				break;
+
+			default:
+				// Safety: If somehow in None state, start waiting
+				TransitionToPhase(ETurnPhase::WaitingForAction);
+				break;
+		}
 	}
 }
 
@@ -181,21 +188,18 @@ bool UGameStateManager::DedectFreeHolder()
 // - フリー(ボールホルダー)状態更新 -
 void UGameStateManager::UpdateFreeHolder()
 {
-	if (isFreeHolder) return; // do once
-
-	isFreeHolder = DedectFreeHolder();
-	// フリー通知
-	if (isFreeHolder) OnFreeHolder.Broadcast();
+	bool detected = DedectFreeHolder();
+	if (detected)
+	{
+		AddState(EGameState::FreeHolder);
+		OnFreeHolder.Broadcast();
+	}
 }
 
 // - デュエル状態検知 -
 bool UGameStateManager::DedectDuel()
 {
 	// *条件*
-	// ボール停止中
-	if (ball->isMoving) return false;
-	// ボールホルダーが存在
-	if (ballHolder == nullptr) return false;
 	// GK以外
 	if (ballHolder->position == C_Common::GK_POSITION) return false;
 	// 接敵中
@@ -250,22 +254,19 @@ bool UGameStateManager::DedectDuel()
 // - デュエル状態更新 -
 void UGameStateManager::UpdateDuel()
 {
-	if (isDuel) return; // do once処理
-
-	isDuel = DedectDuel();
-	// デュエル開始通知
-	if (isDuel) {
+	bool detected = DedectDuel();
+	if (detected)
+	{
+		AddState(EGameState::Duel);
 		OnDuelStart.Broadcast();
 
-		// -- デゥエル開始後、『デゥエル時プレイ選択』を遅延実行 --
-		UWorld* _world = GetWorld();
-		if (_world == nullptr) return;
-		// Create a timer delegate to call the function
-		FTimerDelegate _timerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::DuelPlayChoice /*, optional params */);
-		// Provide a timer handle and a delay value so identifiers are defined.
-		FTimerHandle _timerHandle_SomeTask;
-		const float _delaySeconds = 2.0f; // ディレイ時間
-		_world->GetTimerManager().SetTimer(_timerHandle_SomeTask, _timerDel, _delaySeconds, false /* bLoop */);
+		// デゥエル開始後、『デゥエル時プレイ選択』を遅延実行
+		if (GetWorld()) {
+			FTimerDelegate _timerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::DuelPlayChoice);
+			FTimerHandle _timerHandle_SomeTask;
+			const float _delaySeconds = 2.0f; // ディレイ時間
+			GetWorld()->GetTimerManager().SetTimer(_timerHandle_SomeTask, _timerDel, _delaySeconds, false);
+		}
 	}
 }
 
@@ -289,23 +290,7 @@ bool UGameStateManager::DedectCompleteMoving()
 // - 移動終了更新 -
 void UGameStateManager::UpdateCompleteMoving()
 {
-	bool _isCurrentPlaying = DedectCompleteMoving();
-	if (_isCurrentPlaying) {
-		// 移動中
-		isMoving = true;
-	}
-	else
-	{
-		if (isMoving)
-		{
-			// ターン終了処理
-			turnCount++; // ターンカウントアップ
-			UKismetSystemLibrary::PrintString(this, "turn end" + FString::FromInt(turnCount), true, true, FColor::Red, 10.0f, TEXT("None"));
-			OnCompleteMoving(); // イベント発行
-			
-			isMoving = false;
-		}
-	}
+	isMoving = DedectCompleteMoving();
 }
 
 // - ラインブレイク検知 -
@@ -325,10 +310,10 @@ bool UGameStateManager::DedectLineBreak()
 // - ラインブレイク状態更新 -
 void UGameStateManager::UpdateLineBreak()
 {
-	if (isLineBreak) return; // do once
-
-	isLineBreak = DedectLineBreak();
-	if (isLineBreak) {
+	bool detected = DedectLineBreak();
+	if (detected)
+	{
+		AddState(EGameState::LineBreak);
 		OnLineBreak.Broadcast();
 	}
 }
@@ -336,6 +321,11 @@ void UGameStateManager::UpdateLineBreak()
 // - クロス検知 -
 bool UGameStateManager::DedectCross()
 {
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ ADDED: CheckStateFlags
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	if (CheckStateFlags()) return false;
+	
 	TArray<int> _crossRangeNo = {}; // クラスレンジ(タイルNo)
 	if (ballHolder->ActorHasTag("HOME")) {
 		_crossRangeNo.Append({ 26, 30 });
@@ -351,10 +341,10 @@ bool UGameStateManager::DedectCross()
 // - クロス状態更新 -
 void UGameStateManager::UpdateCross()
 {
-	if (isCross) return; // do once
-
-	isCross = DedectCross();
-	if (isCross) {
+	bool detected = DedectCross();
+	if (detected)
+	{
+		AddState(EGameState::Cross);
 		OnCross.Broadcast();
 	}
 }
@@ -362,6 +352,10 @@ void UGameStateManager::UpdateCross()
 // - シュート状態検知 -
 bool UGameStateManager::DedectShoot()
 {
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ ADDED: CheckStateFlags
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	if (CheckStateFlags()) return false;
 	
 	// シュートレンジ取得
 	TArray<int> _shortRangeNo = {}; // シュートレンジ(タイルNo)
@@ -381,17 +375,17 @@ bool UGameStateManager::DedectShoot()
 // - シュート状態更新 -
 void UGameStateManager::UpdateShoot()
 {
-	if (isShoot) return; // do once
-
-	isShoot = DedectShoot();
-	if (isShoot) {
+	bool detected = DedectShoot();
+	if (detected)
+	{
+		AddState(EGameState::Shoot);
 		OnShoot.Broadcast();
 	}
 }
 
 // - 裏抜け状態検知 -
 bool UGameStateManager::DedectGetBehind()
-{
+{	
 	// *条件*
 	// - ①前のプレイヤーが最終ライン上にいる -
 	// ボール保持チーム取得
@@ -428,10 +422,10 @@ bool UGameStateManager::DedectGetBehind()
 // - 裏抜け状態更新 -
 void UGameStateManager::UpdateGetBehind()
 {
-	if (isGetBehind) return; // do once
-
-	isGetBehind = DedectGetBehind();
-	if (isGetBehind) {
+	bool detected = DedectGetBehind();
+	if (detected)
+	{
+		AddState(EGameState::GetBehind);
 		OnGetBehind.Broadcast();
 	}
 }
@@ -470,10 +464,10 @@ bool UGameStateManager::DedectDribbleBreakThrough()
 // - ドリブル突破状態更新 -
 void UGameStateManager::UpdateDribbleBreakThrough()
 {
-	if (isDribbleBreakThrough) return; // do once
-
-	isDribbleBreakThrough = DedectDribbleBreakThrough();
-	if (isDribbleBreakThrough) {
+	bool detected = DedectDribbleBreakThrough();
+	if (detected)
+	{
+		AddState(EGameState::DribbleBreakThrough);
 		OnDribbleBreakThrough.Broadcast();
 	}
 }
@@ -481,7 +475,10 @@ void UGameStateManager::UpdateDribbleBreakThrough()
 // - ゴール状態検知 -
 bool UGameStateManager::DedectGoal()
 {
-	if (isShoot) return true;
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ NOTE: This function checks Shoot state, no need for CheckStateFlags
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	if (HasState(EGameState::Shoot)) return true;
 
 	return false;
 }
@@ -489,10 +486,12 @@ bool UGameStateManager::DedectGoal()
 // - ゴール状態更新 -
 void UGameStateManager::UpdateGoal()
 {
-	if (isGoal) return; // do once
+	if (HasState(EGameState::Goal)) return; // do once
 
-	isGoal = DedectGoal();
-	if (isGoal) {
+	bool detected = DedectGoal();
+	if (detected)
+	{
+		AddState(EGameState::Goal);
 		OnGoal.Broadcast();
 	}
 }
@@ -500,20 +499,17 @@ void UGameStateManager::UpdateGoal()
 // - 試合開始状態更新 -
 void UGameStateManager::UpdateMatchStart()
 {
-	if (isMatchStarted) return; // do once
-	isMatchStarted = true;
+	if (HasState(EGameState::MatchStarted)) return; // do once
 
-	if (isMatchStarted) {
-		// 通知
-		OnMatchStart.Broadcast();
-	}
+	AddState(EGameState::MatchStarted);
+	OnMatchStart.Broadcast();
 }
 
 // - 試合再開処理 -
 void UGameStateManager::OnMatchRestart()
 {
 	// リセット
-	ResetStateFlags(); // 状態フラグ
+	ClearAllStates(); // 状態
 	ResetPlayerFlags(); // プレイヤーフラグ
 	// 試合開始
 	UpdateMatchStart();
@@ -533,14 +529,15 @@ bool UGameStateManager::DedectMatchEnd()
 
 // - 試合終了更新 -
 void UGameStateManager::UpdateMatchEnd()
-{
-	if (isMatchEnded) return; // do once
-	
-	isMatchEnded = DedectMatchEnd();
-	if (isMatchEnded) {
-		// 通知
+{	
+	if (HasState(EGameState::MatchEnded)) return; // do once
+
+	bool detected = DedectMatchEnd();
+	if (detected)
+	{
+		AddState(EGameState::MatchEnded);
 		OnMatchEnd.Broadcast();
-		OnMatchEnded(); // 試合終了時処理
+		OnMatchEnded();
 	}
 }
 
@@ -600,32 +597,6 @@ void UGameStateManager::SetBallHolder()
 	}
 }
 
-// 移動完了時処理
-void UGameStateManager::OnCompleteMoving()
-{
-	// - ゴール時処理 -
-	if (isShoot) {
-		UpdateGoal(); // ゴール状態更新
-
-		// - 試合再開処理 -
-		// 試合再開時は、フラグをリセットしない
-		FTimerHandle TimerHandle;
-		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::OnMatchRestart);
-		if (GetWorld())
-		{
-			float _delay = 2.5f;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, _delay, false);
-		}
-		
-		return;
-	}
-
-	SetDeffenceLine(); // ディフェンスライン更新
-	SetBallHolder(); // ボールホルダー更新
-	ResetStateFlags(); // 状態フラグリセット
-	ResetPlayerFlags(); // プレイヤーフラグリセット
-}
-
 // 試合終了時処理
 void UGameStateManager::OnMatchEnded()
 {
@@ -633,22 +604,37 @@ void UGameStateManager::OnMatchEnded()
 	if (_instance == nullptr)  return;
 
 	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ変更
-	ResetStateFlags(); // 状態フラグリセット
+	HandleTurnCompletePhase(); // ターン完了フェーズ処理
 }
 
-// 状態フラグリセット
-void UGameStateManager::ResetStateFlags()
+// 状態を追加
+void UGameStateManager::AddState(EGameState State)
 {
-	isFreeHolder = false;
-	isDuel = false;
-	isLineBreak = false;
-	isGetBehind = false;
-	isDribbleBreakThrough = false;
-	isCross = false;
-	isShoot = false;
-	isGoal = false;
-	isMatchStarted = false;
-	isMatchEnded = false;
+	if (!activeStates.Contains(State))
+	{
+		activeStates.Add(State);
+		UE_LOG(LogTemp, Log, TEXT("State Added: %d"), static_cast<int32>(State));
+	}
+}
+
+// 状態を削除
+void UGameStateManager::RemoveState(EGameState State)
+{
+	activeStates.Remove(State);
+	UE_LOG(LogTemp, Log, TEXT("State Removed: %d"), static_cast<int32>(State));
+}
+
+// 状態をチェック
+bool UGameStateManager::HasState(EGameState State) const
+{
+	return activeStates.Contains(State);
+}
+
+// 全状態をクリア
+void UGameStateManager::ClearAllStates()
+{
+	activeStates.Empty();
+	UE_LOG(LogTemp, Log, TEXT("All states cleared"));
 }
 
 // プレイヤーフラグリセット
@@ -688,20 +674,7 @@ void UGameStateManager::ResetPlayerFlags()
 // 状態フラグチェック
 bool UGameStateManager::CheckStateFlags()
 {
-	if (isFreeHolder
-		|| isDuel
-		|| isLineBreak
-		|| isGetBehind
-		|| isDribbleBreakThrough
-		|| isCross
-		|| isShoot
-		|| isGoal
-		|| isMatchStarted
-		|| isMatchEnded
-		)
-	return true;
-
-	return false;
+	return activeStates.Num() > 0; // いずれかの状態がアクティブか
 }
 
 // デゥエル時プレイ選択
@@ -709,7 +682,7 @@ void UGameStateManager::DuelPlayChoice()
 {
 	// 裏抜け or ドリブル突破
 	UpdateGetBehind(); // 裏抜け状態更新
-	if (isGetBehind) return; // 裏抜け中はなし
+	if (HasState(EGameState::GetBehind)) return; // 裏抜け中はなし
 	
 	UpdateDribbleBreakThrough(); // ドリブル突破状態更新
 
@@ -739,4 +712,119 @@ void UGameStateManager::SetDeffenceLine()
 	}
 	if (_awayLines.IsEmpty()) return;
 	awayDeffenceLine = FGenericPlatformMath::Max(_awayLines); // 最大値
+}
+
+// フェーズハンドラー (待機フェーズ)
+void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
+{
+	waitingPhaseTimer += DeltaTime;
+	
+	// Check if action interval reached
+	if (waitingPhaseTimer > C_Common::PLAY_INTERVAL)
+	{	
+		// Reset timer
+		waitingPhaseTimer = 0.0f;
+		// Increment turn count
+		turnCount++;
+		// Update defence line and ball holder
+		SetDeffenceLine();
+		// set ball holder
+		SetBallHolder();
+
+		// Transition to next phase
+		TransitionToPhase(ETurnPhase::ActionPlaying);
+	}
+}
+
+// フェーズハンドラー (アクション実行フェーズ)
+void UGameStateManager::HandleActionPlayingPhase()
+{
+	// 各種状態検知
+    UpdateShoot();
+    UpdateCross();
+    UpdateLineBreak();
+    UpdateDuel();
+    UpdateFreeHolder();
+    
+    // 次のフェーズへ遷移
+    TransitionToPhase(ETurnPhase::StateDetection);
+}
+
+// フェーズハンドラー (状態検知フェーズ)
+void UGameStateManager::HandleStateDetectionPhase()
+{
+    // 移動完了チェック
+    UpdateCompleteMoving();
+	// デゥエル中は、その他の状態が発生するまで継続
+	if (HasState(EGameState::Duel)) {
+		if (activeStates.Num() == 1) return;
+	}
+    
+    if (!isMoving)
+    {
+        TransitionToPhase(ETurnPhase::TurnComplete);
+    }
+}
+
+// フェーズハンドラー (ターン完了フェーズ)
+void UGameStateManager::HandleTurnCompletePhase()
+{
+    if (HasState(EGameState::Shoot))
+    {
+		// - 試合再開処理 (遅延実行) -
+		if (HasState(EGameState::Goal)) return; // do once
+		FTimerHandle TimerHandle;
+		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::OnMatchRestart);
+		if (GetWorld())
+		{
+			float _delay = 2.5f;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, _delay, false);
+		}
+		// ゴール状態更新
+		UpdateGoal();
+
+        return;
+    }
+
+	ClearAllStates();
+    ResetPlayerFlags();
+	OnTurnCompletePhase.Broadcast(); // ターン完了通知
+    
+    TransitionToPhase(ETurnPhase::WaitingForAction);
+}
+
+// フェーズ遷移
+void UGameStateManager::TransitionToPhase(ETurnPhase NewPhase)
+{
+	// 古いフェーズを保存
+	ETurnPhase OldPhase = currentTurnPhase;
+	
+	// 新しいフェーズに更新
+	currentTurnPhase = NewPhase;
+	
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// フェーズ開始時の特別処理 (オプション)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	switch (NewPhase)
+	{
+		case ETurnPhase::WaitingForAction:
+			// 行動待ちフェーズ開始時の処理
+			UKismetSystemLibrary::PrintString(this, "Waiting for action...", true, true, FColor::Yellow, 2.0f);
+			break;
+			
+		case ETurnPhase::ActionPlaying:
+			// アクション実行フェーズ開始時の処理
+			UKismetSystemLibrary::PrintString(this, "Action playing...", true, true, FColor::Cyan, 2.0f);
+			break;
+			
+		case ETurnPhase::StateDetection:
+			// 状態検知フェーズ開始時の処理
+			UKismetSystemLibrary::PrintString(this, "Detecting states...", true, true, FColor::Magenta, 2.0f);
+			break;
+			
+		case ETurnPhase::TurnComplete:
+			// ターン完了フェーズ開始時の処理
+			UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Turn %d complete!"), turnCount), true, true, FColor::Green, 2.0f);
+			break;
+	}
 }

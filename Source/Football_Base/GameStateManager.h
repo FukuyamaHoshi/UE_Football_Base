@@ -19,6 +19,39 @@ DECLARE_MULTICAST_DELEGATE(FOnDribbleBreakThrough);
 DECLARE_MULTICAST_DELEGATE(FOnGoal);
 DECLARE_MULTICAST_DELEGATE(FOnMatchStart);
 DECLARE_MULTICAST_DELEGATE(FOnMatchEnd);
+DECLARE_MULTICAST_DELEGATE(FOnTurnCompletePhase);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ✅ State Flag Enum (状態フラグ列挙型)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UENUM(BlueprintType)
+enum class EGameState : uint8
+{
+	None UMETA(DisplayName = "None"),
+	FreeHolder UMETA(DisplayName = "Free Holder"),                 // フリーホルダー
+	Duel UMETA(DisplayName = "Duel"),                              // デュエル
+	LineBreak UMETA(DisplayName = "Line Break"),                   // ラインブレイク
+	Cross UMETA(DisplayName = "Cross"),                            // クロス
+	Shoot UMETA(DisplayName = "Shoot"),                            // シュート
+	GetBehind UMETA(DisplayName = "Get Behind"),                   // 裏抜け
+	DribbleBreakThrough UMETA(DisplayName = "Dribble BreakThrough"), // ドリブル突破
+	Goal UMETA(DisplayName = "Goal"),                              // ゴール
+	MatchStarted UMETA(DisplayName = "Match Started"),             // 試合開始
+	MatchEnded UMETA(DisplayName = "Match Ended")                  // 試合終了
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ✅ Turn Phase Enum (ターンフェーズ列挙型)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UENUM(BlueprintType)
+enum class ETurnPhase : uint8
+{
+	None UMETA(DisplayName = "None"),
+	WaitingForAction UMETA(DisplayName = "Waiting For Action"),     // AI/プレイヤー行動待ち
+	ActionPlaying UMETA(DisplayName = "Action Playing"),            // アクション実行中
+	StateDetection UMETA(DisplayName = "State Detection"),          // 状態検知中
+	TurnComplete UMETA(DisplayName = "Turn Complete")               // ターン完了
+};
 
 /**
  * 試合状態検知サブシステム
@@ -53,6 +86,7 @@ public:
 	FOnGoal OnGoal;
 	FOnMatchStart OnMatchStart;
 	FOnMatchEnd OnMatchEnd;
+	FOnTurnCompletePhase OnTurnCompletePhase;
 
 	// プレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
@@ -79,35 +113,45 @@ private:
     TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
     AC_Soccer_Ball* ball = nullptr; // ボール
 	int turnCount = 0; // ターンカウント (移動 → 停止時のみ、カウント)
+	bool isMoving = false;                // 移動中か (特別フラグ)
     
-	// - 状態フラグ -
-	// フリー (ボールホルダーが接敵していない)
-	bool isFreeHolder = false;
-	// デュエル
-    bool isDuel = false;
-	// ラインブレイク中
-	bool isLineBreak = false;
-	// クロス中
-	bool isCross = false;
-	// シュート中
-	bool isShoot = false;
-	// 裏抜け中
-	bool isGetBehind = false;
-	// ドリブル突破中
-	bool isDribbleBreakThrough = false;
-	// 移動中
-	bool isMoving = false;
-	// ゴール中
-	bool isGoal = false;
-	// 試合開始済み
-	bool isMatchStarted = false;
-	// 試合終了済み
-	bool isMatchEnded = false;
-
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ Turn Phase State (ターンフェーズ状態)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	ETurnPhase currentTurnPhase = ETurnPhase::None; // 現在のターンフェーズ
+	float waitingPhaseTimer = 0.0f;                 // 待機フェーズ経過時間
+	TArray<EGameState> activeStates = {}; // アクティブな状態のリスト
+	
 private:
 	// 初期化処理 (アクター取得など)
 	bool Initialize();
 	
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ Turn Phase Handling (ターンフェーズ処理)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// フェーズ遷移
+	void TransitionToPhase(ETurnPhase NewPhase);
+	// フェーズハンドラー
+	void HandleWaitingForActionPhase(float DeltaTime); // ← Add DeltaTime parameter
+	void HandleActionPlayingPhase();
+	void HandleStateDetectionPhase();
+	void HandleTurnCompletePhase();
+
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ State management functions (状態管理関数)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// 状態を追加
+	void AddState(EGameState State);
+	// 状態を削除
+	void RemoveState(EGameState State);
+	// 状態をチェック
+	bool HasState(EGameState State) const;
+	// 全状態をクリア
+	void ClearAllStates();
+
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// Match state dedect and update (試合状態検知・更新関数)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	// - フリー(ボールホルダー)状態検知 -
 	bool DedectFreeHolder();
 	// - フリー(ボールホルダー)状態更新 -
@@ -146,15 +190,12 @@ private:
 	void UpdateGoal();
 	// - 試合開始更新 -
 	void UpdateMatchStart();
-	// - 試合再開処理 -
-	void OnMatchRestart();
 	// - 試合終了検知 -
 	bool DedectMatchEnd();
 	// - 試合終了更新 -
 	void UpdateMatchEnd();
 	
-	// リセット状態フラグ
-	void ResetStateFlags();
+
 	// リセットプレイヤーフラグ
 	void ResetPlayerFlags();
 	// チェック状態フラグ
@@ -165,8 +206,8 @@ private:
     void SetDeffenceLine();
     // ボールホルダーセット
     void SetBallHolder();
-	// 移動終了時処理
-	void OnCompleteMoving();
 	// 試合終了時処理
 	void OnMatchEnded();
+	// 試合再開処理
+	void OnMatchRestart();
 };

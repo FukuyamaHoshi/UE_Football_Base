@@ -42,6 +42,8 @@ private:
 	void Move(float dTime);
 	// - 試合開始ハンドル -
 	void HandleMatchStart();
+	// - 試合終了ハンドル -
+	void HandleMatchEnd();
 
 private:
 	UCurveFloat* longBallHeightCurve = nullptr; // カーブアセット (ロングボール)

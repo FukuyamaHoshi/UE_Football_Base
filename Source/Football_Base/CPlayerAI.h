@@ -55,6 +55,8 @@ private:
 	void HandleMatchStart();
 	// - 試合終了ハンドラ -
 	void HandleMatchEnd();
+	// - ターン完了ハンドラ -
+	void HandleTurnCompletePhase();
 
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
