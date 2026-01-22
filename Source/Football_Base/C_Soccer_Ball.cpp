@@ -83,20 +83,7 @@ void AC_Soccer_Ball::Move(float dTime)
 // - 試合開始ハンドル -
 void AC_Soccer_Ball::HandleMatchStart()
 {
-    // 初期配置 (*再試合対応)
-    // 位置
-    UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-    if (_instance == nullptr)  return;
-    if (_instance->game_phase == C_Common::MATCH_READY_PHASE)
-    {
-        // <試合開始>
-        initialLocation = GetActorLocation();
-    }
-    else
-    {
-        // <再試合>
-        SetActorLocation(initialLocation); // 位置
-    }
+    SetActorLocation(initialLocation); // 位置
 }
 
 // - 試合終了ハンドル -

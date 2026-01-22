@@ -112,8 +112,10 @@ private:
 	bool isInitialized = false; // 初期化済みフラグ
     TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
     AC_Soccer_Ball* ball = nullptr; // ボール
-	int turnCount = 0; // ターンカウント (移動 → 停止時のみ、カウント)
+	int turnCount = 0; // ターンカウント
 	bool isMoving = false;                // 移動中か (特別フラグ)
+	bool isMatchRestartReady = false; // 試合再開準備完了フラグ
+	FTimerHandle timerHandle = {}; // タイマーハンドル
     
 	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	// ✅ Turn Phase State (ターンフェーズ状態)
@@ -208,6 +210,6 @@ private:
     void SetBallHolder();
 	// 試合終了時処理
 	void OnMatchEnded();
-	// 試合再開処理
-	void OnMatchRestart();
+	// フェーズ再開処理
+	void RestartPhase();
 };

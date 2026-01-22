@@ -51,6 +51,6 @@ private:
 	FVector fromLocation = FVector(0, 0, 0); // 動く前の位置(一時保存)
 	float movingCount = 0.0f; // 移動経過時間
 	float moveTotalTime = 0.0f; // 移動時間(指定)
-	FVector initialLocation = FVector::ZeroVector; // 初期位置
+	FVector initialLocation = FVector(-1110.0f, 0, 30.0f); // 初期位置
 
 };

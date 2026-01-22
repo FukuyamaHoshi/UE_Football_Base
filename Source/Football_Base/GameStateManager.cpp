@@ -263,9 +263,8 @@ void UGameStateManager::UpdateDuel()
 		// デゥエル開始後、『デゥエル時プレイ選択』を遅延実行
 		if (GetWorld()) {
 			FTimerDelegate _timerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::DuelPlayChoice);
-			FTimerHandle _timerHandle_SomeTask;
 			const float _delaySeconds = 2.0f; // ディレイ時間
-			GetWorld()->GetTimerManager().SetTimer(_timerHandle_SomeTask, _timerDel, _delaySeconds, false);
+			GetWorld()->GetTimerManager().SetTimer(timerHandle, _timerDel, _delaySeconds, false);
 		}
 	}
 }
@@ -503,16 +502,17 @@ void UGameStateManager::UpdateMatchStart()
 
 	AddState(EGameState::MatchStarted);
 	OnMatchStart.Broadcast();
-}
+	
+	// - action match restart (delay action) -
+	if (isMatchRestartReady) {
 
-// - 試合再開処理 -
-void UGameStateManager::OnMatchRestart()
-{
-	// リセット
-	ClearAllStates(); // 状態
-	ResetPlayerFlags(); // プレイヤーフラグ
-	// 試合開始
-	UpdateMatchStart();
+		if (GetWorld())
+		{
+			FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::RestartPhase);
+			float _delay = 1.5f;
+			GetWorld()->GetTimerManager().SetTimer(timerHandle, TimerDel, _delay, false);
+		}
+	}
 }
 
 // - 試合終了検知 -
@@ -603,8 +603,18 @@ void UGameStateManager::OnMatchEnded()
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 
+	GetWorld()->GetTimerManager().ClearTimer(timerHandle); // delay action cansel
 	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ変更
-	HandleTurnCompletePhase(); // ターン完了フェーズ処理
+	RestartPhase(); // 試合再開処理
+}
+
+// - マッチフェーズ再開処理 -
+void UGameStateManager::RestartPhase()
+{
+	isMatchRestartReady = false;
+	ClearAllStates();
+	waitingPhaseTimer = 0.0f;
+	HandleTurnCompletePhase();
 }
 
 // 状態を追加
@@ -753,15 +763,19 @@ void UGameStateManager::HandleActionPlayingPhase()
 // フェーズハンドラー (状態検知フェーズ)
 void UGameStateManager::HandleStateDetectionPhase()
 {
-    // 移動完了チェック
+	// update moving status
     UpdateCompleteMoving();
-	// デゥエル中は、その他の状態が発生するまで継続
+	// if it is only duel state, wait for next state
 	if (HasState(EGameState::Duel)) {
 		if (activeStates.Num() == 1) return;
 	}
     
     if (!isMoving)
     {
+		// update goal states (for checking)
+		UpdateGoal();
+
+		// next phase
         TransitionToPhase(ETurnPhase::TurnComplete);
     }
 }
@@ -769,31 +783,34 @@ void UGameStateManager::HandleStateDetectionPhase()
 // フェーズハンドラー (ターン完了フェーズ)
 void UGameStateManager::HandleTurnCompletePhase()
 {
-    if (HasState(EGameState::Shoot))
+	// if the match restart is ready, skip it (do once)
+	if (isMatchRestartReady) return;
+	
+	// check goal state
+    if (HasState(EGameState::Goal))
     {
 		// - 試合再開処理 (遅延実行) -
-		if (HasState(EGameState::Goal)) return; // do once
-		FTimerHandle TimerHandle;
-		FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::OnMatchRestart);
+		isMatchRestartReady = true; // set flag
 		if (GetWorld())
 		{
+			FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::UpdateMatchStart);
 			float _delay = 2.5f;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, _delay, false);
+			GetWorld()->GetTimerManager().SetTimer(timerHandle, TimerDel, _delay, false);
 		}
-		// ゴール状態更新
-		UpdateGoal();
 
-        return;
+		return;
     }
 
+	// ↓ actions that are not goal state ↓
 	ClearAllStates();
     ResetPlayerFlags();
-	OnTurnCompletePhase.Broadcast(); // ターン完了通知
+	OnTurnCompletePhase.Broadcast(); // turn finish notify (stop player animation ets...)
     
-    TransitionToPhase(ETurnPhase::WaitingForAction);
+	// next phase
+	TransitionToPhase(ETurnPhase::WaitingForAction);
 }
 
-// フェーズ遷移
+// change turn phase (action)
 void UGameStateManager::TransitionToPhase(ETurnPhase NewPhase)
 {
 	// 古いフェーズを保存
