@@ -59,14 +59,14 @@ void AC_Opening_Level_Instance::BeginPlay()
 	//UKismetSystemLibrary::PrintString(this, "level instance", true, true, FColor::Red, 10.0f, TEXT("None"));
 
 	// *** ウィジェット表示 ***
-	openingUI = CreateWidget<UC_Opening_UI>(GetWorld(), openingUISubClass);
-	if (openingUI)
-	{
-		openingUI->AddToViewport(); // Adds the widget to the screen
-	}
+	//openingUI = CreateWidget<UC_Opening_UI>(GetWorld(), openingUISubClass);
+	//if (openingUI)
+	//{
+	//	openingUI->AddToViewport(); // Adds the widget to the screen
+	//}
 	// ***
 
-	SetupInput(); // 入力設定
+	//SetupInput(); // 入力設定
 
 	// *** デカール取得 ***
 	// (コンストラクタ以外のマテリアルはLoadObject使用)
@@ -122,36 +122,36 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-	if (_instance == nullptr)  return;
-	
-	// ***** マネージャー選択フェーズ *****
-	if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
-		// -- ホバー許可 --
-		Hover();
+	//UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
+	//if (_instance == nullptr)  return;
+	//
+	//// ***** マネージャー選択フェーズ *****
+	//if (_instance->game_phase == C_Common::MANAGER_SELECT_BEFORE_PHASE) {
+	//	// -- ホバー許可 --
+	//	Hover();
 
 
-		return;
-	}
-	// *****
+	//	return;
+	//}
+	//// *****
 
 
-	// ***** プレイヤー選択・配置フェーズ *****
-	if (_instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
-		// -- マウス追従 (選択時) --
-		if (isPlayerGrap) {
-			FollowPlayerToMouse();
-		}
-		// -- スポーンプレイヤー (プールから選択された) --
-		if (_instance->pool_selected_player_no >= 0) {
-			SpawnPlayerInPool(_instance->pool_selected_player_no);
+	//// ***** プレイヤー選択・配置フェーズ *****
+	//if (_instance->game_phase == C_Common::PLAYER_SELECT_PLACE_PHASE) {
+	//	// -- マウス追従 (選択時) --
+	//	if (isPlayerGrap) {
+	//		FollowPlayerToMouse();
+	//	}
+	//	// -- スポーンプレイヤー (プールから選択された) --
+	//	if (_instance->pool_selected_player_no >= 0) {
+	//		SpawnPlayerInPool(_instance->pool_selected_player_no);
 
-			_instance->pool_selected_player_no = -1; // リセット
-		}
+	//		_instance->pool_selected_player_no = -1; // リセット
+	//	}
 
-		return;
-	}
-	// *****
+	//	return;
+	//}
+	//// *****
 
 
 	// ***** 試合準備フェーズ *****
@@ -177,8 +177,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 
 	// ***** 試合フェーズ *****
-	if (_instance->game_phase != C_Common::MATCH_PHASE) return;
-	if (ball == nullptr) return; // ボール取得確認
+	//if (_instance->game_phase != C_Common::MATCH_PHASE) return;
+	//if (ball == nullptr) return; // ボール取得確認
 
 	
 	//// *** 試合終了時 (試合時間終了) ***
@@ -531,8 +531,8 @@ void AC_Opening_Level_Instance::Tick(float DeltaTime)
 
 	// ***** プレイ(ボールホルダー) *****
 	// * 制限 *
-	if (ball->isMoving) return; // ボール移動中
-	if (ballHolder == nullptr) return; // ボールホルダーなし
+	//if (ball->isMoving) return; // ボール移動中
+	//if (ballHolder == nullptr) return; // ボールホルダーなし
 	// *
 	
 	//PlayBallHolder();
