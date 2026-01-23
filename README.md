@@ -2,18 +2,20 @@ Event Driven Architecture Flow Chart
 
 ```
 [インプット]  
-・C_My_Player_Controller (player controller)  
+・Systems/Controller/C_My_Player_Controller.h (player controller) 入力処理・フェーズ(ゲーム全体)変更
+      |  
       ▼  
-[監視・キャスト（イベント発行）]
-・GameStateManager (subsystem)
+[監視・キャスト (Hub)]
+・Systems/GameStateManager.h (Subsystem) フェーズ(試合の状況)変更・試合状況検知
+  📢 Event Dispatcher: [ Broadcast ] を発火
+      |  
       ▼  
 [購読（リスナー）]
-・CPlayerAI (AI controller)
+・Characters/Controller/CPlayerAI.h (AI controller) プレイヤーのプレイ判断
+      |  
       ▼  
 [アクション（副作用）]
-・C_Player (Character)
-・C_Manager (Character)
-・C_Soccer_Ball (Pawn)
-・C_Opening_UI (UserWidget)
-・C_Tile (Actor)
+・Characters/C_Player.h (Character) プレイヤー
+・Characters/C_Manager.h (Character) 監督 (*現在,リスナーと兼任)
+・Actors/C_Soccer_Ball.h (Pawn) ボール (*現在,リスナーと兼任)
 ```
