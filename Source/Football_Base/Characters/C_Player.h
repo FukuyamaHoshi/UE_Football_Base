@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include <Components/WidgetComponent.h>
 #include <Football_Base/Actors/C_Soccer_Ball.h>
-#include "Animation/C_Player_Anim_Instance.h"
 #include <Football_Base/Actors/C_Tile.h>
 #include "C_Player.generated.h"
 
@@ -66,18 +65,8 @@ public:
 	void RunTo(FVector toLocation);
 	// ドリブル (相手を抜く)
 	void RegateDrrible();
-	// タックル (Root Motion)
-	void Tackle();
-	// セットディフェンス姿勢
-	void SetDefensiveStance();
-	// 解除ディフェンス姿勢
-	void RemoveDefensiveStance();
 	// ドリブル (前進)
 	void Drrible();
-	// 喜びアニメーション
-	void CheerMotion();
-	// 悲しみアニメーション
-	void SadMotion();
 	// フリーアピール
 	void FreeAppeal(AC_Player* ballHolder);
 	// ターゲットアピール
@@ -88,8 +77,6 @@ public:
 	void RunnerAppeal();
 	// ポケットマンアピール
 	void PoketmanAppeal(AC_Player* ballHolder);
-	// アニメーション停止 (アイドル状態へ)
-	void StopAnim();
 	// 位置からタイルＮｏ取得
 	int GetTileNoFromLocation();
 	// スポーンプレイヤーのマテリアルセット
@@ -111,26 +98,11 @@ private:
 	UMaterial* targetmanPlayerMaterial = nullptr; // マテリアル(ターゲットマン)
 	UMaterial* runnerPlayerMaterial = nullptr; // マテリアル(ランナー)
 	AC_Soccer_Ball* ball = nullptr; // ボール
-	UAnimMontage* shortPassAnim = nullptr; // アニメーション(ショートパス)
-	UAnimMontage* trapAnim = nullptr; // アニメーション(トラップ)
-	UAnimMontage* longPassAnim = nullptr; // アニメーション(ロングパス)
-	UAnimMontage* regateAnim = nullptr; // アニメーション(レガテ)
-	UAnimMontage* tackleAnim = nullptr; // アニメーション(タックル)
-	UAnimMontage* sad1Anim = nullptr; // アニメーション(被ゴール1)
-	UAnimMontage* sad2Anim = nullptr; // アニメーション(被ゴール2)
-	UAnimMontage* cheer1Anim = nullptr; // アニメーション(ゴール1)
-	UAnimMontage* cheer2Anim = nullptr; // アニメーション(ゴール2)
-	UAnimMontage* freeAppealAnim = nullptr; // アニメーション(フリーアピール)
-	UAnimMontage* targetmanAppealAnim = nullptr; // アニメーション(ターゲットマンアピール)
-	UAnimMontage* postmanAppealAnim = nullptr; // アニメーション(ポストマンアピール)
-	UAnimMontage* runnerAppealAnim = nullptr; // アニメーション(ランナーアピール)
-	UAnimMontage* poketmanAppealAnim = nullptr; // アニメーション(ポケットマンアピール)
 	UWidgetComponent* myWidget = nullptr; // ウィジェットコンポーネント
 	TSubclassOf<UUserWidget> runnerWidgetIcon = nullptr; // ランナーWidget
 	TSubclassOf<UUserWidget> targetmanWidgetIcon = nullptr; // ターゲットマンWidget
 
 	bool isTrap = false; // トラップアニメーションするか
-	UC_Player_Anim_Instance* playerAnimInstance = nullptr; // アニメーションインスタンス
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	bool isBallKeeping = false; // ボールキープ判定

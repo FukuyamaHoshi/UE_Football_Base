@@ -51,8 +51,6 @@ private:
 	void HandleDribbleBreakThrough();
 	// - ゴールハンドラ -
 	void HandleGoal();
-	// - 試合開始ハンドラ -
-	void HandleMatchStart();
 	// - 試合終了ハンドラ -
 	void HandleMatchEnd();
 	// - ターン完了ハンドラ -

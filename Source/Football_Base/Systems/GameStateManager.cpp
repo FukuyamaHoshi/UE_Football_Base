@@ -502,7 +502,6 @@ void UGameStateManager::UpdateMatchStart()
 	if (HasState(EGameState::MatchStarted)) return; // do once
 
 	AddState(EGameState::MatchStarted);
-	OnMatchStart.Broadcast();
 	
 	// - action match restart (delay action) -
 	if (isMatchRestartReady) {
@@ -537,7 +536,6 @@ void UGameStateManager::UpdateMatchEnd()
 	if (detected)
 	{
 		AddState(EGameState::MatchEnded);
-		OnMatchEnd.Broadcast();
 		OnMatchEnded();
 	}
 }
@@ -737,8 +735,6 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 		waitingPhaseTimer = 0.0f;
 		// Increment turn count
 		turnCount++;
-		// Update defence line and ball holder
-		SetDeffenceLine();
 		// set ball holder
 		SetBallHolder();
 
@@ -749,14 +745,7 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 
 // フェーズハンドラー (アクション実行フェーズ)
 void UGameStateManager::HandleActionPlayingPhase()
-{
-	// 各種状態検知
-    UpdateShoot();
-    UpdateCross();
-    UpdateLineBreak();
-    UpdateDuel();
-    UpdateFreeHolder();
-    
+{   
     // 次のフェーズへ遷移
     TransitionToPhase(ETurnPhase::StateDetection);
 }
@@ -786,27 +775,22 @@ void UGameStateManager::HandleTurnCompletePhase()
 {
 	// if the match restart is ready, skip it (do once)
 	if (isMatchRestartReady) return;
-	
-	// check goal state
-    if (HasState(EGameState::Goal))
-    {
-		// - 試合再開処理 (遅延実行) -
-		isMatchRestartReady = true; // set flag
-		if (GetWorld())
-		{
-			FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::UpdateMatchStart);
-			float _delay = 2.5f;
-			GetWorld()->GetTimerManager().SetTimer(timerHandle, TimerDel, _delay, false);
-		}
 
-		return;
-    }
-
-	// ↓ actions that are not goal state ↓
 	ClearAllStates();
     ResetPlayerFlags();
-	OnTurnCompletePhase.Broadcast(); // turn finish notify (stop player animation ets...)
+	OnTurnCompletePhase.Broadcast(); // turn finish notify (stop player animation etc...)
     
+	// -- turn end action --
+	//  if two turns(attack and deffence) completed, turn end
+	if (turnCount >= 2) {
+		turnCount = 0; // reset turn count	
+		// get instance
+		UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (_instance == nullptr)  return;
+		_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // to player select phase
+		
+		return;
+	}
 	// next phase
 	TransitionToPhase(ETurnPhase::WaitingForAction);
 }

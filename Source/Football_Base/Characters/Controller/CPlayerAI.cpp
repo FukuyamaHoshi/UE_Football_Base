@@ -24,7 +24,6 @@ void ACPlayerAI::BeginPlay()
 	state->OnGetBehind.AddUObject(this, &ACPlayerAI::HandleGetBehind);
 	state->OnDribbleBreakThrough.AddUObject(this, &ACPlayerAI::HandleDribbleBreakThrough);
 	state->OnGoal.AddUObject(this, &ACPlayerAI::HandleGoal);
-	state->OnMatchStart.AddUObject(this, &ACPlayerAI::HandleMatchStart);
 	state->OnMatchEnd.AddUObject(this, &ACPlayerAI::HandleMatchEnd);
 	state->OnTurnCompletePhase.AddUObject(this, &ACPlayerAI::HandleTurnCompletePhase);
 }
@@ -69,16 +68,10 @@ void ACPlayerAI::HandleDuelStart()
 	
 	// ボールホルダー時
 	if (isBallHolder) {
-		// アグレッシブスタンスに変更
-		_controlledPlayer->SetDefensiveStance();
-
 		return;
 	}
 	// ディフェンダー時
 	if (isDefender) {
-		// アグレッシブスタンスに変更
-		_controlledPlayer->SetDefensiveStance();
-
 		return;
 	}
 	// フリー時
@@ -231,7 +224,6 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 	// ディフェンダー
 	if (isDefender) 
 	{
-		_controlledPlayer->Tackle();
 		return;
 	}
 
@@ -254,57 +246,6 @@ void ACPlayerAI::HandleDribbleBreakThrough()
 // ゴールハンドル
 void ACPlayerAI::HandleGoal()
 {
-	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
-	if (_controlledPlayer == nullptr) return;
-	
-	if (_controlledPlayer->ActorHasTag("HOME")) {
-		_controlledPlayer->CheerMotion();
-	}
-	else {
-		_controlledPlayer->SadMotion();
-	}
-}
-
-// 試合開始ハンドル
-void ACPlayerAI::HandleMatchStart()
-{
-	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
-	if (_controlledPlayer == nullptr) return;
-	
-	// アニメーション停止 (*再試合対応)
-	_controlledPlayer->StopAnim();
-
-	// 初期配置 (*再試合対応)
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-	if (_instance == nullptr)  return;
-	if (_instance->game_phase == C_Common::MATCH_READY_PHASE) 
-	{
-		// <試合開始>
-		initialLocation = _controlledPlayer->GetActorLocation();
-	}else 
-	{
-		// <再試合>
-		_controlledPlayer->SetActorLocation(initialLocation); // 位置
-		_controlledPlayer->LookForward(); // 向き
-	}
-
-	// GK以外
-	if (_controlledPlayer->position != C_Common::GK_POSITION) {
-		// ミドルラインへ移動 (走る)
-		if (_controlledPlayer->ActorHasTag("HOME")) {
-			// HOME
-			FVector _targetLocation = _controlledPlayer->GetActorLocation();
-			_targetLocation.X += C_Common::TILE_SIZE;
-			_controlledPlayer->RunTo(_targetLocation);
-		}
-		else {
-			// AWAY
-			FVector _targetLocation = _controlledPlayer->GetActorLocation();
-			_targetLocation.X -= C_Common::TILE_SIZE * 2;
-			_controlledPlayer->RunTo(_targetLocation);
-		}
-	}
-
 }
 
 // 試合終了ハンドル
@@ -312,9 +253,6 @@ void ACPlayerAI::HandleMatchEnd()
 {
 	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (_controlledPlayer == nullptr) return;
-
-	// アニメーション停止
-	_controlledPlayer->StopAnim();
 
 	// 初期配置
 	_controlledPlayer->SetActorLocation(initialLocation); // 位置
@@ -324,12 +262,6 @@ void ACPlayerAI::HandleMatchEnd()
 // ターン完了ハンドル
 void ACPlayerAI::HandleTurnCompletePhase()
 {
-	// get controlled player
-	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
-	if (_controlledPlayer == nullptr) return;
-
-	// アニメーション停止
-	_controlledPlayer->StopAnim();
 }
 
 // ショートパス

@@ -4,8 +4,6 @@
 #include "C_Player.h"
 #include <Kismet/GameplayStatics.h>
 #include <Kismet/KismetMathLibrary.h>
-#include "GameFramework/CharacterMovementComponent.h" // キャラクター移動コンポーネントをインクルード
-#include "TimerManager.h" // For scheduling a callback when montage ends
 #include "Controller/CPlayerAI.h"
 #include <Football_Base/C_Common.h>
 
@@ -60,43 +58,10 @@ void AC_Player::BeginPlay()
 	UActorComponent* _actorMesh = GetComponentByClass(USkeletalMeshComponent::StaticClass());
 	myMesh = Cast<USkeletalMeshComponent>(_actorMesh); // キャスト
 	// **
-	
-	//myMesh->SetVisibility(false); // メッシュ非表示
 
 	// *** ボール取得 ***
 	AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
 	ball = Cast<AC_Soccer_Ball>(_b); // キャスト
-	// ***
-
-	// *** アニメーションモンタージュ取得 ***
-	shortPassAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_ShortPass.AM_ShortPass"), NULL, LOAD_None, NULL);
-	longPassAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Long_Pass.AM_Long_Pass"), NULL, LOAD_None, NULL);
-	trapAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Trap.AM_Trap"), NULL, LOAD_None, NULL);
-	regateAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Regate.AM_Regate"), NULL, LOAD_None, NULL);
-	tackleAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Tackle.AM_Tackle"), NULL, LOAD_None, NULL);
-	sad1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Sad_1.AM_Sad_1"), NULL, LOAD_None, NULL);
-	sad2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Sad_2.AM_Sad_2"), NULL, LOAD_None, NULL);
-	cheer1Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_1.AM_Cheer_1"), NULL, LOAD_None, NULL);
-	cheer2Anim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Cheer_2.AM_Cheer_2"), NULL, LOAD_None, NULL);
-	freeAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free.AM_Free"), NULL, LOAD_None, NULL);
-	targetmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Target.AM_Free_Target"), NULL, LOAD_None, NULL);
-	postmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Post.AM_Free_Post"), NULL, LOAD_None, NULL);
-	runnerAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Runner.AM_Free_Runner"), NULL, LOAD_None, NULL);
-	poketmanAppealAnim = LoadObject<UAnimMontage>(NULL, TEXT("/Game/Animations/Montage/Player_Origin/AM_Free_Poket.AM_Free_Poket"), NULL, LOAD_None, NULL);
-	// ***
-
-	// *** アニメーションインスタンス取得 ***
-	if (myMesh)
-	{
-		// 2. アニメーションインスタンスを取得
-		UAnimInstance* _animInstance = myMesh->GetAnimInstance();
-
-		// 3. アニメーションインスタンスがUMyAnimInstance型であることを確認
-		if (_animInstance)
-		{
-			playerAnimInstance = Cast<UC_Player_Anim_Instance>(_animInstance);
-		}
-	}
 	// ***
 
 	// *** Widgetコンポーネント取得 ***
@@ -136,65 +101,7 @@ void AC_Player::Tick(float DeltaTime)
 	}
 	// ***
 
-	// *** トラップアニメーション ***
-	if (isTrap) {
-		float _dis = 0; // ボールとの距離
-		if (ball) {
-			_dis = GetDistanceTo(ball);
-		}
-		
-		if (_dis < 400.0f) { // この距離以内にきたらで実行
-			isTrap = false;
-
-			// プレイヤーアニメーション
-			UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-			if (trapAnim)
-			{
-				// Play trap montage
-				_animInstance->Montage_Play(trapAnim);
-
-				// - トラップアニメーション終了後、前方を向く -
-				float _animLength = trapAnim->GetPlayLength();
-				if (_animLength <= 0.0f) _animLength = 0.1f;
-				FTimerHandle _trapTimerHandle;
-				FTimerDelegate _trapDelegate = FTimerDelegate::CreateUObject(this, &AC_Player::LookForward);
-				if (GetWorld())
-				{
-					GetWorld()->GetTimerManager().SetTimer(_trapTimerHandle, _trapDelegate, _animLength, false);
-				}
-			}
-		}
-	}
-	// ***
-
-	// *** アニメーションBP 調整 ***
-	// aiコントローラー取得
-	ACPlayerAI* _aiController = Cast<ACPlayerAI>(GetController());
-	if (_aiController == nullptr) return;
-	if (_aiController->isBallHolder) { // 〇ボールホルダー時
-		// -- ボールキープ --
-		if (isBallKeeping == false) {
-			if (ball) {
-				if (ball->isMoving == false && isTrap == false) {
-					BallKeeping();
-
-					isBallKeeping = true; // フラグON ←これは中に
-				}
-			}
-		}
-	}
-	else { // ●ボールホルダーでない
-		// -- スタンディング --
-		if (isBallKeeping) {
-			if (playerAnimInstance)
-			{
-				playerAnimInstance->isKeep = false;
-			}
-			isBallKeeping = false; // フラグOFF
-		}
-	}
-
-	// -- ボールキープ時間計測 --
+	// *** ボールキープ時間計測 ***
 	if (isBallKeeping) {
 		ballKeepingCount += DeltaTime;
 	}
@@ -208,7 +115,6 @@ void AC_Player::Tick(float DeltaTime)
 void AC_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 // メッシュを表示する
@@ -286,12 +192,6 @@ void AC_Player::ShotPass(AC_Player* targetPlayer)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-	
-
-	// プレイヤーアニメーション
-	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-	if (shortPassAnim)
-	_animInstance->Montage_Play(shortPassAnim);
 
 	// ボール移動
 	if (ball) {
@@ -309,18 +209,6 @@ void AC_Player::LongPass(AC_Player* targetPlayer)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-
-	// プレイヤーアニメーション
-	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-	if (longPassAnim)
-		_animInstance->Montage_Play(longPassAnim);
-
-	// ボール移動
-	if (ball) {
-		FVector _targetLocation = targetPlayer->GetActorLocation();
-		ball->SetLongPass(_targetLocation);
-	}
 }
 
 // スペースパス (ショートパス)
@@ -332,16 +220,6 @@ void AC_Player::SpacePass(FVector toLocation)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	// プレイヤーアニメーション
-	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-	if (shortPassAnim)
-		_animInstance->Montage_Play(shortPassAnim);
-
-	// ボール移動
-	if (ball) {
-		ball->SetShortPass(toLocation);
-	}
 }
 
 // ロングキック
@@ -353,17 +231,6 @@ void AC_Player::LongKick(FVector toLocation)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-
-	// プレイヤーアニメーション
-	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-	if (longPassAnim)
-		_animInstance->Montage_Play(longPassAnim);
-
-	// ボール移動
-	if (ball) {
-		ball->SetLongPass(toLocation);
-	}
 }
 
 // トラップ
@@ -398,28 +265,11 @@ void AC_Player::Shoot()
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-
-	// プレイヤーアニメーション
-	UAnimInstance* _animInstance = myMesh->GetAnimInstance(); // アニメーションインスタンス
-	if (longPassAnim)
-		_animInstance->Montage_Play(longPassAnim);
-
-	// ボール移動
-	if (ball) {
-		ball->SetLongPass(_goalLocation);
-	}
 }
 
 // ボール保持
 void AC_Player::BallKeeping()
 {
-	// アニメーション
-	if (playerAnimInstance)
-	{
-		playerAnimInstance->isKeep = true;
-	}
-	
 	// 前方向へ回転 (*必ず前を向く)
 	FRotator _rotation = FRotator::ZeroRotator;
 	if (ActorHasTag("HOME")) {
@@ -457,14 +307,6 @@ void AC_Player::RunTo(FVector toLocation)
 	fromLocation = GetActorLocation(); // 動く前の位置セット
 	isMoving = true; // 移動開始
 
-	// アニメーション
-	if (playerAnimInstance)
-	{
-		// 第1引数はブレンドアウト時間 (任意)、第2引数は停止するモンタージュ (nullptrで全て対象)
-		playerAnimInstance->Montage_Stop(0.25f, nullptr); // アニメーションモンタージュ停止 (0.25秒かけてブレンドアウト)
-		playerAnimInstance->isRun = true; // ABP開始
-	}
-
 	// ONタイルプレイヤー削除
 	for (AC_Tile* _tile : tiles) {
 		if (_tile->tileNo == tileNo) {
@@ -479,8 +321,6 @@ void AC_Player::RunTo(FVector toLocation)
 // ドリブル (相手を抜く)
 void AC_Player::RegateDrrible()
 {
-	StopAnim(); // アニメーション停止
-
 	// 移動位置取得
 	FVector _ToLocation = GetActorLocation();
 	if (ActorHasTag("HOME")) {
@@ -495,13 +335,6 @@ void AC_Player::RegateDrrible()
 	isMoving = true; // 移動開始
 	isDrribling = true; // ドリブル開始
 
-	// アニメーション時間取得
-	if (regateAnim) moveTotalTime = regateAnim->GetPlayLength(); // 移動時間 (指定)
-
-	// プレイヤーアニメーション
-	if (regateAnim && playerAnimInstance)
-		playerAnimInstance->Montage_Play(regateAnim);
-
 	// ONタイルプレイヤー削除
 	for (AC_Tile* _tile : tiles) {
 		if (_tile->tileNo == tileNo) {
@@ -514,37 +347,6 @@ void AC_Player::RegateDrrible()
 
 	// ボールキープ時間リセット
 	ballKeepingCount = 0.0f;
-}
-
-// タックル (Root Motion)
-void AC_Player::Tackle()
-{
-	// プレイヤーアニメーション
-	if (tackleAnim && playerAnimInstance)
-		playerAnimInstance->Montage_Play(tackleAnim);
-	
-	// ディフェンス姿勢解除
-	RemoveDefensiveStance();
-}
-
-// ディフェンス姿勢
-void AC_Player::SetDefensiveStance()
-{
-	StopAnim();
-
-	// プレイヤーアニメーション
-	if (playerAnimInstance) {
-		playerAnimInstance->isDefensiveStance = true;
-	}
-}
-
-// 解除ディフェンス姿勢
-void AC_Player::RemoveDefensiveStance()
-{
-	// プレイヤーアニメーション
-	if (playerAnimInstance) {
-		playerAnimInstance->isDefensiveStance = false;
-	}
 }
 
 // 移動処理
@@ -562,7 +364,6 @@ void AC_Player::Move(float dTime) {
 
 	// *** ドリブル時処理 ***
 	if (isDrribling && ball) {
-		//FVector _ballLocation = _newPlayerLocation + (GetActorForwardVector() * 20.0f); // プレイヤーの前の位置;
 		ball->SetActorLocation(_newPlayerLocation);
 	}
 	// ***
@@ -575,7 +376,6 @@ void AC_Player::Move(float dTime) {
 		moveTotalTime = 0.0f; // 移動時間(指定)リセット
 		movingCount = 0.0f; // 移動カウントリセット
 		isMoving = false; // 移動終了
-		if (playerAnimInstance) playerAnimInstance->isRun = false; // アニメーション
 		
 		// -- タイルNo更新 --
 		tileNo = GetTileNoFromLocation(); // タイルNo更新
@@ -595,7 +395,6 @@ void AC_Player::Move(float dTime) {
 		
 		// -- ドリブル時 --
 		isDrribling = false; // *ドリブル終了
-		if (playerAnimInstance) playerAnimInstance->isDrrible = false; // アニメーション終了
 		
 		// -- コールバック処理 (delegate) --
 		if (completeMoving.IsBound()) completeMoving.Execute(); // 実行処理
@@ -716,7 +515,6 @@ void AC_Player::UpdateViewTileNos()
 		idx++; // インクリメント (タイルが1-5のため)
 		viewNos.Add(idx);
 	}
-
 }
 
 // ドリブル (前進)
@@ -736,11 +534,6 @@ void AC_Player::Drrible()
 	isMoving = true; // 移動開始
 	isDrribling = true; // ドリブル開始
 
-	// プレイヤーアニメーション
-	if (playerAnimInstance) {
-		playerAnimInstance->isDrrible = true;
-		playerAnimInstance->isKeep = false; // *キープアニメーションOFF (これしないとアニメーション切り替わらない)
-	}
 	isBallKeeping = false; // *キープOFF
 
 	// ONタイルプレイヤー削除
@@ -757,32 +550,6 @@ void AC_Player::Drrible()
 	ballKeepingCount = 0.0f;
 }
 
-// 喜びアニメーション
-void AC_Player::CheerMotion()
-{
-	bool _b = FMath::RandBool(); // ランダム
-
-	if (_b) {
-		if (cheer1Anim && playerAnimInstance) playerAnimInstance->Montage_Play(cheer1Anim);
-	}
-	else {
-		if (cheer2Anim && playerAnimInstance) playerAnimInstance->Montage_Play(cheer2Anim);
-	}
-}
-
-// 悲しみアニメーション
-void AC_Player::SadMotion()
-{
-	bool _b = FMath::RandBool(); // ランダム
-
-	if (_b) {
-		if (sad1Anim && playerAnimInstance) playerAnimInstance->Montage_Play(sad1Anim);
-	}
-	else {
-		if (sad2Anim && playerAnimInstance) playerAnimInstance->Montage_Play(sad2Anim);
-	}
-}
-
 // フリーアピール
 void AC_Player::FreeAppeal(AC_Player* ballHolder)
 {
@@ -792,8 +559,6 @@ void AC_Player::FreeAppeal(AC_Player* ballHolder)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	if (freeAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(freeAppealAnim);
 }
 
 // ターゲットマンアピール
@@ -805,8 +570,6 @@ void AC_Player::TargetmanAppeal(AC_Player* ballHolder)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	if (targetmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(targetmanAppealAnim);
 }
 
 // ポストマンアピール
@@ -818,8 +581,6 @@ void AC_Player::PostmanAppeal(AC_Player* ballHolder)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	if (postmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(postmanAppealAnim);
 }
 
 // ランナーアピール
@@ -831,8 +592,6 @@ void AC_Player::RunnerAppeal()
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	if (runnerAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(runnerAppealAnim);
 }
 
 // ポケットマンアピール
@@ -844,28 +603,4 @@ void AC_Player::PoketmanAppeal(AC_Player* ballHolder)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-
-	if (poketmanAppealAnim && playerAnimInstance) playerAnimInstance->Montage_Play(poketmanAppealAnim);
-}
-
-// アニメーション停止 (アイドル状態へ)
-void AC_Player::StopAnim() 
-{
-	if (playerAnimInstance == nullptr) return;
-
-	// -- モンタージュ --
-	// 第1引数はブレンドアウト時間 (任意)、第2引数は停止するモンタージュ (nullptrで全て対象)
-	playerAnimInstance->Montage_Stop(0.25f, nullptr); // アニメーションモンタージュ停止 (0.25秒かけてブレンドアウト)
-	
-	// -- ルートモーション --
-	UCharacterMovementComponent* _movementComponent = GetCharacterMovement(); // コンポーネント
-	if (_movementComponent) {
-		_movementComponent->StopMovementImmediately();
-	}
-
-	// -- Anim BluePrint --
-	playerAnimInstance->isKeep = false;
-	playerAnimInstance->isRun = false;
-	playerAnimInstance->isDrrible = false;
-	playerAnimInstance->isDefensiveStance = false;
 }
