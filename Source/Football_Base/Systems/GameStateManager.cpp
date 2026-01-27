@@ -673,6 +673,14 @@ void UGameStateManager::ResetPlayerFlags()
 		_frontAI->isFrontMovingPlayer = false; // フラグ
 		frontMovingPlayer = nullptr;
 	}
+
+	// reset all players' action completed flag
+	for (AC_Player* _p : allPlayers) {
+		ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
+		// check controller
+		if (_playerAI == nullptr) continue;
+		_playerAI->isActionCompleted = false; // フラグリセット
+	}
 }
 
 // 状態フラグチェック
