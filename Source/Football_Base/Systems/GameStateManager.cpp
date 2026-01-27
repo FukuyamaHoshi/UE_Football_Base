@@ -154,33 +154,17 @@ bool UGameStateManager::Initialize()
 // - フリー(ボールホルダー)状態検知 -
 bool UGameStateManager::DedectFreeHolder()
 {
-	// *条件*
-	// ボール停止中
-	if (ball->isMoving) return false;
-	// すべての状態フラグ確認
+	// *conditions*
+	// check all state flags
 	if (CheckStateFlags()) return false;
+	// check free
+	if (GetIsFree(ballHolder) == false) return false;
 
-	// *プレイヤーフラグ更新*
-	// - フリーマン -
-	// ボール保持チーム取得
-	TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
-	if (ballHolder->ActorHasTag(FName("HOME"))) {
-		_myTeamPlayers = homePlayers;
-	}
-	else {
-		_myTeamPlayers = awayPlayers;
-	}
-	// フラグ更新
-	for (AC_Player* _p : _myTeamPlayers) {
-		if (_p->isMoving) continue; // 移動中はなし
-		if (_p == ballHolder) continue; // ボールホルダーなし
-
-		if (GetIsFree(_p)) {
-			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
-			_playerAI->isFreeMan = true; // *フラグセット
-			freeMans.Add(_p); // *プレイヤーセット
-		}
-	}
+	// - update player's flag -
+	ACPlayerAI* _holderAI = Cast<ACPlayerAI>(ballHolder->GetController());
+	if (_holderAI == nullptr) return false;
+	_holderAI->isBallHolder = true; // *set flag
+	
 	return true;
 }
 
@@ -535,26 +519,55 @@ void UGameStateManager::UpdateMatchEnd()
 	}
 }
 
-// プレイヤーフリー判定
-// ( true: フリー )
+// check if the target player is free
 bool UGameStateManager::GetIsFree(AC_Player* targetPlayer)
 {
-	bool _isFree = false;
+	bool _isFree = true;
 
-	// タイルNo = 0でもフリー
+	// - tile No 0 (= free) or sub player check -
 	if (targetPlayer->tileNo == 0 && subPlayers.Contains(targetPlayer) == false) {
 		_isFree = true;
-
 		return _isFree;
 	}
 
-	for (AC_Tile* _tile : tiles) {
-		if (_tile->tileNo == targetPlayer->tileNo) {
-			if (_tile->onPlayerNum < 2) _isFree = true;
-
+	// front tile No
+	int _frontTileNo = targetPlayer->tileNo + C_Common::TILE_NUM_Y;
+		
+	// - check out of range -
+	if (targetPlayer->ActorHasTag(FName("HOME"))) {
+		// HOME: check max No (until 30)
+		if (_frontTileNo > 30)
+		{
+			_isFree = true;
+			return _isFree;
+		}
+	}
+	else {
+		// AWAY: check min No (until 1)
+		if (_frontTileNo < 1) 
+		{
+			_isFree = true;
+			return _isFree;
+		}
+	}
+		
+	// - check enemy players on the front tile -
+	TArray<AC_Player*> _enemyPlayers = {};
+	if (targetPlayer->ActorHasTag(FName("HOME"))) {
+		_enemyPlayers = awayPlayers;
+	}
+	else {
+		_enemyPlayers = homePlayers;
+	}
+	// - check each enemy player -
+	for (AC_Player* _enemy : _enemyPlayers) {
+		if (_enemy->tileNo == _frontTileNo) {
+			_isFree = false; // Found!!
+			
 			break;
 		}
 	}
+
 	return _isFree;
 }
 
