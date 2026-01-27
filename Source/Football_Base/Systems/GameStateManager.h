@@ -9,6 +9,7 @@
 // C++ 専用デリゲート（Blueprint 連携なし）
 DECLARE_MULTICAST_DELEGATE(FOnFreeHolder);
 DECLARE_MULTICAST_DELEGATE(FOnDuelStart);
+DECLARE_MULTICAST_DELEGATE(FOnDuelContinue); // working on duel
 DECLARE_MULTICAST_DELEGATE(FOnLineBreak);
 DECLARE_MULTICAST_DELEGATE(FOnCross);
 DECLARE_MULTICAST_DELEGATE(FOnShoot);
@@ -76,6 +77,7 @@ public:
     // C++ デリゲート
     FOnFreeHolder OnFreeHolder;
     FOnDuelStart OnDuelStart;
+	FOnDuelContinue OnDuelContinue; // working on duel
 	FOnLineBreak OnLineBreak;
 	FOnCross OnCross;
 	FOnShoot OnShoot;
@@ -110,7 +112,6 @@ private:
 	bool isInitialized = false; // 初期化済みフラグ
     TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
     AC_Soccer_Ball* ball = nullptr; // ボール
-	int turnCount = 0; // ターンカウント
 	bool isActionCompleted = false; // complete all players' action flog
 	bool isMatchRestartReady = false; // 試合再開準備完了フラグ
 	FTimerHandle timerHandle = {}; // タイマーハンドル
@@ -121,7 +122,13 @@ private:
 	ETurnPhase currentTurnPhase = ETurnPhase::None; // 現在のターンフェーズ
 	float waitingPhaseTimer = 0.0f;                 // 待機フェーズ経過時間
 	TArray<EGameState> activeStates = {}; // アクティブな状態のリスト
+	int turnCount = 0; // turn counter
 	
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ State Turn Counter
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	int duelTurnCount = 0;
+
 private:
 	// 初期化処理 (アクター取得など)
 	bool Initialize();
@@ -194,7 +201,12 @@ private:
 	bool DedectMatchEnd();
 	// - 試合終了更新 -
 	void UpdateMatchEnd();
-	
+
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ State Turn Action
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// duel turn action
+	void OnDuelTurn();
 
 	// リセットプレイヤーフラグ
 	void ResetPlayerFlags();

@@ -49,6 +49,8 @@ private:
 	void HandleFreeHolder();
 	// - デュエルハンドラ -
 	void HandleDuelStart();
+	// - continue duel handler -
+	void HandleDuelContinue(); // working on it
 	// - ラインブレイクハンドラ -
 	void HandleLineBreak();
 	// - クロスハンドラ -
@@ -74,6 +76,9 @@ private:
 	// action pass to front player
 	// | return : completed |
 	bool PassToFrontPlayer();
+	// back pass (step by step to GK)
+	// | return : completed |
+	bool BackPass();
 	// キャリー (前進ドリブル)
 	// | return : 実行済みか |
 	bool Carry();

@@ -215,6 +215,9 @@ bool UGameStateManager::DedectDuel()
 	// deffender
 	_defenceAI->SetEnemyAbilityCost(_ballHolderAI->offence);
 
+	// - increment duel turn counter -
+	duelTurnCount++;
+
 
 	return true;
 }
@@ -632,6 +635,13 @@ void UGameStateManager::ClearAllStates()
 	UE_LOG(LogTemp, Log, TEXT("All states cleared"));
 }
 
+// continue duel turn
+void UGameStateManager::OnDuelTurn()
+{
+	duelTurnCount++;
+	OnDuelContinue.Broadcast();
+}
+
 // プレイヤーフラグリセット
 void UGameStateManager::ResetPlayerFlags()
 {
@@ -740,6 +750,17 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 // フェーズハンドラー (アクション実行フェーズ)
 void UGameStateManager::HandleActionPlayingPhase()
 {   
+	// -- continue turn actions --
+	if (duelTurnCount > 0) 
+	{
+		// continue duel play
+		OnDuelTurn();
+		// next phase
+		TransitionToPhase(ETurnPhase::StateDetection);
+
+		return;
+	}
+
 	// - update states -
 	UpdateDuel(); // duel
 	UpdateFreeHolder(); // *set temporary

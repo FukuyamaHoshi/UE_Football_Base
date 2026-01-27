@@ -15,9 +15,10 @@ void ACPlayerAI::BeginPlay()
 	// StateSubsystem を取得
 	UGameStateManager*  state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 
-	// C++ デリゲートを購読
+	// subscribe C++ delegate
 	state->OnFreeHolder.AddUObject(this, &ACPlayerAI::HandleFreeHolder);
 	state->OnDuelStart.AddUObject(this, &ACPlayerAI::HandleDuelStart);
+	state->OnDuelContinue.AddUObject(this, &ACPlayerAI::HandleDuelContinue); // working on duel
 	state->OnLineBreak.AddUObject(this, &ACPlayerAI::HandleLineBreak);
 	state->OnCross.AddUObject(this, &ACPlayerAI::HandleCross);
 	state->OnShoot.AddUObject(this, &ACPlayerAI::HandleShoot);
@@ -74,6 +75,7 @@ void ACPlayerAI::HandleDuelStart()
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
 		
+		isActionCompleted = true; // action completed!
 		return;
 	}
 	// ディフェンダー時
@@ -81,8 +83,30 @@ void ACPlayerAI::HandleDuelStart()
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
 		
+		isActionCompleted = true; // action completed!
 		return;
 	}
+
+	isActionCompleted = true; // action completed!
+}
+
+// continue duel handler
+void ACPlayerAI::HandleDuelContinue()
+{
+	// 所有プレイヤー取得
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return;
+
+	// ボールホルダー時
+	if (isBallHolder) {
+		// - back pass until GK -
+		BackPass();
+		UKismetSystemLibrary::PrintString(this, "call", true, true, FColor::Red, 10.0f, TEXT("None"));
+		isActionCompleted = true; // action completed!
+		return;
+	}
+
+	isActionCompleted = true; // action completed!
 }
 
 // ラインブレイクハンドル
@@ -382,6 +406,60 @@ bool ACPlayerAI::PassToFrontPlayer()
 
 	// -- action short pass --
 	ShortPass(_frontPlayer);
+
+	return true;
+}
+
+// back pass (step by step to GK)
+bool ACPlayerAI::BackPass()
+{
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return false;
+
+	// get my tile No
+	int _myTileNo = _controlledPlayer->tileNo;
+	// - check (if it is GK tile) -
+	if (_myTileNo <= 0) return false; // call finish duel turn?
+	
+	// get back tile No
+	int _backTileNo = _myTileNo - (C_Common::TILE_NUM_Y * 2);	
+
+	// get my team players
+	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
+	if (_state == nullptr) return false;
+	TArray<AC_Player*> _myTeamPlayers = {}; // my team players
+	if (_controlledPlayer->ActorHasTag(FName("HOME"))) {
+		_myTeamPlayers = _state->homePlayers;
+	}
+	else {
+		_myTeamPlayers = _state->awayPlayers;
+	}
+
+	// - search back player (and get GK player) -
+	AC_Player* _gk = nullptr;
+	AC_Player* _backPlayer = nullptr;
+	for (AC_Player* _p : _myTeamPlayers) {
+		if (_p->tileNo == _backTileNo) {
+			_backPlayer = _p;
+
+			break;
+		}
+		if (_p->position == C_Common::GK_POSITION) {
+			_gk = _p;
+		}
+	}
+
+	// - action -
+	if (_backPlayer == nullptr) {
+		// < short pass to GK >
+		if (_gk == nullptr) return false;
+		ShortPass(_gk);
+		
+		return true;
+	}
+
+	// < short pass to back player >
+	ShortPass(_backPlayer);
 
 	return true;
 }
