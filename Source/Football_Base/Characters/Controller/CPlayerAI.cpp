@@ -37,9 +37,23 @@ void ACPlayerAI::HandleFreeHolder()
 {
 	// ball holder
 	if (isBallHolder) {
-		bool _b = PassFromGKToDF();
-		
-		if (_b == false) return;
+		// get player
+		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+		if (_controlledPlayer == nullptr) return;
+
+		// < GK >
+		if (_controlledPlayer->position == C_Common::GK_POSITION) {
+			bool _b = PassFromGKToDF();
+			
+			if (_b == false) return; // ← call attack trun over?
+		}
+		else {
+			// < Field Player >
+			bool _b = PassToFrontPlayer();
+
+			if (_b == false) return; // ← call duel?
+
+		}
 
 		isActionCompleted = true; // action completed!
 		return;
@@ -332,9 +346,48 @@ bool ACPlayerAI::PassFromGKToDF()
 	}
 	if (_targetPlayer == nullptr) return false;
 
-	// -- ショートパス --
+	// -- action short pass --
 	ShortPass(_targetPlayer);
 	
+	return true;
+}
+
+// action pass to front player (front player is 2 tiles ahead)
+bool ACPlayerAI::PassToFrontPlayer()
+{
+	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
+	if (_controlledPlayer == nullptr) return false;
+
+	// get my tile No
+	int _myTileNo = _controlledPlayer->tileNo;
+	// get front tile No
+	int _frontTileNo = _myTileNo + (C_Common::TILE_NUM_Y * 2);
+
+	// get my team players
+	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
+	if (_state == nullptr) return false;
+	TArray<AC_Player*> _myTeamPlayers = {}; // my team players
+	if (_controlledPlayer->ActorHasTag(FName("HOME"))) {
+		_myTeamPlayers = _state->homePlayers;
+	}
+	else {
+		_myTeamPlayers = _state->awayPlayers;
+	}
+
+	// search front player
+	AC_Player* _frontPlayer = nullptr;
+	for (AC_Player* _p : _myTeamPlayers) {
+		if (_p->tileNo == _frontTileNo) {
+			_frontPlayer = _p;
+			
+			break;
+		}
+	}
+	if (_frontPlayer == nullptr) return false;
+
+	// -- action short pass --
+	ShortPass(_frontPlayer);
+
 	return true;
 }
 

@@ -70,6 +70,9 @@ private:
 	// action pass from GK to DF
 	// | return : completed |
 	bool PassFromGKToDF();
+	// action pass to front player
+	// | return : completed |
+	bool PassToFrontPlayer();
 	// キャリー (前進ドリブル)
 	// | return : 実行済みか |
 	bool Carry();
