@@ -111,7 +111,7 @@ private:
     TArray <AC_Player*> subPlayers = {}; // サブプレイヤー
     AC_Soccer_Ball* ball = nullptr; // ボール
 	int turnCount = 0; // ターンカウント
-	bool isMoving = false;                // 移動中か (特別フラグ)
+	bool isActionCompleted = false; // complete all players' action flog
 	bool isMatchRestartReady = false; // 試合再開準備完了フラグ
 	FTimerHandle timerHandle = {}; // タイマーハンドル
     

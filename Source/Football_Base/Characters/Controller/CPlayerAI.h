@@ -31,6 +31,8 @@ public:
 	bool isGetBehindRunner = false;
 	// front moving player
 	bool isFrontMovingPlayer = false;
+	// action completed
+	bool isActionCompleted = false;
 
 	//  -- abiritys --
 	int offence = 1;
@@ -39,6 +41,7 @@ public:
 
 private:
 	FVector initialLocation = FVector::ZeroVector; // 初期位置
+	TArray<AC_Player*> passedTargets = {}; // passed players (in a attack)
 
 private:
 	// - フリー(ボールホルダー)ハンドラ -
@@ -64,9 +67,9 @@ private:
 
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
-	// フリーマンへパス
-	// | return : 実行済みか |
-	bool ShortPassToFreeMan();
+	// action pass from GK to DF
+	// | return : completed |
+	bool PassFromGKToDF();
 	// キャリー (前進ドリブル)
 	// | return : 実行済みか |
 	bool Carry();

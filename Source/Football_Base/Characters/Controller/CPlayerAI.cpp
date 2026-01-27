@@ -35,28 +35,17 @@ void ACPlayerAI::Tick(float DeltaSeconds)
 // フリー(ボールホルダー)ハンドル
 void ACPlayerAI::HandleFreeHolder()
 {
-	// ボールホルダー時
+	// ball holder
 	if (isBallHolder) {
-		bool _b = ShortPassToFreeMan();
-		if (_b == false) {
-			Carry();
-		}
+		bool _b = PassFromGKToDF();
 		
+		if (_b == false) return;
+
+		isActionCompleted = true; // action completed!
 		return;
 	}
-	// フリー時
-	if (isFreeMan) {
-		AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
-		if (controlledPlayer == nullptr) return;
-		// ステート取得
-		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
-		if (_state == nullptr) return;
-		
-		if (_state->ballHolder)
-			controlledPlayer->FreeAppeal(_state->ballHolder);
-		
-		return;
-	}
+	
+	isActionCompleted = true; // action completed!
 }
 
 // デュエル開始ハンドル
@@ -275,14 +264,19 @@ void ACPlayerAI::ShortPass(AC_Player* toPlayer)
 	toPlayer->Trap(controlledPlayer); // トラップ
 }
 
-// フリーマンへパス
-bool ACPlayerAI::ShortPassToFreeMan()
+// action pass from GK to DF
+bool ACPlayerAI::PassFromGKToDF()
 {
+	// < if GK player is ball holder >
+	//	1. serch DF
+	//	2. pass to the player from left side
 	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
 	if (controlledPlayer == nullptr) return false;
+	// check GK
+	if (controlledPlayer->position != C_Common::GK_POSITION) return false;
+
 	UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
 	if (_state == nullptr) return false;
-
 	// -- ボール保持チーム取得 --
 	TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
 	if (controlledPlayer->ActorHasTag(FName("HOME"))) {
@@ -292,28 +286,49 @@ bool ACPlayerAI::ShortPassToFreeMan()
 		_myTeamPlayers = _state->awayPlayers;
 	}
 
-	// -- ターゲット取得 --
-	AC_Player* _targetPlayer = nullptr; // パス先のプレイヤー
+	// - create DF position array -
+	// DF positions from left to right: LSB(1), LCB(2), CB(3), RCB(4), RSB(5)
+	TArray<int> _dfPositions = {
+		C_Common::LSB_POSITION,
+		C_Common::LCB_POSITION,
+		C_Common::CB_POSITION,
+		C_Common::RCB_POSITION,
+		C_Common::RSB_POSITION
+	};
+	// Remove positions of players already in passedTargets
+	for (AC_Player* _passedPlayer : passedTargets) {
+		_dfPositions.Remove(_passedPlayer->position);
+	}
+	// Remove positions that don't exist in _myTeamPlayers
+	for (int i = _dfPositions.Num() - 1; i >= 0; i--) {
+		int dfPos = _dfPositions[i];
+		bool positionExists = false;
+		
+		for (AC_Player* _p : _myTeamPlayers) {
+			if (_p->position == dfPos) {
+				positionExists = true;
+				break;
+			}
+		}
+		
+		if (!positionExists) {
+			_dfPositions.RemoveAt(i);
+		}
+	}
+	// check empty
+	if (_dfPositions.IsEmpty()) return false;
+
+	// -- get pass target --
+	AC_Player* _targetPlayer = nullptr;
 	for (AC_Player* _p : _myTeamPlayers) {
+		// *conditions*
+		// 1. DF position from left to right
+		if (_p->position != _dfPositions[0]) continue;
 
-		if (controlledPlayer->position == C_Common::GK_POSITION) {
-			// < GK >
-			// ①RB
-			if (_p->position != C_Common::RSB_POSITION) continue;
-
-			_targetPlayer = _p;
-			break;
-		}
-		else {
-			// < フィールドプレイヤー >
-			// ①視野内
-			if (controlledPlayer->viewNos.Contains(_p->tileNo) == false) continue;
-			// ②フリー
-			if (_state->GetIsFree(_p) == false) continue;
-
-			_targetPlayer = _p;
-			break;
-		}
+		passedTargets.Add(_p); // passed players
+		_targetPlayer = _p;
+			
+		break;
 	}
 	if (_targetPlayer == nullptr) return false;
 

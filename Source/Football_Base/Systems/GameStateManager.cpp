@@ -53,8 +53,6 @@ void UGameStateManager::Tick(float DeltaTime)
 	// --- 試合フェーズ処理 ---
 	if (_instance->game_phase == C_Common::MATCH_PHASE)
 	{
-		UpdateMatchEnd(); // 試合終了状態更新
-
 		switch (currentTurnPhase)
 		{
 			case ETurnPhase::WaitingForAction:
@@ -274,23 +272,20 @@ void UGameStateManager::UpdateDuel()
 bool UGameStateManager::DedectCompleteMoving()
 {
 	// *条件*
-	// ①ボール移動中
-	if (ball->isMoving) return true;
-	// ②全プレイヤー移動中
+	// 1. complete all players' action
 	for (AC_Player* _p : allPlayers) {
-		if (_p->isMoving) {
-			
-			return true;
-		}
+		ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
+		if (_playerAI == nullptr) return false;
+		if (_playerAI->isActionCompleted == false) return false; // not action completed
 	}
 
-	return false;
+	return true;
 }
 
 // - 移動終了更新 -
 void UGameStateManager::UpdateCompleteMoving()
 {
-	isMoving = DedectCompleteMoving();
+	isActionCompleted = DedectCompleteMoving();
 }
 
 // - ラインブレイク検知 -
@@ -746,6 +741,8 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 // フェーズハンドラー (アクション実行フェーズ)
 void UGameStateManager::HandleActionPlayingPhase()
 {   
+	UpdateFreeHolder(); // *set temporary
+
     // 次のフェーズへ遷移
     TransitionToPhase(ETurnPhase::StateDetection);
 }
@@ -753,19 +750,16 @@ void UGameStateManager::HandleActionPlayingPhase()
 // フェーズハンドラー (状態検知フェーズ)
 void UGameStateManager::HandleStateDetectionPhase()
 {
-	// update moving status
+	// update action completed status
     UpdateCompleteMoving();
-	// if it is only duel state, wait for next state
-	if (HasState(EGameState::Duel)) {
-		if (activeStates.Num() == 1) return;
-	}
     
-    if (!isMoving)
+	// -- when all players' action completed --
+    if (isActionCompleted)
     {
-		// update goal states (for checking)
+		// 1.update goal states (for checking)
 		UpdateGoal();
 
-		// next phase
+		// 2.next phase
         TransitionToPhase(ETurnPhase::TurnComplete);
     }
 }
@@ -773,25 +767,12 @@ void UGameStateManager::HandleStateDetectionPhase()
 // フェーズハンドラー (ターン完了フェーズ)
 void UGameStateManager::HandleTurnCompletePhase()
 {
-	// if the match restart is ready, skip it (do once)
-	if (isMatchRestartReady) return;
-
+	// -- turn reset action --
 	ClearAllStates();
     ResetPlayerFlags();
 	OnTurnCompletePhase.Broadcast(); // turn finish notify (stop player animation etc...)
     
-	// -- turn end action --
-	//  if two turns(attack and deffence) completed, turn end
-	if (turnCount >= 2) {
-		turnCount = 0; // reset turn count	
-		// get instance
-		UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (_instance == nullptr)  return;
-		_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // to player select phase
-		
-		return;
-	}
-	// next phase
+	// -- next phase --
 	TransitionToPhase(ETurnPhase::WaitingForAction);
 }
 
