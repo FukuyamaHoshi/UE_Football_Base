@@ -159,11 +159,6 @@ bool UGameStateManager::DedectFreeHolder()
 	if (CheckStateFlags()) return false;
 	// check free
 	if (GetIsFree(ballHolder) == false) return false;
-
-	// - update player's flag -
-	ACPlayerAI* _holderAI = Cast<ACPlayerAI>(ballHolder->GetController());
-	if (_holderAI == nullptr) return false;
-	_holderAI->isBallHolder = true; // *set flag
 	
 	return true;
 }
@@ -182,16 +177,16 @@ void UGameStateManager::UpdateFreeHolder()
 // - デュエル状態検知 -
 bool UGameStateManager::DedectDuel()
 {
-	// *条件*
-	// GK以外
+	// *conditions*
+	// except GK
 	if (ballHolder->position == C_Common::GK_POSITION) return false;
-	// 接敵中
-	if (GetIsFree(ballHolder)) return false;
-	// すべての状態フラグ確認
+	// check all state flags
 	if (CheckStateFlags()) return false;
+	// check free
+	if (GetIsFree(ballHolder)) return false;
 
-	// *プレイヤーフラグ更新*
-	// - ディフェンダー -
+	// - undate player's flag -
+	// < defender >
 	TArray<AC_Player*> _deffencePlayers = {};
 	if (ballHolder->ActorHasTag(FName("HOME"))) {
 		_deffencePlayers = awayPlayers;
@@ -199,38 +194,28 @@ bool UGameStateManager::DedectDuel()
 	else {
 		_deffencePlayers = homePlayers;
 	}
+	// get enemy player on front tile
+	int _frontTileNo = ballHolder->tileNo + C_Common::TILE_NUM_Y;
 	for (AC_Player* _player : _deffencePlayers) {
-		if (_player->tileNo == ballHolder->tileNo) {
-			// プレイヤーのAIコントローラー取得
+		if (_player->tileNo == _frontTileNo) {
 			ACPlayerAI* _defenceAI = Cast<ACPlayerAI>(_player->GetController());
-			_defenceAI->isDefender = true; // *フラグセット
-			duelDeffender = _player; // *プレイヤーセット
-
+			if (_defenceAI == nullptr) continue;
+			
+			_defenceAI->isDefender = true; // *set flag
+			duelDeffender = _player; // *set defender
 			break;
 		}
 	}
 
-	// - フリーマン -
-	// ボール保持チーム取得
-	TArray<AC_Player*> _myTeamPlayers = {}; // ボール保持チーム
-	if (ballHolder->ActorHasTag(FName("HOME"))) {
-		_myTeamPlayers = homePlayers;
-	}
-	else {
-		_myTeamPlayers = awayPlayers;
-	}
-	// フラグ更新
-	for (AC_Player* _p : _myTeamPlayers) {
-		if (_p->isMoving) continue; // 移動中はなし
-		if (_p == ballHolder) continue; // ボールホルダーなし
+	// - set enemy ability cost -
+	ACPlayerAI* _ballHolderAI = Cast<ACPlayerAI>(ballHolder->GetController());
+	ACPlayerAI* _defenceAI = Cast<ACPlayerAI>(duelDeffender->GetController());
+	// ball holder
+	_ballHolderAI->SetEnemyAbilityCost(_defenceAI->defence);
+	// deffender
+	_defenceAI->SetEnemyAbilityCost(_ballHolderAI->offence);
 
-		if (GetIsFree(_p)) {
-			ACPlayerAI* _playerAI = Cast<ACPlayerAI>(_p->GetController());
-			_playerAI->isFreeMan = true; // *フラグセット
-			freeMans.Add(_p); // *プレイヤーセット
-		}
-	}
-	
+
 	return true;
 }
 
@@ -242,13 +227,6 @@ void UGameStateManager::UpdateDuel()
 	{
 		AddState(EGameState::Duel);
 		OnDuelStart.Broadcast();
-
-		// デゥエル開始後、『デゥエル時プレイ選択』を遅延実行
-		if (GetWorld()) {
-			FTimerDelegate _timerDel = FTimerDelegate::CreateUObject(this, &UGameStateManager::DuelPlayChoice);
-			const float _delaySeconds = 2.0f; // ディレイ時間
-			GetWorld()->GetTimerManager().SetTimer(timerHandle, _timerDel, _delaySeconds, false);
-		}
 	}
 }
 
@@ -762,9 +740,11 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 // フェーズハンドラー (アクション実行フェーズ)
 void UGameStateManager::HandleActionPlayingPhase()
 {   
+	// - update states -
+	UpdateDuel(); // duel
 	UpdateFreeHolder(); // *set temporary
 
-    // 次のフェーズへ遷移
+	// next phase
     TransitionToPhase(ETurnPhase::StateDetection);
 }
 

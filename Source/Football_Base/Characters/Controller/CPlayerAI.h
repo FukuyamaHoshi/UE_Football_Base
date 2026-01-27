@@ -16,8 +16,8 @@ class FOOTBALL_BASE_API ACPlayerAI : public AAIController
 	GENERATED_BODY()
 
 public:
-    virtual void BeginPlay() override;
-    virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	// --- states ---
@@ -42,6 +42,7 @@ public:
 private:
 	FVector initialLocation = FVector::ZeroVector; // 初期位置
 	TArray<AC_Player*> passedTargets = {}; // passed players (in a attack)
+	int enemyAbilityCost = 0; // enemy ability cost (for duel)
 
 private:
 	// - フリー(ボールホルダー)ハンドラ -
@@ -76,4 +77,10 @@ private:
 	// キャリー (前進ドリブル)
 	// | return : 実行済みか |
 	bool Carry();
+	// update stamina
+	void UpdateStamina(int value);
+
+public:
+	// get enemy ability cost (for duel)
+	void SetEnemyAbilityCost(int enemysAbility);
 };

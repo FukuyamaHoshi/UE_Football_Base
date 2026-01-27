@@ -71,21 +71,16 @@ void ACPlayerAI::HandleDuelStart()
 	
 	// ボールホルダー時
 	if (isBallHolder) {
+		// - update my stamina -
+		UpdateStamina(enemyAbilityCost);
+		
 		return;
 	}
 	// ディフェンダー時
 	if (isDefender) {
-		return;
-	}
-	// フリー時
-	if (isFreeMan) {
-		// ステート取得
-		UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
-		if (_state == nullptr) return;
-
-		if (_state->ballHolder)
-			_controlledPlayer->FreeAppeal(_state->ballHolder);
-
+		// - update my stamina -
+		UpdateStamina(enemyAbilityCost);
+		
 		return;
 	}
 }
@@ -441,4 +436,17 @@ bool ACPlayerAI::Carry()
 	controlledPlayer->Drrible(); // ドリブル
 	
 	return true;
+}
+
+// update stamina
+void ACPlayerAI::UpdateStamina(int value)
+{
+	stamina += value;
+	if (stamina < 1) stamina = 0; // min
+}
+
+// get enemy ability cost (for duel)
+void ACPlayerAI::SetEnemyAbilityCost(int enemysAbility)
+{
+	enemyAbilityCost = enemysAbility;
 }
