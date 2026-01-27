@@ -20,16 +20,22 @@ public:
     virtual void Tick(float DeltaSeconds) override;
 
 public:
-	// ボールホルダーフラグ
+	// --- states ---
+	// ball holder
 	bool isBallHolder = false;
-	// ディフェンダーフラグ
+	// defender
 	bool isDefender = false;
-	// フリーアピールフラグ
+	// free
 	bool isFreeMan = false;
-	// 裏抜けフラグ (走るプレイヤー)
+	// get behind runner
 	bool isGetBehindRunner = false;
-	// 縦ずれプレイヤーフラグ
+	// front moving player
 	bool isFrontMovingPlayer = false;
+
+	//  -- abiritys --
+	int offence = 1;
+	int defence = 1;
+	int stamina = 1;
 
 private:
 	FVector initialLocation = FVector::ZeroVector; // 初期位置
