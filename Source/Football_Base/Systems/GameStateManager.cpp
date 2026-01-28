@@ -155,6 +155,8 @@ bool UGameStateManager::Initialize()
 bool UGameStateManager::DedectFreeHolder()
 {
 	// *conditions*
+	// check the flag for failed free-holder state
+	if (HasFailedState(EGameState::FreeHolder)) return false;
 	// check all state flags
 	if (CheckStateFlags()) return false;
 	// check free
@@ -478,25 +480,21 @@ void UGameStateManager::UpdateMatchStart()
 // - 試合終了検知 -
 bool UGameStateManager::DedectMatchEnd()
 {
-	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
-	if (_instance == nullptr)  return false;
-	// *条件*
-	// ①フェーズカウントが1.0f以下で終了
-	if (_instance->phase_count > 1.0f) return false;
-	
+	// *conditions*
+	// 1. check all state flags
+	if (CheckStateFlags()) return false;
+
 	return true;
 }
 
 // - 試合終了更新 -
 void UGameStateManager::UpdateMatchEnd()
 {	
-	if (HasState(EGameState::MatchEnded)) return; // do once
-
 	bool detected = DedectMatchEnd();
 	if (detected)
 	{
 		AddState(EGameState::MatchEnded);
-		OnMatchEnded();
+		OnMatchEnd.Broadcast();
 	}
 }
 
@@ -552,6 +550,16 @@ bool UGameStateManager::GetIsFree(AC_Player* targetPlayer)
 	return _isFree;
 }
 
+// - handler for player handler failure -
+void UGameStateManager::OnPlayerHandleFailed(EGameState state)
+{
+	// - add failed state -
+	failedStates.Add(state);
+
+	// - broadcast event -
+	OnActionFailed.Broadcast();
+}
+
 // ボールホルダー設定
 void UGameStateManager::SetBallHolder()
 {
@@ -559,6 +567,7 @@ void UGameStateManager::SetBallHolder()
 	if (ballHolder) {
 		ACPlayerAI* _ballHolderAI = Cast<ACPlayerAI>(ballHolder->GetController()); // ボールホルダーAI
 		_ballHolderAI->isBallHolder = false; // *プレイヤーAI更新
+		preBallHolder = ballHolder; // set pre ball holder
 	}
 
 	// - 新しいボールホルダー取得 -
@@ -591,9 +600,8 @@ void UGameStateManager::OnMatchEnded()
 	UMy_Game_Instance* _instance = Cast<UMy_Game_Instance>(UGameplayStatics::GetGameInstance(GetWorld())); // ゲームインスタンス
 	if (_instance == nullptr)  return;
 
-	GetWorld()->GetTimerManager().ClearTimer(timerHandle); // delay action cansel
-	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ変更
-	RestartPhase(); // 試合再開処理
+	//GetWorld()->GetTimerManager().ClearTimer(timerHandle); // delay action cansel
+	_instance->game_phase = C_Common::PLAYER_SELECT_PLACE_PHASE; // フェーズ変更 (turn end)
 }
 
 // - マッチフェーズ再開処理 -
@@ -747,8 +755,8 @@ void UGameStateManager::HandleWaitingForActionPhase(float DeltaTime)
 	{	
 		// Reset timer
 		waitingPhaseTimer = 0.0f;
-		// Increment turn count
-		turnCount++;
+		// Increment step count
+		stepCount++;
 		// set ball holder
 		SetBallHolder();
 
@@ -774,6 +782,7 @@ void UGameStateManager::HandleActionPlayingPhase()
 	// - update states -
 	UpdateDuel(); // duel
 	UpdateFreeHolder(); // *set temporary
+	UpdateMatchEnd(); // match end (*call last)
 
 	// next phase
     TransitionToPhase(ETurnPhase::StateDetection);
@@ -793,13 +802,18 @@ void UGameStateManager::HandleStateDetectionPhase()
 
 		// 2.next phase
         TransitionToPhase(ETurnPhase::TurnComplete);
-    }
+    }	
 }
 
 // フェーズハンドラー (ターン完了フェーズ)
 void UGameStateManager::HandleTurnCompletePhase()
 {
-	// -- turn reset action --
+	// -- turn end action --
+	if (HasState(EGameState::MatchEnded)) {
+		OnMatchEnded();
+	}
+
+	// -- step reset action --
 	ClearAllStates();
     ResetPlayerFlags();
 	OnTurnCompletePhase.Broadcast(); // turn finish notify (stop player animation etc...)
@@ -839,7 +853,41 @@ void UGameStateManager::TransitionToPhase(ETurnPhase NewPhase)
 			
 		case ETurnPhase::TurnComplete:
 			// ターン完了フェーズ開始時の処理
-			UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Turn %d complete!"), turnCount), true, true, FColor::Green, 2.0f);
+			UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Step %d complete!"), stepCount), true, true, FColor::Green, 2.0f);
 			break;
 	}
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ✅ Failed State Management Functions (失敗状態管理関数)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 失敗状態を追加
+void UGameStateManager::AddFailedState(EGameState State)
+{
+	if (!failedStates.Contains(State))
+	{
+		failedStates.Add(State);
+		UE_LOG(LogTemp, Warning, TEXT("Failed State Added: %d"), static_cast<int32>(State));
+	}
+}
+
+// 失敗状態を削除
+void UGameStateManager::RemoveFailedState(EGameState State)
+{
+	failedStates.Remove(State);
+	UE_LOG(LogTemp, Log, TEXT("Failed State Removed: %d"), static_cast<int32>(State));
+}
+
+// 失敗状態をチェック
+bool UGameStateManager::HasFailedState(EGameState State) const
+{
+	return failedStates.Contains(State);
+}
+
+// 全失敗状態をクリア
+void UGameStateManager::ClearAllFailedStates()
+{
+	failedStates.Empty();
+	UE_LOG(LogTemp, Log, TEXT("All failed states cleared"));
 }

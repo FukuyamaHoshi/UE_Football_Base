@@ -28,6 +28,7 @@ void ACPlayerAI::BeginPlay()
 	state->OnMatchEnd.AddUObject(this, &ACPlayerAI::HandleMatchEnd);
 	state->OnTurnCompletePhase.AddUObject(this, &ACPlayerAI::HandleTurnCompletePhase);
 	state->OnStateTurnComplete.AddUObject(this, &ACPlayerAI::HandleStateTurnComplete);
+	state->OnActionFailed.AddUObject(this, &ACPlayerAI::HandleActionFailed); // ← ADD THIS
 }
 
 void ACPlayerAI::Tick(float DeltaSeconds)
@@ -37,9 +38,8 @@ void ACPlayerAI::Tick(float DeltaSeconds)
 // フリー(ボールホルダー)ハンドル
 void ACPlayerAI::HandleFreeHolder()
 {
-	// ball holder
+	// - ball holder -
 	if (isBallHolder) {
-		// get player
 		AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
 		if (_controlledPlayer == nullptr) return;
 
@@ -47,20 +47,40 @@ void ACPlayerAI::HandleFreeHolder()
 		if (_controlledPlayer->position == C_Common::GK_POSITION) {
 			bool _b = PassFromGKToDF();
 			
-			if (_b == false) return; // ← call attack trun over?
+			// - failure action -
+			if (_b == false) {
+				// Notify GameStateManager of failure
+				UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
+				if (_state) {
+					UKismetSystemLibrary::PrintString(this, "GK pass failed - notifying GameStateManager", true, true, FColor::Red, 3.0f);
+					_state->OnPlayerHandleFailed(EGameState::FreeHolder);
+				}
+				
+				return;
+			}
 		}
 		else {
 			// < Field Player >
 			bool _b = PassToFrontPlayer();
 
-			if (_b == false) return; // ← call duel?
-
+			// - failure action -
+			if (_b == false) {
+				// Notify GameStateManager of failure
+				UGameStateManager* _state = GetGameInstance()->GetSubsystem<UGameStateManager>();
+				if (_state) {
+					UKismetSystemLibrary::PrintString(this, "Field player pass failed - notifying GameStateManager", true, true, FColor::Red, 3.0f);
+					_state->OnPlayerHandleFailed(EGameState::FreeHolder);
+				}
+				
+				return;
+			}
 		}
 
 		isActionCompleted = true; // action completed!
 		return;
 	}
 	
+	// - except ball holder -
 	isActionCompleted = true; // action completed!
 }
 
@@ -272,12 +292,11 @@ void ACPlayerAI::HandleGoal()
 // 試合終了ハンドル
 void ACPlayerAI::HandleMatchEnd()
 {
-	AC_Player* _controlledPlayer = Cast<AC_Player>(GetPawn());
-	if (_controlledPlayer == nullptr) return;
+	isActionCompleted = true; // reset
 
 	// 初期配置
-	_controlledPlayer->SetActorLocation(initialLocation); // 位置
-	_controlledPlayer->LookForward(); // 向き
+	//_controlledPlayer->SetActorLocation(initialLocation); // 位置
+	//_controlledPlayer->LookForward(); // 向き
 }
 
 // ターン完了ハンドル
@@ -521,4 +540,12 @@ void ACPlayerAI::UpdateStamina(int value)
 void ACPlayerAI::SetEnemyAbilityCost(int enemysAbility)
 {
 	enemyAbilityCost = enemysAbility;
+}
+
+// Add this implementation
+void ACPlayerAI::HandleActionFailed()
+{
+    // - complete action state -
+    isActionCompleted = true;
+    
 }

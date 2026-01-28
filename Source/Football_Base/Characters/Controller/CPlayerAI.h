@@ -44,31 +44,21 @@ private:
 	TArray<AC_Player*> passedTargets = {}; // passed players (in a attack)
 	int enemyAbilityCost = 0; // enemy ability cost (for duel)
 
-private:
-	// - フリー(ボールホルダー)ハンドラ -
+protected:
+	// Handler functions
 	void HandleFreeHolder();
-	// - デュエルハンドラ -
 	void HandleDuelStart();
-	// - continue duel handler -
-	void HandleDuelContinue(); // working on it
-	// - ラインブレイクハンドラ -
+	void HandleDuelContinue();
 	void HandleLineBreak();
-	// - クロスハンドラ -
 	void HandleCross();
-	// - シュートハンドラ -
 	void HandleShoot();
-	// - 裏抜けハンドラ -
 	void HandleGetBehind();
-	// - ドリブル突破ハンドラ -
 	void HandleDribbleBreakThrough();
-	// - ゴールハンドラ -
 	void HandleGoal();
-	// - 試合終了ハンドラ -
 	void HandleMatchEnd();
-	// - ターン完了ハンドラ -
 	void HandleTurnCompletePhase();
-	// - ステートターン完了ハンドラ -
 	void HandleStateTurnComplete();
+	void HandleActionFailed(); // ← ADD THIS
 
 	// action pass from GK to DF
 	// | return : completed |

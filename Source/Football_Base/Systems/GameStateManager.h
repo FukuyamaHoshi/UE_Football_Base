@@ -20,6 +20,7 @@ DECLARE_MULTICAST_DELEGATE(FOnMatchStart);
 DECLARE_MULTICAST_DELEGATE(FOnMatchEnd);
 DECLARE_MULTICAST_DELEGATE(FOnTurnCompletePhase);
 DECLARE_MULTICAST_DELEGATE(FOnStateTurnComplete);
+DECLARE_MULTICAST_DELEGATE(FOnActionFailed); // ← ADD THIS
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ✅ State Flag Enum (状態フラグ列挙型)
@@ -89,9 +90,11 @@ public:
 	FOnMatchEnd OnMatchEnd;
 	FOnTurnCompletePhase OnTurnCompletePhase;
 	FOnStateTurnComplete OnStateTurnComplete; // state turn complete
+	FOnActionFailed OnActionFailed; // ← ADD THIS
 
 	// プレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー
+	AC_Player* preBallHolder = nullptr; // ボールホルダー (before a step)
 	AC_Player* duelDeffender = nullptr; // デュエル守備側
 	TArray<AC_Player*> freeMans = {}; // フリーマン (複数)
 	AC_Player* getBehindingRunner = nullptr; // 裏抜けプレイヤー (走る側)
@@ -106,9 +109,12 @@ public:
     int awayDeffenceLine = 0; // ディフェンスライン (AWAY 0-5まで)
 
 public:
-    // -- 共通関数 --
-   // - プレイヤーフリー判定 -
+    // - common functions -
+	// - プレイヤーフリー判定 -
     bool GetIsFree(AC_Player* targetPlayer);
+
+	// - handler for player handler failure -
+	void OnPlayerHandleFailed(EGameState state);
 
 private:
 	bool isInitialized = false; // 初期化済みフラグ
@@ -124,12 +130,17 @@ private:
 	ETurnPhase currentTurnPhase = ETurnPhase::None; // 現在のターンフェーズ
 	float waitingPhaseTimer = 0.0f;                 // 待機フェーズ経過時間
 	TArray<EGameState> activeStates = {}; // アクティブな状態のリスト
-	int turnCount = 0; // turn counter
+	int stepCount = 0; // step counter
 	
 	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	// ✅ State Turn Counter
 	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	int duelTurnCount = 0;
+
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ Failed States Array (失敗状態配列)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	TArray<EGameState> failedStates = {}; // 失敗した状態のリスト
 
 private:
 	// 初期化処理 (アクター取得など)
@@ -157,6 +168,18 @@ private:
 	bool HasState(EGameState State) const;
 	// 全状態をクリア
 	void ClearAllStates();
+
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// ✅ Failed State management functions (失敗状態管理関数)
+	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+	// 失敗状態を追加
+	void AddFailedState(EGameState State);
+	// 失敗状態を削除
+	void RemoveFailedState(EGameState State);
+	// 失敗状態をチェック
+	bool HasFailedState(EGameState State) const;
+	// 全失敗状態をクリア
+	void ClearAllFailedStates();
 
 	// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 	// Match state dedect and update (試合状態検知・更新関数)
