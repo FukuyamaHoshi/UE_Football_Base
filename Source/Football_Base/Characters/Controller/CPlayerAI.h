@@ -70,8 +70,6 @@ private:
 	// - ステートターン完了ハンドラ -
 	void HandleStateTurnComplete();
 
-	// ショートパス
-	void ShortPass(AC_Player* toPlayer);
 	// action pass from GK to DF
 	// | return : completed |
 	bool PassFromGKToDF();

@@ -167,7 +167,6 @@ void ACPlayerAI::HandleCross()
 
 		// 実行
 		_controlledPlayer->LongPass(_targetPlayer); // ロングパス
-		_targetPlayer->Trap(_controlledPlayer); // トラップ
 
 		return;
 	}
@@ -292,17 +291,6 @@ void ACPlayerAI::HandleStateTurnComplete()
 	isActionCompleted = true; // reset
 }
 
-// ショートパス
-void ACPlayerAI::ShortPass(AC_Player* toPlayer)
-{
-	AC_Player* controlledPlayer = Cast<AC_Player>(GetPawn());
-	if (controlledPlayer == nullptr) return;
-
-	// アニメーション
-	controlledPlayer->ShotPass(toPlayer); // ショートパス
-	toPlayer->Trap(controlledPlayer); // トラップ
-}
-
 // action pass from GK to DF
 bool ACPlayerAI::PassFromGKToDF()
 {
@@ -372,7 +360,7 @@ bool ACPlayerAI::PassFromGKToDF()
 	if (_targetPlayer == nullptr) return false;
 
 	// -- action short pass --
-	ShortPass(_targetPlayer);
+	controlledPlayer->ShotPass(_targetPlayer);
 	
 	return true;
 }
@@ -411,8 +399,8 @@ bool ACPlayerAI::PassToFrontPlayer()
 	if (_frontPlayer == nullptr) return false;
 
 	// -- action short pass --
-	ShortPass(_frontPlayer);
-
+	_controlledPlayer->ShotPass(_frontPlayer);
+	
 	return true;
 }
 
@@ -459,13 +447,13 @@ bool ACPlayerAI::BackPass()
 	if (_backPlayer == nullptr) {
 		// < short pass to GK >
 		if (_gk == nullptr) return false;
-		ShortPass(_gk);
+		_controlledPlayer->ShotPass(_gk);
 		
 		return true;
 	}
 
 	// < short pass to back player >
-	ShortPass(_backPlayer);
+	_controlledPlayer->ShotPass(_backPlayer);
 
 	return true;
 }

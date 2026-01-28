@@ -186,12 +186,12 @@ void AC_Player::SetPosition()
 // ショートパス
 void AC_Player::ShotPass(AC_Player* targetPlayer)
 {
-	// パス方向へ回転
-	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), targetPlayer->GetActorLocation());
-	FQuat _q = _rotation.Quaternion(); // 変換
-	_q.X = 0; // *Z軸のみ回転させる
-	_q.Y = 0; // *Z軸のみ回転させる
-	SetActorRotation(_q);
+	//// パス方向へ回転
+	//FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), targetPlayer->GetActorLocation());
+	//FQuat _q = _rotation.Quaternion(); // 変換
+	//_q.X = 0; // *Z軸のみ回転させる
+	//_q.Y = 0; // *Z軸のみ回転させる
+	//SetActorRotation(_q);
 
 	// ボール移動
 	if (ball) {
@@ -231,20 +231,6 @@ void AC_Player::LongKick(FVector toLocation)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
-}
-
-// トラップ
-void AC_Player::Trap(AC_Player* fromPlayer)
-{
-	// パス先方向へ回転
-	FRotator _rotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), fromPlayer->GetActorLocation());
-	FQuat _q = _rotation.Quaternion(); // 変換
-	_q.X = 0; // *Z軸のみ回転させる
-	_q.Y = 0; // *Z軸のみ回転させる
-	SetActorRotation(_q);
-
-	// アニメーション実行フラグ
-	isTrap = true;
 }
 
 // シュート

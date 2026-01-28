@@ -55,8 +55,6 @@ public:
 	void SpacePass(FVector toLocation);
 	// ロングキック
 	void LongKick(FVector toLocation);
-	// トラップ
-	void Trap(AC_Player* fromPlayer);
 	// シュート
 	void Shoot();
 	// ボール保持
@@ -102,7 +100,6 @@ private:
 	TSubclassOf<UUserWidget> runnerWidgetIcon = nullptr; // ランナーWidget
 	TSubclassOf<UUserWidget> targetmanWidgetIcon = nullptr; // ターゲットマンWidget
 
-	bool isTrap = false; // トラップアニメーションするか
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	bool isBallKeeping = false; // ボールキープ判定
