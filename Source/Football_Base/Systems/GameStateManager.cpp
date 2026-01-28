@@ -638,6 +638,16 @@ void UGameStateManager::ClearAllStates()
 // continue duel turn
 void UGameStateManager::OnDuelTurn()
 {
+	// - duel turn end -
+	// *condition*
+	// 1. ball holder is GK
+	if (ballHolder->position == C_Common::GK_POSITION) {
+		duelTurnCount = 0;
+		OnStateTurnComplete.Broadcast(); // (for player's action flag ON)
+		
+		return;
+	}
+	
 	duelTurnCount++;
 	OnDuelContinue.Broadcast();
 }

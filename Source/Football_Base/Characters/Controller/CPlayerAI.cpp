@@ -27,6 +27,7 @@ void ACPlayerAI::BeginPlay()
 	state->OnGoal.AddUObject(this, &ACPlayerAI::HandleGoal);
 	state->OnMatchEnd.AddUObject(this, &ACPlayerAI::HandleMatchEnd);
 	state->OnTurnCompletePhase.AddUObject(this, &ACPlayerAI::HandleTurnCompletePhase);
+	state->OnStateTurnComplete.AddUObject(this, &ACPlayerAI::HandleStateTurnComplete);
 }
 
 void ACPlayerAI::Tick(float DeltaSeconds)
@@ -101,7 +102,6 @@ void ACPlayerAI::HandleDuelContinue()
 	if (isBallHolder) {
 		// - back pass until GK -
 		BackPass();
-		UKismetSystemLibrary::PrintString(this, "call", true, true, FColor::Red, 10.0f, TEXT("None"));
 		isActionCompleted = true; // action completed!
 		return;
 	}
@@ -284,6 +284,12 @@ void ACPlayerAI::HandleMatchEnd()
 // ターン完了ハンドル
 void ACPlayerAI::HandleTurnCompletePhase()
 {
+}
+
+// ステート：ターン完了ハンドラ
+void ACPlayerAI::HandleStateTurnComplete()
+{
+	isActionCompleted = true; // reset
 }
 
 // ショートパス

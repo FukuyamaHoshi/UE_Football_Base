@@ -19,6 +19,7 @@ DECLARE_MULTICAST_DELEGATE(FOnGoal);
 DECLARE_MULTICAST_DELEGATE(FOnMatchStart);
 DECLARE_MULTICAST_DELEGATE(FOnMatchEnd);
 DECLARE_MULTICAST_DELEGATE(FOnTurnCompletePhase);
+DECLARE_MULTICAST_DELEGATE(FOnStateTurnComplete);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ✅ State Flag Enum (状態フラグ列挙型)
@@ -87,6 +88,7 @@ public:
 	FOnMatchStart OnMatchStart;
 	FOnMatchEnd OnMatchEnd;
 	FOnTurnCompletePhase OnTurnCompletePhase;
+	FOnStateTurnComplete OnStateTurnComplete; // state turn complete
 
 	// プレイヤー
 	AC_Player* ballHolder = nullptr; // ボールホルダー

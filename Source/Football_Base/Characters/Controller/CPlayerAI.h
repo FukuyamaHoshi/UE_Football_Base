@@ -67,6 +67,8 @@ private:
 	void HandleMatchEnd();
 	// - ターン完了ハンドラ -
 	void HandleTurnCompletePhase();
+	// - ステートターン完了ハンドラ -
+	void HandleStateTurnComplete();
 
 	// ショートパス
 	void ShortPass(AC_Player* toPlayer);
