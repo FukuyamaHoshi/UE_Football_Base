@@ -7,6 +7,7 @@
 #include <Components/WidgetComponent.h>
 #include <Football_Base/Actors/C_Soccer_Ball.h>
 #include <Football_Base/Actors/C_Tile.h>
+#include <ActorSequenceComponent.h>
 #include "C_Player.generated.h"
 
 DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
@@ -86,6 +87,8 @@ public:
 	void LookForward();
 	// 視野タイルNo更新
 	void UpdateViewTileNos();
+	// デュエルアニメーション再生
+	void PlayDuelAnimation();
 
 private:
 	// 移動処理
@@ -99,6 +102,8 @@ private:
 	UWidgetComponent* myWidget = nullptr; // ウィジェットコンポーネント
 	TSubclassOf<UUserWidget> runnerWidgetIcon = nullptr; // ランナーWidget
 	TSubclassOf<UUserWidget> targetmanWidgetIcon = nullptr; // ターゲットマンWidget
+
+	UActorSequenceComponent* sequenceComponent = nullptr; // シーケンスコンポーネント
 
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)

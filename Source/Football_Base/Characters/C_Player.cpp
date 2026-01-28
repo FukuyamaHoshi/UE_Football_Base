@@ -59,6 +59,10 @@ void AC_Player::BeginPlay()
 	myMesh = Cast<USkeletalMeshComponent>(_actorMesh); // キャスト
 	// **
 
+	// *** シーケンスコンポーネント取得 ***
+	sequenceComponent = FindComponentByClass<UActorSequenceComponent>();
+	// ***
+	
 	// *** ボール取得 ***
 	AActor* _b = UGameplayStatics::GetActorOfClass(this, AC_Soccer_Ball::StaticClass());
 	ball = Cast<AC_Soccer_Ball>(_b); // キャスト
@@ -589,4 +593,25 @@ void AC_Player::PoketmanAppeal(AC_Player* ballHolder)
 	_q.X = 0; // *Z軸のみ回転させる
 	_q.Y = 0; // *Z軸のみ回転させる
 	SetActorRotation(_q);
+}
+
+// デュエルアニメーション再生
+void AC_Player::PlayDuelAnimation()
+{
+	// シーケンスコンポーネント確認
+	if (sequenceComponent == nullptr) {
+		UKismetSystemLibrary::PrintString(this, "Sequence Component Not Found", true, true, FColor::Red, 2.0f, TEXT("None"));
+		return;
+	}
+
+	// シーケンスが設定されているか確認
+	if (sequenceComponent->GetSequence() == nullptr) {
+		UKismetSystemLibrary::PrintString(this, "Sequence Not Set", true, true, FColor::Yellow, 2.0f, TEXT("None"));
+		return;
+	}
+
+	// アニメーション再生
+	sequenceComponent->PlaySequence();
+	
+	UKismetSystemLibrary::PrintString(this, "Duel Animation Playing", true, true, FColor::Green, 2.0f, TEXT("None"));
 }
