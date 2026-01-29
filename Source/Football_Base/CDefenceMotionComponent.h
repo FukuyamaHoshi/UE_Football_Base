@@ -51,34 +51,34 @@ private:
 
 	// Duration of brace phase
 	UPROPERTY(EditAnywhere)
-	float BraceTime = 0.15f;
+	float BraceTime = 0.25f;
 
 	// Duration of impact phase
 	UPROPERTY(EditAnywhere)
-	float ImpactTime = 0.1f;
+	float ImpactTime = 0.15f;
 
 	// Duration of absorb phase
 	UPROPERTY(EditAnywhere)
-	float AbsorbTime = 0.15f;
+	float AbsorbTime = 0.1f;
 
 	// Duration of return phase
 	UPROPERTY(EditAnywhere)
-	float ReturnTime = 0.2f;
+	float ReturnTime = 0.15f;
 
 	// Initial position
 	FVector StartLocation;
 	
-	// Position offsets - defence motion (backward)
+	// Position offsets - defence motion (backward from attacker)
 	UPROPERTY(EditAnywhere)
-	FVector BraceOffset = FVector(-10, 0, 0);      // ç\Ç¶ (brace position)
+	FVector BraceOffset = FVector(0, 0, 0);      // ç\Ç¶ (slight pull back to brace - opposite direction)
 	
 	UPROPERTY(EditAnywhere)
-	FVector ImpactOffset = FVector(-50, 0, 0);     // è’åÇéÛÇØ (pushed back by impact)
+	FVector ImpactOffset = FVector(60, 0, 0);     // è’åÇéÛÇØ (pushed back by impact - strong backward)
 	
 	UPROPERTY(EditAnywhere)
-	FVector AbsorbOffset = FVector(-20, 0, 0);     // ãzé˚ (absorbing force)
+	FVector AbsorbOffset = FVector(0, 0, 0);     // ãzé˚ (absorbing force - medium backward)
 	
 	UPROPERTY(EditAnywhere)
-	FVector ReturnOffset = FVector(0, 0, 0);       // ñﬂÇË (return to start)
+	FVector ReturnOffset = FVector(0, 0, 0);       // ñﬂÇË (return to start position)
 		
 };
