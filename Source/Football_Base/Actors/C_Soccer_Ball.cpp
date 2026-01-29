@@ -6,7 +6,6 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <Kismet/GameplayStatics.h>
 #include <Football_Base/Systems/GameStateManager.h>
-#include <Football_Base/C_Common.h>
 
 // Sets default values
 AC_Soccer_Ball::AC_Soccer_Ball()
@@ -51,7 +50,7 @@ void AC_Soccer_Ball::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AC_Soccer_Ball::Move(float dTime)
 {
     // *** 移動処理 ***
-    if (moveTotalTime == 0.0f) moveTotalTime = 0.7f; // 移動時間指定
+    if (moveTotalTime == 0.0f) moveTotalTime = 0.5f; // 移動時間指定
     movingCount += dTime; // 経過時間
     float _alpha = FMath::Clamp(movingCount / moveTotalTime, 0.0f, 1.0f); // 0から1にクランプ
     FVector _newLocation = FMath::Lerp(fromLocation, targetLocation, _alpha);

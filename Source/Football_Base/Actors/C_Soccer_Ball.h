@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include <Football_Base/C_Common.h>
 #include "C_Soccer_Ball.generated.h"
 
 UCLASS()
@@ -50,7 +51,7 @@ private:
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
 	FVector fromLocation = FVector(0, 0, 0); // 動く前の位置(一時保存)
 	float movingCount = 0.0f; // 移動経過時間
-	float moveTotalTime = 0.0f; // 移動時間(指定)
+	float moveTotalTime = C_Common::BALL_MOVE_COMPLETE_TIME; // ball speed seting
 	FVector initialLocation = FVector(-1110.0f, 0, 30.0f); // 初期位置
 
 };
