@@ -8,8 +8,8 @@
 #include <Football_Base/Actors/C_Soccer_Ball.h>
 #include <Football_Base/Actors/C_Tile.h>
 #include <ActorSequenceComponent.h>
-#include <Football_Base/CAttackMotionComponent.h>
-#include <Football_Base/CDefenceMotionComponent.h>
+#include "Motion/CAttackMotionComponent.h"
+#include "Motion/CDefenceMotionComponent.h"
 #include "C_Player.generated.h"
 
 DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
