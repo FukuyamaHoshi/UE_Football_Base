@@ -92,9 +92,11 @@ public:
 	// デュエルアニメーション再生
 	void PlayDuelAnimation();
 	// アタックモーション開始
-	void StartAttackMotion();
+	// Returns total animation duration
+	float StartAttackMotion();
 	// ディフェンスモーション開始
-	void StartDefenceMotion();
+	// Returns total animation duration
+	float StartDefenceMotion();
 
 private:
 	// 移動処理

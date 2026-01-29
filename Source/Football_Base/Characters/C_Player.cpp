@@ -637,19 +637,25 @@ void AC_Player::PlayDuelAnimation()
 }
 
 // アタックモーション開始
-void AC_Player::StartAttackMotion()
+// Returns total animation duration
+float AC_Player::StartAttackMotion()
 {
 	if (attackMotionComponent)
 	{
-		attackMotionComponent->StartAttack();
+		return attackMotionComponent->StartAttack();
 	}
+	
+	return 0.0f; // Return 0 if component is not available
 }
 
 // ディフェンスモーション開始
-void AC_Player::StartDefenceMotion()
+// Returns total animation duration
+float AC_Player::StartDefenceMotion()
 {
 	if (defenceMotionComponent)
 	{
-		defenceMotionComponent->StartDefence();
+		return defenceMotionComponent->StartDefence();
 	}
+	
+	return 0.0f; // Return 0 if component is not available
 }

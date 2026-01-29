@@ -94,23 +94,49 @@ void ACPlayerAI::HandleDuelStart()
 	// ボールホルダー時
 	if (isBallHolder) {
 		// - アタックモーション再生 -
-		_controlledPlayer->StartAttackMotion();
+		float attackDuration = _controlledPlayer->StartAttackMotion();
+		
+		// - タイマーセット (アタックモーション終了後に実行) -
+		if (attackDuration > 0.0f) {
+			FTimerHandle attackTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(attackTimerHandle, [this]()
+			{
+				// アタックモーション終了後の処理
+				UKismetSystemLibrary::PrintString(this, "Attack Motion Completed!", true, true, FColor::Green, 2.0f, TEXT("None"));
+				
+				// アクション完了フラグセット
+				isActionCompleted = true;
+				
+			}, attackDuration, false);
+		}
 		
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
 		
-		isActionCompleted = true; // action completed!
 		return;
 	}
 	// ディフェンダー時
 	if (isDefender) {
 		// - ディフェンスモーション再生 -
-		_controlledPlayer->StartDefenceMotion();
+		float defenceDuration = _controlledPlayer->StartDefenceMotion();
+		
+		// - タイマーセット (ディフェンスモーション終了後に実行) -
+		if (defenceDuration > 0.0f) {
+			FTimerHandle defenceTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(defenceTimerHandle, [this]()
+			{
+				// ディフェンスモーション終了後の処理
+				UKismetSystemLibrary::PrintString(this, "Defence Motion Completed!", true, true, FColor::Blue, 2.0f, TEXT("None"));
+				
+				// アクション完了フラグセット
+				isActionCompleted = true;
+				
+			}, defenceDuration, false);
+		}
 		
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
 		
-		isActionCompleted = true; // action completed!
 		return;
 	}
 
