@@ -47,6 +47,10 @@ AC_Player::AC_Player()
 	// *** AIコントローラーセット ***
 	AIControllerClass = ACPlayerAI::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// *** アタックモーションコンポーネント作成 ***
+	attackMotionComponent = CreateDefaultSubobject<UCAttackMotionComponent>(TEXT("AttackMotionComponent"));
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -70,6 +74,12 @@ void AC_Player::BeginPlay()
 
 	// *** Widgetコンポーネント取得 ***
 	myWidget = FindComponentByClass<UWidgetComponent>();
+	// ***
+
+	// *** アタックモーションコンポーネント取得 ***
+	if (attackMotionComponent == nullptr) {
+		attackMotionComponent = FindComponentByClass<UCAttackMotionComponent>();
+	}
 	// ***
 
 	// *** 全てのタイルを取得 ***
@@ -614,4 +624,13 @@ void AC_Player::PlayDuelAnimation()
 	sequenceComponent->PlaySequence();
 	
 	UKismetSystemLibrary::PrintString(this, "Duel Animation Playing", true, true, FColor::Green, 2.0f, TEXT("None"));
+}
+
+// アタックモーション開始
+void AC_Player::StartAttackMotion()
+{
+	if (attackMotionComponent)
+	{
+		attackMotionComponent->StartAttack();
+	}
 }

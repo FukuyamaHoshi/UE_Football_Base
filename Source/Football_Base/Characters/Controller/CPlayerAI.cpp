@@ -93,8 +93,8 @@ void ACPlayerAI::HandleDuelStart()
 	
 	// ボールホルダー時
 	if (isBallHolder) {
-		// - デュエルアニメーション再生 -
-		_controlledPlayer->PlayDuelAnimation();
+		// - アタックモーション再生 -
+		_controlledPlayer->StartAttackMotion();
 		
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
