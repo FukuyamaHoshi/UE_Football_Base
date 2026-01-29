@@ -36,7 +36,11 @@ public:
 
 public:
 	// Start defence animation sequence
-	void StartDefence();
+	// Returns total animation duration
+	float StartDefence();
+
+	// Get total animation time
+	float GetTotalAnimationTime() const;
 
 private:
 	// Apply motion offset to owner

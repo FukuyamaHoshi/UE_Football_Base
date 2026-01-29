@@ -36,7 +36,11 @@ public:
 
 public:
 	// Start attack animation sequence
-	void StartAttack();
+	// Returns total animation duration
+	float StartAttack();
+
+	// Get total animation time
+	float GetTotalAnimationTime() const;
 
 private:
 	// Apply motion offset to owner

@@ -110,19 +110,31 @@ void UCDefenceMotionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 }
 
-void UCDefenceMotionComponent::StartDefence()
+// Start defence animation sequence
+// Returns total animation duration
+float UCDefenceMotionComponent::StartDefence()
 {
 	// Don't start if already defending
-	if (State != EDefenceState::None) return;
+	if (State != EDefenceState::None) return 0.0f;
 
 	// Store starting position
 	AActor* Owner = GetOwner();
+	if (Owner == nullptr) return 0.0f;
+	
 	StartLocation = Owner->GetActorLocation();
 
 	// Begin brace phase
 	State = EDefenceState::Brace;
 	Timer = 0.f;
 
+	// Return total animation time
+	return GetTotalAnimationTime();
+}
+
+// Get total animation time
+float UCDefenceMotionComponent::GetTotalAnimationTime() const
+{
+	return BraceTime + ImpactTime + AbsorbTime + ReturnTime;
 }
 
 void UCDefenceMotionComponent::ApplyMotion(float Alpha, const FVector& Offset)

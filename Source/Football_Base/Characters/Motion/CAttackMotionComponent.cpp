@@ -110,19 +110,23 @@ void UCAttackMotionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 }
 
-void UCAttackMotionComponent::StartAttack()
+float UCAttackMotionComponent::StartAttack()
 {
 	// Don't start if already attacking
-	if (State != EAttackState::None) return;
+	if (State != EAttackState::None) return 0.0f;
 
 	// Store starting position
 	AActor* Owner = GetOwner();
+	if (Owner == nullptr) return 0.0f;
+	
 	StartLocation = Owner->GetActorLocation();
 
 	// Begin charge phase
 	State = EAttackState::Charge;
 	Timer = 0.f;
 
+	// Return total animation time
+	return GetTotalAnimationTime();
 }
 
 void UCAttackMotionComponent::ApplyMotion(float Alpha, const FVector& Offset)
@@ -135,5 +139,10 @@ void UCAttackMotionComponent::ApplyMotion(float Alpha, const FVector& Offset)
 	// Update actor position
 	Owner->SetActorLocation(NewLoc);
 
+}
+
+float UCAttackMotionComponent::GetTotalAnimationTime() const
+{
+	return ChargeTime + SwingTime + OverShootTime + RecoverTime;
 }
 
