@@ -246,6 +246,9 @@ bool UGameStateManager::DedectCompleteMoving()
 		if (_playerAI->isActionCompleted == false) return false; // not action completed
 	}
 
+	// 2. check if ball is moving
+	if (ball && ball->isMoving) return false; // ball is still moving
+
 	return true;
 }
 

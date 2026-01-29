@@ -59,7 +59,7 @@ public:
     // インターバル
     static constexpr float MATCH_READY_TIME = 3.0f; // 試合準備
     static constexpr float MATCH_TIME = 30.0f; // 試合中
-    static constexpr float PLAY_INTERVAL = 1.0f; // プレイ間隔
+    static constexpr float PLAY_INTERVAL = 0.0f; // プレイ間隔
 
     // 位置からタイルＮｏ取得
     static int GetTileNoFromLocation(FVector location);
