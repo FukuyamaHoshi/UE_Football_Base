@@ -61,7 +61,7 @@ public:
     static constexpr float MATCH_TIME = 30.0f; // 試合中
     static constexpr float PLAY_INTERVAL = 0.0f; // プレイ間隔
     // ball speed (complete time)
-	static constexpr float BALL_MOVE_COMPLETE_TIME = 0.5f;
+	static constexpr float BALL_MOVE_COMPLETE_TIME = 0.2f;
 
     // 位置からタイルＮｏ取得
     static int GetTileNoFromLocation(FVector location);

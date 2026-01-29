@@ -50,7 +50,6 @@ void AC_Soccer_Ball::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AC_Soccer_Ball::Move(float dTime)
 {
     // *** 移動処理 ***
-    if (moveTotalTime == 0.0f) moveTotalTime = 0.5f; // 移動時間指定
     movingCount += dTime; // 経過時間
     float _alpha = FMath::Clamp(movingCount / moveTotalTime, 0.0f, 1.0f); // 0から1にクランプ
     FVector _newLocation = FMath::Lerp(fromLocation, targetLocation, _alpha);
@@ -71,7 +70,7 @@ void AC_Soccer_Ball::Move(float dTime)
         targetLocation = FVector(0, 0, 0); // ターゲット位置リセット
         isMoving = false; // 移動終了
         isLongBall = false; // ロングボールOFF
-        moveTotalTime = 0.0f; // 移動時間(指定)リセット
+        moveTotalTime = C_Common::BALL_MOVE_COMPLETE_TIME; // ← CHANGED: 次回のために値を保持
         movingCount = 0.0f; // 移動カウントリセット
 
         return;
