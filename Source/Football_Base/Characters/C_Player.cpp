@@ -51,6 +51,10 @@ AC_Player::AC_Player()
 	// *** アタックモーションコンポーネント作成 ***
 	attackMotionComponent = CreateDefaultSubobject<UCAttackMotionComponent>(TEXT("AttackMotionComponent"));
 	// ***
+
+	// *** ディフェンスモーションコンポーネント作成 ***
+	defenceMotionComponent = CreateDefaultSubobject<UCDefenceMotionComponent>(TEXT("DefenceMotionComponent"));
+	// ***
 }
 
 // Called when the game starts or when spawned
@@ -79,6 +83,12 @@ void AC_Player::BeginPlay()
 	// *** アタックモーションコンポーネント取得 ***
 	if (attackMotionComponent == nullptr) {
 		attackMotionComponent = FindComponentByClass<UCAttackMotionComponent>();
+	}
+	// ***
+
+	// *** ディフェンスモーションコンポーネント取得 ***
+	if (defenceMotionComponent == nullptr) {
+		defenceMotionComponent = FindComponentByClass<UCDefenceMotionComponent>();
 	}
 	// ***
 
@@ -632,5 +642,14 @@ void AC_Player::StartAttackMotion()
 	if (attackMotionComponent)
 	{
 		attackMotionComponent->StartAttack();
+	}
+}
+
+// ディフェンスモーション開始
+void AC_Player::StartDefenceMotion()
+{
+	if (defenceMotionComponent)
+	{
+		defenceMotionComponent->StartDefence();
 	}
 }

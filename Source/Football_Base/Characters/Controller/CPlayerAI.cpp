@@ -103,7 +103,10 @@ void ACPlayerAI::HandleDuelStart()
 		return;
 	}
 	// ディフェンダー時
-	if (isDefender) {		
+	if (isDefender) {
+		// - ディフェンスモーション再生 -
+		_controlledPlayer->StartDefenceMotion();
+		
 		// - update my stamina -
 		UpdateStamina(enemyAbilityCost);
 		

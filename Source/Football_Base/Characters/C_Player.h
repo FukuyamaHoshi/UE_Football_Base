@@ -9,6 +9,7 @@
 #include <Football_Base/Actors/C_Tile.h>
 #include <ActorSequenceComponent.h>
 #include <Football_Base/CAttackMotionComponent.h>
+#include <Football_Base/CDefenceMotionComponent.h>
 #include "C_Player.generated.h"
 
 DECLARE_DELEGATE(FCompleteMoveDelegate); // 移動終了コールバッグDelegate
@@ -92,6 +93,8 @@ public:
 	void PlayDuelAnimation();
 	// アタックモーション開始
 	void StartAttackMotion();
+	// ディフェンスモーション開始
+	void StartDefenceMotion();
 
 private:
 	// 移動処理
@@ -108,6 +111,7 @@ private:
 
 	UActorSequenceComponent* sequenceComponent = nullptr; // シーケンスコンポーネント
 	UCAttackMotionComponent* attackMotionComponent = nullptr; // アタックモーションコンポーネント
+	UCDefenceMotionComponent* defenceMotionComponent = nullptr; // ディフェンスモーションコンポーネント
 
 	FVector fromLocation = FVector(0, 0, 0); // 動く前のターゲット位置(一時保存)
 	FVector targetLocation = FVector(0, 0, 0); // 動くターゲット位置(一時保存)
